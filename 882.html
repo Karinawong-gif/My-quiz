@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roblox 知識大冒險！</title>
+    <style>
+        /* CSS 變數配置 */
+        :root {
+            --roblox-bg: url('https://images5.alphacoders.com/121/thumb-1920-1217521.jpg');
+            --rbx-dark-alpha: rgba(25, 25, 25, 0.75);
+            --rbx-green: #00B06F;
+            --rbx-green-dark: #008F58;
+            --rbx-red: #D32F2F;
+            --rbx-red-dark: #9A2121;
+            --rbx-gray: #393B3D;
+            --rbx-gray-dark: #232527;
+            --rbx-blue: #0074BD;
+            --rbx-blue-dark: #005A92;
+            --rbx-text: #FFFFFF;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, "Microsoft JhengHei";
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background-image: var(--roblox-bg);
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-attachment: fixed;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        /* 題目容器（毛玻璃效果） */
+        .game-container {
+            width: 90%;
+            max-width: 650px;
+            background: var(--rbx-dark-alpha);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.14);
+            border-radius: 16px;
+            padding: 30px;
+            color: var(--rbx-text);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+            position: relative;
+            z-index: 10;
+        }
+
+        /* 陰影文字確保清晰度 */
+        h1, h2, h3, p, .score-board, .feedback, .question-text {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+        }
+
+        /* 計分板 */
+        .score-board {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.1rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #FFD700;
+        }
+
+        /* 題型標籤 */
+        .question-type-badge {
+            background-color: #FF9800;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            vertical-align: middle;
+            margin-left: 8px;
+            text-shadow: none;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 25px;
+        }
+
+        /* Roblox 風格立體按鈕（預設狀態） */
+        .btn-option {
+            background-color: var(--rbx-green);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 14px 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-align: left;
+            cursor: pointer;
+            position: relative;
+            box-shadow: 0 5px 0 var(--rbx-green-dark);
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+            z-index: 12;
+        }
+
+        /* 懸停彈簧動畫效果 */
+        .btn-option:hover:not(:disabled) {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 0 var(--rbx-green-dark);
+        }
+
+        /* 多選點擊時的選取中狀態（亮藍色） */
+        .btn-option.selected {
+            background-color: var(--rbx-blue) !important;
+            box-shadow: 0 5px 0 var(--rbx-blue-dark) !important;
+            transform: translateY(2px);
+        }
+
+        /* 最終回饋狀態：正確綠、錯誤紅 */
+        .btn-option.correct {
+            background-color: #00B06F !important;
+            box-shadow: 0 5px 0 #008F58 !important;
+        }
+
+        .btn-option.wrong {
+            background-color: var(--rbx-red) !important;
+            box-shadow: 0 5px 0 var(--rbx-red-dark) !important;
+        }
+
+        .btn-option:disabled {
+            cursor: not-allowed;
+            opacity: 0.95;
+        }
+
+        /* 回饋文字區 */
+        .feedback {
+            margin: 20px 0;
+            font-size: 1.25rem;
+            font-weight: bold;
+            min-height: 35px;
+            text-align: center;
+        }
+
+        /* 功能控制鈕 */
+        .control-area {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn-action {
+            display: block;
+            width: 100%;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.1s ease;
+        }
+
+        .btn-submit {
+            background-color: #FF9800;
+            box-shadow: 0 4px 0 #E65100;
+        }
+        .btn-submit:hover:not(:disabled) {
+            background-color: #FFA726;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #E65100;
+        }
+
+        .btn-next {
+            background-color: var(--rbx-gray);
+            box-shadow: 0 4px 0 var(--rbx-gray-dark);
+        }
+        .btn-next:hover {
+            background-color: #4f5153;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 var(--rbx-gray-dark);
+        }
+
+        .btn-action:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.4);
+        }
+
+        .hidden { display: none !important; }
+
+        /* 右下角動態角色容器 */
+        .avatar-container {
+            position: absolute;
+            bottom: -15px;
+            right: -15px;
+            width: 120px;
+            height: 120px;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* 結算頁面 */
+        .result-screen {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .badge-title {
+            font-size: 2.2rem;
+            color: #FFD700;
+            margin: 20px 0;
+            animation: bounce 1s infinite alternate;
+        }
+
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <div id="quiz-screen">
+            <div class="score-board">
+                <span id="progress-text">題目：1 / 10</span>
+                <span id="score-text">目前 Robux 積分：0 / 10</span>
+            </div>
+            
+            <div class="question-text">
+                <span id="question-field">載入題目中...</span>
+                <span id="type-badge" class="question-type-badge">單選題</span>
+            </div>
+            
+            <div class="options-container" id="options-field"></div>
+            
+            <div class="feedback hidden" id="feedback-field"></div>
+            
+            <div class="control-area">
+                <button class="btn-action btn-submit" id="btn-submit-action">確認送出 ✔</button>
+                <button class="btn-action btn-next hidden" id="btn-next-action">下一題 ➔</button>
+            </div>
+        </div>
+
+        <div id="result-screen" class="result-screen hidden">
+            <h2>🎉 挑戰完成！ 🎉</h2>
+            <p style="font-size: 1.4rem;">你的最終得分</p>
+            <div class="badge-title" id="final-score">0 / 10</div>
+            <p style="font-size: 1.2rem;">獲得 Roblox 專屬稱號：</p>
+            <div class="badge-title" id="roblox-rank" style="font-size: 2rem; color: #00E6FF;">-</div>
+            <button class="btn-action btn-submit" onclick="restartGame()" style="margin-top: 30px;">再次挑戰 ↻</button>
+        </div>
+
+        <div class="avatar-container">
+            <img id="roblox-avatar" class="avatar-img" src="" alt="Roblox Character">
+        </div>
+    </div>
+
+    <audio id="sound-correct" src="https://www.soundjay.com/buttons/sounds/button-09a.mp3"></audio> 
+    <audio id="sound-wrong" src="https://www.soundjay.com/buttons/sounds/button-10a.mp3"></audio>
+
+    <script>
+        // 47 題完整題庫陣列數據
+        const pool = [
+            { question: "以下哪項不是兒童常見的牙齒問題？", options: ["A. 👑 🦷 蛀牙。", "B. 牙齒排列不整齊。", "C. 牙周病。", "D. 牙齒掉光。"], answer: [3] },
+            { question: "以下哪項不是蛀牙或牙周病的徵狀？", options: ["A. 口臭。", "B. 牙齒變白。", "C. 牙肉紅腫。", "D. 牙肉流血。"], answer: [1] },
+            { question: "以下哪些是牙周病的徵狀？（答案可多於一個。）", options: ["A. 牙肉紅腫。", "B. 刷牙時，牙肉流血。", "C. 牙齒排列不整齊。", "D. 牙齒之間有空隙。"], answer: [0, 1] },
+            { question: "以下哪項是保護牙齒的方法？", options: ["A. 早晚洗臉。", "B. 做適量運動。", "C. 使用牙線清潔牙縫。", "D. 吃高糖分的食物。"], answer: [2] },
+            { question: "以下哪項與近視有關？", options: ["A. 看事物時模糊不清。", "B. 眼睛紅腫。", "C. 看事物時出現重影。", "D. 眼睛乾澀。"], answer: [0] },
+            { question: "以下哪些是視力有問題時出現的情況？（答案可多於一個。）", options: ["A. 看黑板時模糊不清。", "B. 常常閲讀大量圖書。", "C. 閲讀時經常瞇起眼睛。", "D. 閲讀時眼睛感到不適或刺痛。"], answer: [0, 2, 3] },
+            { question: "患上近視時要怎樣處理？", options: ["A. 輕揉眼睛。", "B. 把書本移近眼睛。", "C. 配戴眼鏡。", "D. 瞇起眼睛來閲讀。"], answer: [2] },
+            { question: "觀看電子屏幕一段時間後停下來休息有甚麼好處？", options: ["A. 讓眼睛放鬆。", "B. 讓電子工具休息。", "C. 讓雙手放鬆。", "D. 方便思考。"], answer: [0] },
+            { question: "以下哪項與心理健康有關？", options: ["A. 視力下降。", "B. 體重正常。", "C. 想不跟人接觸。", "D. 出現蛀牙。"], answer: [2] },
+            { question: "怎樣做可以避免出現心理健康問題？（答案可多於一個。）", options: ["A. 及早發現問題。", "B. 注意自己的日常行為。", "C. 縮小生活圈子。", "D. 有問題必須自己解決。"], answer: [0, 1] },
+            { question: "以下哪些是抑鬱徵狀？（答案可多於一個。）", options: ["A. 胃口大增或大減。", "B. 經常感到疲倦。", "C. 經常失眠。", "D. 主動參加集體活動。"], answer: [0, 1, 2] },
+            { question: "以下哪些是抑鬱徵狀？（答案可多於一個。）", options: ["A. 愛向別人傾訴。", "B. 感到精力充沛。", "C. 思考能力或集中力下降。", "D. 對享受的事物不再感興趣。"], answer: [2, 3] },
+            { question: "以下哪項不是抑鬱症的徵狀？", options: ["A. 不想跟人接觸。", "B. 經常擦眼或眨眼。", "C. 大部分時間都情緒低落。", "D. 對一向享受的事情失去興趣。"], answer: [1] },
+            { question: "以下哪些是打機成癮的行為？（答案可多於一個。）", options: ["A. 經常想着打機。", "B. 喜愛電腦課堂。", "C. 做完功課才玩耍。", "D. 對打機以外的愛好或活動沒有興趣。"], answer: [0, 4] }, // 修正對應對象
+            { question: "以下哪項與打機成癮無關？", options: ["A. 經常長時間打機。", "B. 胃口大增或大減。", "C. 如果不可以打機，心情會很差。", "D. 因為打機導致和家人關係變差。"], answer: [1] },
+            { question: "以下哪些是購物成癮人士的常見特徵？（答案可多於一個。）", options: ["A. 設定購物限額。", "B. 依賴購物得到快樂。", "C. 購買大量不是必需的物品。", "D. 購物前，先檢視自己有沒有類似的物件或替代品。"], answer: [1, 2] },
+            { question: "購物成癮有甚麼影響？（答案可多於一個。）", options: ["A. 花費了很多金錢。", "B. 經常想着打機。", "C. 買了很多沒有用的東西回家。", "D. 因為金錢和購物問題以致和家人關係變差。"], answer: [0, 2, 3] },
+            { question: "以下哪些是醫院提供的服務？（答案可多於一個。）", options: ["A. 急症服務。", "B. 替病人進行手術服務。", "C. 為病人提供住院治療。", "D. 提供學童保健服務。"], answer: [0, 1, 2] },
+            { question: "以下哪項不是醫院為市民提供的服務？", options: ["A. 替病人進行手術服務。", "B. 進行身體檢查。", "C. 復康治療。", "D. 處理家居環境的衞生問題。"], answer: [3] },
+            { question: "扭傷了，可以到哪裏診治？", options: ["A. 藥房。", "B. 牙科診所。", "C. 跌打醫館。", "D. 普通科門診診所。"], answer: [2] },
+            { question: "情況危急的傷病者應該送到哪裏診治？", options: ["A. 急症室。", "B. 牙科診所。", "C. 普通科門診診所。", "D. 香港眼科醫院。"], answer: [0] },
+            { question: "選擇合適的醫療設施有甚麼好處？（答案可多於一個。）", options: ["A. 不用跟醫護人員合作。", "B. 浪費金錢。", "C. 得到適當的治療。", "D. 可以加快康復。"], answer: [2, 3] },
+            { question: "以下哪項是病人的權利？", options: ["A. 與醫生合作。", "B. 繳付診金。", "C. 查看其他病人的病歷。", "D. 查問自己的病情。"], answer: [3] },
+            { question: "以下哪些是病人的權利？（答案可多於一個。）", options: ["A. 準時覆診。", "B. 拒絕繳付診金。", "C. 查問自己的病情。", "D. 徵詢不同醫生的意見。"], answer: [2, 3] },
+            { question: "以下哪項是病人的責任？（答案可多於一個。）", options: ["A. 向家人透露病情。", "B. 按指示服藥。", "C. 向醫生說明病情。", "D. 瞭解其他病人的病情。"], answer: [1, 2] },
+            { question: "如果察覺自己出現抑鬱、打機成癮或購物成癮的徵狀，應該怎樣做？（答案可多於一個。）", options: ["A. 告訴社工。", "B. 告訴父母。", "C. 向支援機構尋求意見。", "D. 告訴不相熟的朋友。"], answer: [0, 1, 2] },
+            { question: "以下哪個機構提供心理健康支援服務？（答案可多於一個。）", options: ["A. 香港聖公會輔導服務處。", "B. 香港聖約翰救護機構。", "C. 衞生署學生健康服務中心。", "D. 香港小童群益會。"], answer: [0, 2, 3] },
+            { question: "以下哪項是健康的飲食習慣？", options: ["A. 以汽水代替清水。", "B. 以零食代替部分正餐。", "C. 按「健康飲食金字塔」建議進食。", "D. 以水果代替蔬菜。"], answer: [2] },
+            { question: "以下哪項是預防疾病的方法？", options: ["A. 不做運動。", "B. 長時間工作。", "C. 健康的飲食習慣。", "D. 早睡晚起。"], answer: [2] },
+            { question: "以下哪項是預防疾病的方法？", options: ["A. 有規律的作息。", "B. 做適量運動。", "C. 保持心境開朗。", "D. 養成多肉少菜的飲食習慣。"], answer: [0, 1, 2] },
+            { question: "以下哪項不是良好的個人衞生習慣？", options: ["A. 早晚刷牙。", "B. 不洗澡就睡覺。", "C. 外出回家後立即洗手。", "D. 定時修剪指甲。"], answer: [1] },
+            { question: "以下哪項生活習慣可以增強身體抵抗疾病的能力？", options: ["A. 乘搭電梯。", "B. 多做功課。", "C. 多做運動。", "D. 以車代步。"], answer: [2] },
+            { question: "以下哪些行為會引起衞生問題？（答案可多於一個。）", options: ["A. 把冷氣機温度調得極低。", "B. 不清除花盆積水。", "C. 隨處傾倒污水。", "D. 把垃圾放進有蓋垃圾箱。"], answer: [1, 2] },
+            { question: "亂拋垃圾會對環境造成哪些影響？（答案可多於一個。）", options: ["A. 滋生蚊蟲。", "B. 發出臭味。", "C. 造成噪音。", "D. 引致鼠患。"], answer: [0, 1, 3] },
+            { question: "冷氣機滴水會引致哪些問題？（答案可多於一個。）", options: ["A. 蚊患。", "B. 水浸。", "C. 滋擾途人。", "D. 堆積垃圾。"], answer: [0, 2] },
+            { question: "以下哪些是防蚊措施？（答案可多於一個。）", options: ["A. 清除積水。", "B. 穿短袖衣服。", "C. 避免在叢林逗留。", "D. 塗上驅蚊劑。"], answer: [0, 2, 3] },
+            { question: "蚊患會帶來甚麼影響？", options: ["A. 損毀財物。", "B. 傳播疾病。", "C. 滋生蚊蟲。", "D. 引致積水。"], answer: [1] },
+            { question: "以下哪些是蚊傳疾病？（答案可多於一個。）", options: ["A. 瘧疾。", "B. 登革熱。", "C. 日本腦炎。", "D. 手足口病。"], answer: [0, 1, 2] },
+            { question: "以下哪項描述是不對的？", options: ["A. 花盆、冷氣機積水會滋生蚊子。", "B. 雨水不會滋生蚊子。", "C. 亂拋垃圾會引來老鼠。", "D. 封好垃圾袋，便不會引來老鼠。"], answer: [1] },
+            { question: "以下哪項是預防鼠患的措施？", options: ["A. 清除積水。", "B. 避免户外活動。", "C. 妥善處理垃圾。", "D. 綠化社區。"], answer: [2] },
+            { question: "鼠患會為社區帶來哪些影響？（答案可多於一個。）", options: ["A. 損毀財物。", "B. 污染食物。", "C. 損毀植物。", "D. 傳播鼠疫。"], answer: [0, 1, 3] },
+            { question: "當發現街上有老鼠出沒時，我們應該向以下哪個政府部門求助？", options: ["A. 社會福利署。", "B. 香港房屋委員會。", "C. 食物環境衞生署。", "D. 醫院管理局。"], answer: [2] },
+            { question: "以下哪些是食物環境衞生署負責的工作？（答案可多於一個。）", options: ["A. 滅蚊。", "B. 洗洗街道。", "C. 種植花草。", "D. 收集垃圾。"], answer: [0, 1, 3] },
+            { question: "遇到以下哪種情況，我們應該向食物環境衞生署求助？", options: ["A. 沒有自來水供應。", "B. 家裏環境衞生惡劣。", "C. 大廈水管破裂。", "D. 街上有老鼠出沒。"], answer: [3] },
+            { question: "以下哪些是政府為學童提供的保健服務？（答案可多於一個。）", options: ["A. 健康檢查。", "B. 免疫注射服務。", "C. 功課輔導服務。", "D. 牙科保健服務。"], answer: [0, 1, 3] },
+            { question: "以下哪些是學生保健中心的服務？（答案可多於一個。）", options: ["A. 視力檢查。", "B. 身體檢查。", "C. 牙齒檢查。", "D. 接種疫苗。"], answer: [0, 1] },
+            { question: "市民應該怎樣響應社區的健康活動？（答案可多於一個。）", options: ["A. 參與清潔活動。", "B. 購買健康食品。", "C. 參與健康講座。", "D. 參觀健康展覽。"], answer: [0, 2, 3] }
+        ];
+
+        let currentQuestions = [];
+        let currentIndex = 0;
+        let score = 0;
+        let selectedAnswers = []; 
+
+        const progressText = document.getElementById('progress-text');
+        const scoreText = document.getElementById('score-text');
+        const questionField = document.getElementById('question-field');
+        const typeBadge = document.getElementById('type-badge');
+        const optionsField = document.getElementById('options-field');
+        const feedbackField = document.getElementById('feedback-field');
+        const btnSubmitAction = document.getElementById('btn-submit-action');
+        const btnNextAction = document.getElementById('btn-next-action');
+        const avatarImg = document.getElementById('roblox-avatar');
+
+        // 初始化遊戲：隨機抽 10 題
+        function initGame() {
+            const shuffled = [...pool].sort(() => 0.5 - Math.random());
+            currentQuestions = shuffled.slice(0, 10); 
+            currentIndex = 0;
+            score = 0;
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            showQuestion();
+        }
+
+        // 渲染題目與選項
+        function showQuestion() {
+            feedbackField.classList.add('hidden');
+            btnNextAction.classList.add('hidden');
+            btnSubmitAction.classList.remove('hidden');
+            optionsField.innerHTML = '';
+            selectedAnswers = [];
+
+            const qData = currentQuestions[currentIndex];
+            
+            progressText.innerText = `題目：${currentIndex + 1} / 10`;
+            scoreText.innerText = `目前 Robux 積分：${score} / 10`;
+            questionField.innerText = qData.question;
+
+            // 顯示單選/多選提示
+            if (qData.answer.length > 1) {
+                typeBadge.innerText = "多選題（可多選）";
+                typeBadge.style.backgroundColor = "#FF9800";
+            } else {
+                typeBadge.innerText = "單選題";
+                typeBadge.style.backgroundColor = "#0074BD";
+            }
+
+            // 【核心更換】：隨機挑選本機 Roblox 資料夾中的 1~10 號 PNG 貼圖
+            const randomImageNumber = Math.floor(Math.random() * 10) + 1;
+            avatarImg.src = `Roblox/guest (${randomImageNumber}).png`;
+
+            // 生成立體選項按禮
+            qData.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-option';
+                btn.innerText = opt;
+                btn.onclick = () => toggleOption(idx, btn);
+                optionsField.appendChild(btn);
+            });
+        }
+
+        // 點擊切換選取狀態
+        function toggleOption(idx, btn) {
+            const qData = currentQuestions[currentIndex];
+            
+            if (qData.answer.length === 1) {
+                // 單選題：互斥切換
+                const allButtons = optionsField.querySelectorAll('.btn-option');
+                allButtons.forEach(b => b.classList.remove('selected'));
+                selectedAnswers = [idx];
+                btn.classList.add('selected');
+            } else {
+                // 多選題：自由勾選與取消
+                if (selectedAnswers.includes(idx)) {
+                    selectedAnswers = selectedAnswers.filter(item => item !== idx);
+                    btn.classList.remove('selected');
+                } else {
+                    selectedAnswers.push(idx);
+                    btn.classList.add('selected');
+                }
+            }
+        }
+
+        // 確認送出與完全對判定邏輯
+        btnSubmitAction.onclick = () => {
+            if (selectedAnswers.length === 0) {
+                alert("請至少選擇一個答案再送出！");
+                return;
+            }
+
+            const qData = currentQuestions[currentIndex];
+            const allButtons = optionsField.querySelectorAll('.btn-option');
+
+            allButtons.forEach(btn => btn.disabled = true);
+            btnSubmitAction.classList.add('hidden');
+
+            // 雙向排序後比對陣列內容是否完美一致
+            const playerSorted = [...selectedAnswers].sort((a, b) => a - b);
+            const correctSorted = [...qData.answer].sort((a, b) => a - b);
+            const isFullyCorrect = playerSorted.length === correctSorted.length && 
+                                   playerSorted.every((val, index) => val === correctSorted[index]);
+
+            // 轉換正確答案字母代號
+            const correctLabels = qData.answer.map(i => qData.options[i].trim().substring(0, 2).replace('.', '')).join('、');
+
+            // 反饋按鈕視覺轉變
+            allButtons.forEach((btn, idx) => {
+                btn.classList.remove('selected');
+                if (qData.answer.includes(idx)) {
+                    btn.classList.add('correct'); // 正確答案強制變綠
+                } else if (selectedAnswers.includes(idx)) {
+                    btn.classList.add('wrong'); // 選錯的強制變紅
+                }
+            });
+
+            // 得分與音效控制
+            if (isFullyCorrect) {
+                score++;
+                scoreText.innerText = `目前 Robux 積分：${score} / 10`;
+                feedbackField.innerText = "✨ 太棒了！全答對了！ ✨";
+                feedbackField.style.color = "#00B06F";
+                document.getElementById('sound-correct').currentTime = 0;
+                document.getElementById('sound-correct').play().catch(e => {});
+            } else {
+                feedbackField.innerText = `喔不！沒全對。正確答案是：[ ${correctLabels} ]`;
+                feedbackField.style.color = "#FF5252";
+                document.getElementById('sound-wrong').currentTime = 0;
+                document.getElementById('sound-wrong').play().catch(e => {});
+            }
+
+            feedbackField.classList.remove('hidden');
+            btnNextAction.classList.remove('hidden');
+        };
+
+        // 下一題流程
+        btnNextAction.onclick = () => {
+            currentIndex++;
+            if (currentIndex < currentQuestions.length) {
+                showQuestion();
+            } else {
+                showEndScreen();
+            }
+        };
+
+        // 結算畫面
+        function showEndScreen() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            document.getElementById('final-score').innerText = `${score} / 10`;
+
+            let rank = "";
+            if (score === 10) {
+                rank = "👑 Roblox 創造神 (Builderman) 👑";
+            } else if (score >= 7) {
+                rank = "🛠️ 資深開發者 (Developer) 🛠️";
+            } else {
+                rank = "🎒 萌新小路過 (Noob) 🎒";
+            }
+            document.getElementById('roblox-rank').innerText = rank;
+        }
+
+        function restartGame() {
+            initGame();
+        }
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>
