@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zootopia 常識大挑戰！</title>
+    <style>
+        :root {
+            --primary-color: #2c3e6b; /* 警服藍 */
+            --secondary-color: #e67e22; /* 胡蘿蔔橙 */
+            --success-color: #2ec4b6; /* 答對：草綠色 */
+            --danger-color: #e74c3c; /* 答錯：警告紅 */
+            --bg-glass: rgba(255, 255, 255, 0.88); /* 半透明毛玻璃底色 */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'PingFang HK', 'Helvetica Neue', Arial, sans-serif, "Microsoft JhengHei";
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: url('zootopia/zootopia wallpaper.jpg') no-repeat center center fixed;
+            background-size: cover;
+            padding: 20px;
+        }
+
+        .quiz-container {
+            background: var(--bg-glass);
+            width: 100%;
+            max-width: 680px;
+            border-radius: 24px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+            padding: 30px;
+            position: relative;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 4px solid var(--primary-color);
+            min-height: 550px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px dashed #bdc3c7;
+        }
+
+        .quiz-info {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--primary-color);
+            background: #edf2f7;
+            padding: 6px 14px;
+            border-radius: 12px;
+        }
+
+        .score-info {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--secondary-color);
+            background: #fef3c7;
+            padding: 6px 14px;
+            border-radius: 12px;
+        }
+
+        .question-box {
+            margin-bottom: 25px;
+        }
+
+        .q-type {
+            display: inline-block;
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            color: white;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+        .q-type.single { background-color: #3498db; }
+        .q-type.multi { background-color: #9b59b6; }
+
+        .question-text {
+            font-size: 20px;
+            color: #2c3e50;
+            font-weight: bold;
+            line-height: 1.6;
+        }
+
+        .options-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+            z-index: 5;
+        }
+
+        .option-item {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-bottom: 5px solid #cbd5e1;
+            border-radius: 14px;
+            padding: 14px 20px;
+            font-size: 17px;
+            font-weight: bold;
+            color: #4a5568;
+            cursor: pointer;
+            transition: transform 0.1s ease, background-color 0.2s ease;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .option-item:hover {
+            border-color: var(--primary-color);
+            background: #f7fafc;
+        }
+
+        .option-item.selected {
+            background: #fff3e0;
+            border-color: var(--secondary-color);
+            color: #d35400;
+        }
+
+        .option-item.correct-ans {
+            background: #e6fffa !important;
+            border-color: var(--success-color) !important;
+            border-bottom-color: #17a2b8 !important;
+            color: #234e52 !important;
+        }
+
+        .option-item.wrong-ans {
+            background: #fff5f5 !important;
+            border-color: var(--danger-color) !important;
+            border-bottom-color: #c0392b !important;
+            color: #742a2a !important;
+        }
+
+        .feedback-panel {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 14px;
+            display: none;
+            font-size: 16px;
+            font-weight: bold;
+            line-height: 1.6;
+            text-align: center;
+        }
+        .feedback-panel.correct {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 2px solid var(--success-color);
+        }
+        .feedback-panel.wrong {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 2px solid var(--danger-color);
+        }
+
+        .footer-action {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .btn-submit, .btn-next {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-bottom: 4px solid #1a2544;
+            padding: 12px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: all 0.1s;
+        }
+
+        .btn-submit:active, .btn-next:active {
+            transform: translateY(2px);
+            border-bottom-width: 1px;
+        }
+
+        .btn-submit:disabled {
+            background: #cbd5e1;
+            border-bottom-color: #94a3b8;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .avatar-deco {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            pointer-events: none;
+        }
+
+        .result-screen {
+            text-align: center;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .result-screen h2 {
+            font-size: 28px;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+        .result-score {
+            font-size: 44px;
+            color: var(--secondary-color);
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .result-img {
+            width: 140px;
+            height: 140px;
+            object-fit: contain;
+            margin-bottom: 20px;
+        }
+        .btn-restart {
+            background: var(--secondary-color);
+            border-bottom: 4px solid #d35400;
+            color: white;
+            border: none;
+            padding: 12px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 14px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container">
+        <div id="quiz-screen" style="width: 100%;">
+            <div class="quiz-header">
+                <div class="quiz-info" id="progress-text">第 1 / 5 題</div>
+                <div class="score-info" id="score-text">目前 Zootopia 積分：0 / 5</div>
+            </div>
+
+            <div class="question-box">
+                <div id="question-type" class="q-type single">單選題</div>
+                <div class="question-text" id="question-text">題目載入中...</div>
+            </div>
+
+            <ul class="options-list" id="options-container"></ul>
+
+            <div class="feedback-panel" id="feedback-panel"></div>
+
+            <div class="footer-action">
+                <div>
+                    <button class="btn-submit" id="action-btn" onclick="handleSubmit()">確認答案</button>
+                </div>
+                <img src="zootopia/zootopia (1).png" class="avatar-deco" id="avatar-deco" alt="Zootopia" onerror="handleImgError(this)">
+            </div>
+        </div>
+
+        <div class="result-screen" id="result-screen">
+            <h2>🎉 挑戰完成！</h2>
+            <img src="zootopia/zootopia (4).png" class="result-img" id="result-img" alt="Result" onerror="handleImgError(this)">
+            <div class="result-score" id="final-score">0 / 5 分</div>
+            <p id="result-comment" style="font-size: 18px; margin-bottom: 25px; font-weight: bold; color: #4a5568;"></p>
+            <button class="btn-restart" onclick="restartQuiz()">再換一組 5 題 ↺</button>
+        </div>
+    </div>
+
+    <script>
+        // 完整的 30 題庫數據庫
+        const allQuizData = [
+            { id: "001", text: "中國從哪天起恢復對香港行使主權？", type: "single", options: ["A. 1990年7月1日。", "B. 1997年7月1日。", "C. 1997年10月1日。", "D. 1999年12月20日。"], answer: ["B"] },
+            { id: "002", text: "以下哪個國家曾經佔領了香港一百多年？", type: "single", options: ["A. 英國。", "B. 日本。", "C. 美國。", "D. 泰國。"], answer: ["A"] },
+            { id: "003", text: "香港特別行政區在甚麼時候成立？", type: "single", options: ["A. 1997年10月1日。", "B. 1997年7月1日。", "C. 1991年7月1日。", "D. 1997年1月1日。"], answer: ["B"] },
+            { id: "004", text: "「一國兩制」是以下哪位已故國家領導人提出的？", type: "single", options: ["A. 毛澤東。", "B. 江澤民。", "C. 鄧小平。"], answer: ["C"] },
+            { id: "005", text: "已故國家領導人鄧小平對香港提出了甚麼方針？", type: "single", options: ["A. 《憲法》。", "B. 《基本法》。", "C. 「一國兩制」。", "D. 《香港國安法》。"], answer: ["C"] },
+            { id: "006", text: "以下哪些描述是正確的？（答案可多於一個。）", type: "multi", options: ["A. 香港自古以來是中國的領土。", "B. 香港是中國不可分離的部分。", "C. 英國曾經佔領香港九十九年。", "D. 中國在1997年7月1日恢復對香港行使主權。"], answer: ["A", "B", "D"] },
+            { id: "007", text: "以下哪些關於「一國兩制」的描述是正確的？（答案可多於一個。）", type: "multi", options: ["A. 香港可以維持原有的制度，五十年不變。", "B. 由已故國家領導人毛澤東提出。", "C. 指一個國家實行兩種制度。", "D. 指香港和澳門分別有不同的制度。"], answer: ["A", "C"] },
+            { id: "008", text: "以下哪些有關《基本法》的描述是正確的？（答案可多於一個。）", type: "multi", options: ["A. 保障香港居民享有的權利。", "B. 保障香港居民不需繳交税款。", "C. 列明香港居民需服兵役的義務。", "D. 列明香港居民應該履行遵守法律的基本義務。"], answer: ["A", "D"] },
+            { id: "009", text: "根據《基本法》，以下哪些描述是不正確的？（答案可多於一個。）", type: "multi", options: ["A. 香港居民不需要遵守法律。", "B. 香港居民享有自由出入境的權利。", "C. 香港居民享有各種權利，也可以不遵守義務。", "D. 香港居民可以使用中國香港隊的名義參加國際比賽。"], answer: ["A", "C"] },
+            { id: "010", text: "以下哪些有關《基本法》的描述是不正確的？（答案可多於一個。）", type: "multi", options: ["A. 訂明香港居民不能出入境。", "B. 於1987年7月1日生效。", "C. 保障香港居民享有的權利。", "D. 列明香港居民有必須遵守法律的義務。"], answer: ["A", "B"] },
+            { id: "011", text: "以下哪項體現了《基本法》對香港居民的重要性？（答案可多於一個。）", type: "multi", options: ["A. 為香港居民帶來財富。", "B. 確保香港居民身體健康。", "C. 保障香港居民的基本權利。", "D. 保障香港社會整體利益不受損害。"], answer: ["C", "D"] },
+            { id: "012", text: "以下哪些是香港回歸祖國後可以維持的事物？（答案可多於一個。）", type: "multi", options: ["A. 港幣。", "B. 右軚車。", "C. 簡體字。", "D. 繁體字。"], answer: ["A", "B", "D"] },
+            { id: "013", text: "在「一國兩制」下，內地與香港有哪些不同的地方？（答案可多於一個。）", type: "multi", options: ["A. 內地使用繁體字，香港使用簡體字。", "B. 內地道路設計是右上左落，香港是左上右落。", "C. 人民幣是內地的流通貨幣，港幣是香港主要的流通貨幣。", "D. 內地使用中國隊的名義參加國際比賽，香港使用中國香港隊的名義參加國際比賽。"], answer: ["B", "C", "D"] },
+            { id: "014", text: "以下哪些是「一國兩制」下香港可以保留的制度？（答案可多於一個。）", type: "multi", options: ["A. 貨幣。", "B. 右上左落。", "C. 左上右落。", "D. 中文字體。"], answer: ["A", "C", "D"] },
+            { id: "015", text: "以下哪些是《基本法》規定香港居民享有的權利？（答案可多於一個。）", type: "multi", options: ["A. 選擇職業的自由。", "B. 進行文化活動的自由。", "C. 分享他人財產的權利。", "D. 享受社會福利的權利。"], answer: ["A", "B", "D"] },
+            { id: "016", text: "香港居民享有以下哪些權利？（答案可多於一個。）", type: "multi", options: ["A. 生育的自由。", "B. 參加宗教活動的自由。", "C. 在公眾地方塗鴉的自由。", "D. 與身處海外的親友視像通訊的自由。"], answer: ["A", "B", "D"] },
+            { id: "017", text: "以下哪些是香港居民享有的權利？（答案可多於一個。）", type: "multi", options: ["A. 宗教信仰的自由。", "B. 進行文化活動的自由。", "C. 享受社會福利的權利。", "D. 不遵守交通規則的權利。"], answer: ["A", "B", "C"] },
+            { id: "018", text: "以下哪項不是《基本法》保障的權利？", type: "single", options: ["A. 宗教信仰的自由。", "B. 進行文化活動的自由。", "C. 享受社會福利的權利。", "D. 奪取別人財產的權利。"], answer: ["D"] },
+            { id: "019", text: "以下哪項關於權利的描述不正確？", type: "single", options: ["A. 香港居民享有宗教信仰的自由。", "B. 《基本法》保障了香港居民的權利。", "C. 在行使權利時，我們也要遵守社會秩序 and 規則。", "D. 由於擁有了權利，我們可以完全不受限制地做喜歡的事情。"], answer: ["D"] },
+            { id: "020", text: "以下哪項是香港居民享有的權利？（答案可多於一個。）", type: "multi", options: ["A. 繳交税款。", "B. 選擇職業的自由。", "C. 旅行和出入境自由。", "D. 公開別人私隱的自由。"], answer: ["B", "C"] },
+            { id: "021", text: "以下哪項不是香港居民的義務？", type: "single", options: ["A. 遵守秩序。", "B. 繳交税款。", "C. 享受社會福利。", "D. 保持環境清潔衞生。"], answer: ["C"] },
+            { id: "022", text: "以下哪項是香港居民的義務？", type: "single", options: ["A. 宗教信仰的自由。", "B. 遵守規則和秩序。", "C. 旅行和出入境的自由。", "D. 進行文化活動的自由。"], answer: ["B"] },
+            { id: "023", text: "在我們享有旅行和出入境自由的同時，相對地要履行甚麼義務？", type: "single", options: ["A. 愛護公物。", "B. 接受教育。", "C. 照顧家庭成員。", "D. 遵守出入境條例。"], answer: ["D"] },
+            { id: "024", text: "在我們享受社會福利的同時，相對地要履行甚麼義務？", type: "single", options: ["A. 繳交税款。", "B. 照顧家庭成員。", "C. 遵守出入境條例。", "D. 在行人路上騎單車。"], answer: ["A"] },
+            { id: "025", text: "以下哪項描述是不正確的？", type: "single", options: ["A. 《憲法》是我國最高的法律。", "B. 《憲法》與《基本法》沒有關連。", "C. 《憲法》是《基本法》立法的依據和效力來源。", "D. 《基本法》是為了確保「一國兩制」方針得以落實而制定的。"], answer: ["B"] },
+            { id: "026", text: "以下哪些行為沒有尊重他人的權利？（答案可多於一個。）", type: "multi", options: ["A. 在公園裏拍攝花卉。", "B. 在行人路上騎單車。", "C. 綠燈時在斑馬線橫過馬路。", "D. 在公共圖書館借來的書上塗鴉。"], answer: ["B", "D"] },
+            { id: "027", text: "如果所有人都不遵守規則，會給社會帶來哪些影響？（答案可多於一個。）", type: "multi", options: ["A. 容易發生意外。", "B. 使交通更方便。", "C. 破壞社會秩序。", "D. 令社區更和諧。"], answer: ["A", "C"] },
+            { id: "028", text: "以下哪種行為會破壞社會秩序？", type: "single", options: ["A. 排隊等候巴士。", "B. 使用行人隧道過馬路。", "C. 在單車徑範圍內騎單車。", "D. 不看燈號，只要道路上沒有車輛便橫過馬路。"], answer: ["D"] },
+            { id: "029", text: "以下哪種行為會破壞社會秩序？（答案可多於一個。）", type: "multi", options: ["A. 繳交税款。", "B. 餵飼野生動物。", "C. 把垃圾拋進垃圾箱。", "D. 翻越欄杆橫過馬路。"], answer: ["B", "D"] },
+            { id: "030", text: "香港居民應該怎樣做才能確保社會的整體利益不受損害？（答案可多於一個。）", type: "multi", options: ["A. 餵飼野生猴子。", "B. 遵守《基本法》。", "C. 等待綠燈才過馬路。", "D. 逛年宵市場時遵從執法人員的指示。"], answer: ["B", "C", "D"] }
+        ];
+
+        let quizData = []; 
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedAnswers = [];
+        let isSubmitted = false;
+
+        function handleImgError(img) {
+            if (img.src.endsWith(".png")) {
+                img.src = img.src.replace(".png", ".webp");
+            } else if (img.src.endsWith(".webp")) {
+                img.src = img.src.replace(".webp", ".jpg");
+            }
+        }
+
+        function initRandomQuestions() {
+            let shuffled = [...allQuizData];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            // 修改此處：從題庫中隨機挑選 5 題
+            quizData = shuffled.slice(0, 5);
+            quizData.forEach(q => {
+                q.options.sort();
+            });
+        }
+
+        function loadQuestion() {
+            isSubmitted = false;
+            selectedAnswers = [];
+            
+            const currentQuestion = quizData[currentQuestionIndex];
+            
+            document.getElementById("progress-text").innerText = `第 ${currentQuestionIndex + 1} / ${quizData.length} 題`;
+            document.getElementById("score-text").innerText = `目前 Zootopia 積分：${score} / ${quizData.length}`;
+            
+            const randomAvatarNum = Math.floor(Math.random() * 10) + 1;
+            document.getElementById("avatar-deco").src = `zootopia/zootopia (${randomAvatarNum}).png`;
+
+            const typeLabel = document.getElementById("question-type");
+            if(currentQuestion.type === "multi") {
+                typeLabel.innerText = "複選題（答案可多於一個）";
+                typeLabel.className = "q-type multi";
+            } else {
+                typeLabel.innerText = "單選題";
+                typeLabel.className = "q-type single";
+            }
+
+            document.getElementById("question-text").innerText = currentQuestion.text;
+
+            const container = document.getElementById("options-container");
+            container.innerHTML = "";
+            
+            currentQuestion.options.forEach(option => {
+                const li = document.createElement("li");
+                li.className = "option-item";
+                li.innerText = option;
+                const optionLetter = option.charAt(0); 
+                li.onclick = () => selectOption(li, optionLetter);
+                container.appendChild(li);
+            });
+
+            const feedback = document.getElementById("feedback-panel");
+            feedback.style.display = "none";
+            
+            const actionBtn = document.getElementById("action-btn");
+            actionBtn.innerText = "確認答案";
+            actionBtn.onclick = handleSubmit;
+            actionBtn.disabled = true;
+        }
+
+        function selectOption(element, letter) {
+            if (isSubmitted) return;
+
+            const currentQuestion = quizData[currentQuestionIndex];
+
+            if (currentQuestion.type === "multi") {
+                if (selectedAnswers.includes(letter)) {
+                    selectedAnswers = selectedAnswers.filter(ans => ans !== letter);
+                    element.classList.remove("selected");
+                } else {
+                    selectedAnswers.push(letter);
+                    element.classList.add("selected");
+                }
+            } else {
+                selectedAnswers = [letter];
+                const items = document.querySelectorAll(".option-item");
+                items.forEach(item => item.classList.remove("selected"));
+                element.classList.add("selected");
+            }
+
+            document.getElementById("action-btn").disabled = selectedAnswers.length === 0;
+        }
+
+        function handleSubmit() {
+            if (isSubmitted) return;
+            isSubmitted = true;
+
+            const currentQuestion = quizData[currentQuestionIndex];
+            const items = document.querySelectorAll(".option-item");
+            
+            selectedAnswers.sort();
+            const correctAnswers = [...currentQuestion.answer].sort();
+            const isCorrect = JSON.stringify(selectedAnswers) === JSON.stringify(correctAnswers);
+
+            if (isCorrect) {
+                score++;
+                showFeedback(true, `🎯 答對了！太棒了，獲得 1 點動物城積分！`);
+            } else {
+                showFeedback(false, `❌ 喔不！答錯了。正確答案是：${currentQuestion.answer.join('、')}`);
+            }
+
+            items.forEach(item => {
+                const letter = item.innerText.charAt(0);
+                if (correctAnswers.includes(letter)) {
+                    item.classList.add("correct-ans");
+                } else if (selectedAnswers.includes(letter)) {
+                    item.classList.add("wrong-ans");
+                }
+                item.classList.remove("selected");
+            });
+
+            const actionBtn = document.getElementById("action-btn");
+            if (currentQuestionIndex < quizData.length - 1) {
+                actionBtn.innerText = "下一題 ➔";
+                actionBtn.onclick = nextQuestion;
+            } else {
+                actionBtn.innerText = "查看總結算 ➔";
+                actionBtn.onclick = showResults;
+            }
+            actionBtn.disabled = false;
+        }
+
+        function showFeedback(isCorrect, text) {
+            const feedback = document.getElementById("feedback-panel");
+            feedback.innerText = text;
+            feedback.style.display = "block";
+            feedback.className = isCorrect ? "feedback-panel correct" : "feedback-panel wrong";
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        function showResults() {
+            document.getElementById("quiz-screen").style.display = "none";
+            document.getElementById("result-screen").style.display = "flex";
+            
+            // 修改此處：顯示 5 題的總分
+            document.getElementById("final-score").innerText = `${score} / 5 分`;
+            
+            const comment = document.getElementById("result-comment");
+            const resultImg = document.getElementById("result-img");
+
+            // 調整 5 題制的得分評語評級
+            if (score === 5) {
+                comment.innerText = "🎖️ 滿分！你就是 Zootopia 最優秀的明星警官朱迪！";
+                resultImg.src = "zootopia/zootopia (4).png"; 
+            } else if (score >= 4) {
+                comment.innerText = "🦊 太厲害了！你擁有像尼克一樣靈活聰明的腦袋！";
+                resultImg.src = "zootopia/zootopia (3).png";
+            } else if (score >= 3) {
+                comment.innerText = "🐢 表現不錯，再加把勁就能跟上閃電（Flash）的速度了！";
+                resultImg.src = "zootopia/zootopia (1).png";
+            } else {
+                comment.innerText = "🔍 再多讀幾次歷史資料，你一定能解開所有謎題的！";
+                resultImg.src = "zootopia/zootopia (9).png";
+            }
+        }
+
+        function restartQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            document.getElementById("quiz-screen").style.display = "block";
+            document.getElementById("result-screen").style.display = "none";
+            initRandomQuestions();
+            loadQuestion();
+        }
+
+        window.onload = function() {
+            initRandomQuestions();
+            loadQuestion();
+        };
+    </script>
+</body>
+</html>
