@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zootopia 常識大挑戰！</title>
+    <style>
+        :root {
+            --primary-color: #2c3e6b; /* 警服藍 */
+            --secondary-color: #e67e22; /* 胡蘿蔔橙 */
+            --success-color: #2ec4b6; /* 答對：草綠色 */
+            --danger-color: #e74c3c; /* 答錯：警告紅 */
+            --bg-glass: rgba(255, 255, 255, 0.88); /* 半透明毛玻璃底色 */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'PingFang HK', 'Helvetica Neue', Arial, sans-serif, "Microsoft JhengHei";
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: url('zootopia/zootopia wallpaper.jpg') no-repeat center center fixed;
+            background-size: cover;
+            padding: 20px;
+        }
+
+        .quiz-container {
+            background: var(--bg-glass);
+            width: 100%;
+            max-width: 680px;
+            border-radius: 24px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+            padding: 30px;
+            position: relative;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 4px solid var(--primary-color);
+            min-height: 550px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px dashed #bdc3c7;
+        }
+
+        .quiz-info {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--primary-color);
+            background: #edf2f7;
+            padding: 6px 14px;
+            border-radius: 12px;
+        }
+
+        .score-info {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--secondary-color);
+            background: #fef3c7;
+            padding: 6px 14px;
+            border-radius: 12px;
+        }
+
+        .question-box {
+            margin-bottom: 25px;
+        }
+
+        .q-type {
+            display: inline-block;
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            color: white;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+        .q-type.single { background-color: #3498db; }
+        .q-type.multi { background-color: #9b59b6; }
+
+        .question-text {
+            font-size: 20px;
+            color: #2c3e50;
+            font-weight: bold;
+            line-height: 1.6;
+        }
+
+        .options-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+            z-index: 5;
+        }
+
+        .option-item {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-bottom: 5px solid #cbd5e1;
+            border-radius: 14px;
+            padding: 14px 20px;
+            font-size: 17px;
+            font-weight: bold;
+            color: #4a5568;
+            cursor: pointer;
+            transition: transform 0.1s ease, background-color 0.2s ease;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .option-item:hover {
+            border-color: var(--primary-color);
+            background: #f7fafc;
+        }
+
+        .option-item.selected {
+            background: #fff3e0;
+            border-color: var(--secondary-color);
+            color: #d35400;
+        }
+
+        .option-item.correct-ans {
+            background: #e6fffa !important;
+            border-color: var(--success-color) !important;
+            border-bottom-color: #17a2b8 !important;
+            color: #234e52 !important;
+        }
+
+        .option-item.wrong-ans {
+            background: #fff5f5 !important;
+            border-color: var(--danger-color) !important;
+            border-bottom-color: #c0392b !important;
+            color: #742a2a !important;
+        }
+
+        .feedback-panel {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 14px;
+            display: none;
+            font-size: 16px;
+            font-weight: bold;
+            line-height: 1.6;
+            text-align: center;
+        }
+        .feedback-panel.correct {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 2px solid var(--success-color);
+        }
+        .feedback-panel.wrong {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 2px solid var(--danger-color);
+        }
+
+        .footer-action {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .btn-submit, .btn-next {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-bottom: 4px solid #1a2544;
+            padding: 12px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: all 0.1s;
+        }
+
+        .btn-submit:active, .btn-next:active {
+            transform: translateY(2px);
+            border-bottom-width: 1px;
+        }
+
+        .btn-submit:disabled {
+            background: #cbd5e1;
+            border-bottom-color: #94a3b8;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .avatar-deco {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            pointer-events: none;
+        }
+
+        .result-screen {
+            text-align: center;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .result-screen h2 {
+            font-size: 28px;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+        .result-score {
+            font-size: 44px;
+            color: var(--secondary-color);
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .result-img {
+            width: 140px;
+            height: 140px;
+            object-fit: contain;
+            margin-bottom: 20px;
+        }
+        .btn-restart {
+            background: var(--secondary-color);
+            border-bottom: 4px solid #d35400;
+            color: white;
+            border: none;
+            padding: 12px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 14px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container">
+        <div id="quiz-screen" style="width: 100%;">
+            <div class="quiz-header">
+                <div class="quiz-info" id="progress-text">第 1 / 10 題</div>
+                <div class="score-info" id="score-text">目前 Zootopia 積分：0 / 10</div>
+            </div>
+
+            <div class="question-box">
+                <div id="question-type" class="q-type single">單選題</div>
+                <div class="question-text" id="question-text">題目載入中...</div>
+            </div>
+
+            <ul class="options-list" id="options-container"></ul>
+
+            <div class="feedback-panel" id="feedback-panel"></div>
+
+            <div class="footer-action">
+                <div>
+                    <button class="btn-submit" id="action-btn" onclick="handleSubmit()">確認答案</button>
+                </div>
+                <img src="zootopia/zootopia (1).png" class="avatar-deco" id="avatar-deco" alt="Zootopia" onerror="handleImgError(this)">
+            </div>
+        </div>
+
+        <div class="result-screen" id="result-screen">
+            <h2>🎉 挑戰完成！</h2>
+            <img src="zootopia/zootopia (4).png" class="result-img" id="result-img" alt="Result" onerror="handleImgError(this)">
+            <div class="result-score" id="final-score">0 / 10 分</div>
+            <p id="result-comment" style="font-size: 18px; margin-bottom: 25px; font-weight: bold; color: #4a5568;"></p>
+            <button class="btn-restart" onclick="restartQuiz()">再換一組 10 題 ↺</button>
+        </div>
+    </div>
+
+    <script>
+        // 完整的 28 題庫數據庫
+        const allQuizData = [
+            { id: "001", text: "香港名字的起源與以下哪些傳説有關？（答案可多於一個。）", type: "multi", options: ["A. 紅香爐廟。", "B. 香品轉運的港口。", "C. 林姓海盜的名字。", "D. 石排灣瀑布和清甜的水質。"], answer: ["A", "B", "D"] },
+            { id: "002", text: "以下哪些是香港名字由來的傳説？（答案可多於一個。）", type: "multi", options: ["A. 水質甘甜的湖泊。", "B. 香木轉運的港口。", "C. 香姑的名字。", "D. 金色香爐。"], answer: ["B", "C"] },
+            { id: "003", text: "香港這個地名最早出現在哪個朝代的書本中？", type: "single", options: ["A. 宋朝。", "B. 元朝。", "C. 明朝。", "D. 清朝。"], answer: ["C"] },
+            { id: "004", text: "以下哪項對香港地名的描述是不正確的？", type: "single", options: ["A. 香港島有石排灣這個地方。", "B. 石排灣附近有清朝時興建的「香港圍」。", "C. 香港的香品貿易曾經很蓬勃。", "D. 香港這個地名在清朝時才出現。"], answer: ["D"] },
+            { id: "005", text: "以下哪些是早期香港居民大多從事的工作？（答案可多於一個。）", type: "multi", options: ["A. 捕魚。", "B. 狩獵。", "C. 耕種。", "D. 畜牧。"], answer: ["A", "C"] },
+            { id: "006", text: "以下哪個地方在昔日有「媚珠池」的別名？", type: "single", options: ["A. 元朗 錦田。", "B. 元朗 新田。", "C. 西貢 鹽田梓。", "D. 大埔 吐露港。"], answer: ["D"] },
+            { id: "007", text: "為甚麼大埔 吐露港昔日有「媚珠池」的別名？", type: "single", options: ["A. 當地的人從事漁業。", "B. 當地的人從事採珠業。", "C. 當地的人從事養珠業。", "D. 當地的人從事製鹽業。"], answer: ["B"] },
+            { id: "008", text: "天后廟反映了早期的香港沿海居民以甚麼為生？", type: "single", options: ["A. 畜牧。", "B. 狩獵。", "C. 耕種。", "D. 捕魚。"], answer: ["D"] },
+            { id: "009", text: "以下哪項對張保仔的描述是不正確的？", type: "single", options: ["A. 他曾經是農民。", "B. 他年輕時被海盜抓走。", "C. 他後來成為海盜的首領。", "D. 他最後向清政府投降。"], answer: ["A"] },
+            { id: "010", text: "清朝的海盜對當時沿海居民有甚麼影響？", type: "single", options: ["A. 海盜幫助居民捕魚，促進經濟發展。", "B. 海盜搶奪居民的財物，使他們的財產受到威脅。", "C. 海盜建造房屋，改善居民的生活條件。", "D. 海盜教導居民學習航海知識，增加就業機會。"], answer: ["B"] },
+            { id: "011", text: "為甚麼清政府要建造東涌炮台？（答案可多於一個。）", type: "multi", options: ["A. 為了消滅海盜。", "B. 為了建造一個新的港口。", "C. 為了防止海盜攻擊沿海地區。", "D. 為了保障沿海居民的生命和財產安全。"], answer: ["A", "C", "D"] },
+            { id: "012", text: "以下哪項對東涌炮台的描述是不正確的？", type: "single", options: ["A. 位於大嶼山。", "B. 建造於明朝。", "C. 打擊和消滅海盜。", "D. 保護沿海居民。"], answer: ["B"] },
+            { id: "013", text: "以下哪個國家於1841年佔領香港島？", type: "single", options: ["A. 英國。", "B. 日本。", "C. 美國。", "D. 法國。"], answer: ["A"] },
+            { id: "014", text: "以下哪項是香港開埠後的經濟活動？", type: "single", options: ["A. 金融業。", "B. 採茶業。", "C. 採珠業。", "D. 轉口貿易。"], answer: ["D"] },
+            { id: "015", text: "維多利亞港具有甚麼特點？", type: "single", options: ["A. 水深港闊，而且終年不結冰，適合大型船隻停泊。", "B. 位於內陸，適合陸路貿易。", "C. 水較淺，而且終年不結冰，適合小型漁船停泊。", "D. 每年只有很少日子結冰。"], answer: ["A"] },
+            { id: "016", text: "香港的地理位置對香港成為轉口港有甚麼幫助？", type: "single", options: ["A. 位於中國 南海沿岸，是通往內地和鄰近地區的重要通道。", "B. 位於內陸，陸上交通方便貿易。", "C. 地理位置偏遠，方便船隻停泊。", "D. 有高山作為屏障，方便船隻避風。"], answer: ["A"] },
+            { id: "017", text: "哪項政策令香港成為轉口港？", type: "single", options: ["A. 限制港口貨物種類。", "B. 實施自由港政策，不徵收關税。", "C. 徵收高額關税，限制外國商人進入。", "D. 封鎖港口，防止外國船隻進入。"], answer: ["B"] },
+            { id: "018", text: "以下哪項對香港開埠後的描述是不正確的？", type: "single", options: ["A. 香港發展為轉口港。", "B. 受到海盜侵擾。", "C. 外國船隻進出港口不需要繳税。", "D. 香港實施自由港政策。"], answer: ["B"] },
+            { id: "019", text: "1953年，香港哪個地方的木屋區發生大火？", type: "single", options: ["A. 石硤尾。", "B. 調景嶺。", "C. 茶果嶺。", "D. 筲箕灣。"], answer: ["A"] },
+            { id: "020", text: "1950至1970年代，香港為了解決房屋短缺問題而興建哪種類型的房屋？", type: "single", options: ["A. 唐樓。", "B. 村屋。", "C. 木屋。", "D. 徙置大廈。"], answer: ["D"] },
+            { id: "021", text: "以下哪些是大多數香港居民在1950至1970年代居住的房屋？（答案可多於一個。）", type: "multi", options: ["A. 四合院。", "B. 徙置大廈。", "C. 摩天大廈。", "D. 木屋。"], answer: ["B", "D"] },
+            { id: "022", text: "香港在1963年發生甚麼事情導致居民要在大街上輪候食水？", type: "single", options: ["A. 水荒。", "B. 火災。", "C. 勞工短缺。", "D. 水管爆裂。"], answer: ["A"] },
+            { id: "023", text: "國家從1965年開始向香港供應哪條河流的水？", type: "single", options: ["A. 長江。", "B. 黃河。", "C. 東江。", "D. 珠江. "], answer: ["C"] },
+            { id: "024", text: "以下哪個水庫是香港儲水量最多的水庫？", type: "single", options: ["A. 萬宜水庫。", "B. 城門水塘。", "C. 薄扶林水塘。", "D. 船灣淡水湖. "], answer: ["A"] },
+            { id: "025", text: "1974年，香港成立了哪個部門以打擊貪污？", type: "single", options: ["A. 警務處。", "B. 廉政公署。", "C. 消費者委員會。", "D. 消防處。"], answer: ["B"] },
+            { id: "026", text: "1950至1970年代香港居民主要依靠甚麼謀生？（答案可多於一個。）", type: "multi", options: ["A. 勞力。", "B. 口才。", "C. 技術。", "D. 捐款。"], answer: ["A", "C"] },
+            { id: "027", text: "以下哪項對「苦力」的描述是不正確的？", type: "single", options: ["A. 依靠勞力。", "B. 替人修補破損的物品。", "C. 經常在碼頭附近工作。", "D. 1950至1970年代香港的常見職業。"], answer: ["B"] },
+            { id: "028", text: "以下哪項對補鞋匠和裁縫的描述是不正確的？", type: "single", options: ["A. 依靠勞力。", "B. 替人修補破損的物品。", "C. 1950至1970年代的常見職業。", "D. 現在已經完全沒有補鞋匠和裁縫了。"], answer: ["D"] }
+        ];
+
+        let quizData = []; 
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedAnswers = [];
+        let isSubmitted = false;
+
+        // 自動適應圖片副檔名錯誤的處理函數
+        function handleImgError(img) {
+            if (img.src.endsWith(".png")) {
+                // 如果嘗試載入 png 失敗，自動切換為 webp 試試看
+                img.src = img.src.replace(".png", ".webp");
+            } else if (img.src.endsWith(".webp")) {
+                // 如果 webp 也失敗，嘗試不帶副檔名或一般常見格式（防呆）
+                img.src = img.src.replace(".webp", ".jpg");
+            }
+        }
+
+        function initRandomQuestions() {
+            let shuffled = [...allQuizData];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            quizData = shuffled.slice(0, 10);
+            quizData.forEach(q => {
+                q.options.sort();
+            });
+        }
+
+        function loadQuestion() {
+            isSubmitted = false;
+            selectedAnswers = [];
+            
+            const currentQuestion = quizData[currentQuestionIndex];
+            
+            document.getElementById("progress-text").innerText = `第 ${currentQuestionIndex + 1} / ${quizData.length} 題`;
+            document.getElementById("score-text").innerText = `目前 Zootopia 積分：${score} / ${quizData.length}`;
+            
+            // 修正：因為只有 10 張角色圖，隨機數字範圍改為 1 到 10
+            const randomAvatarNum = Math.floor(Math.random() * 10) + 1;
+            document.getElementById("avatar-deco").src = `zootopia/zootopia (${randomAvatarNum}).png`;
+
+            const typeLabel = document.getElementById("question-type");
+            if(currentQuestion.type === "multi") {
+                typeLabel.innerText = "複選題（答案可多於一個）";
+                typeLabel.className = "q-type multi";
+            } else {
+                typeLabel.innerText = "單選題";
+                typeLabel.className = "q-type single";
+            }
+
+            document.getElementById("question-text").innerText = currentQuestion.text;
+
+            const container = document.getElementById("options-container");
+            container.innerHTML = "";
+            
+            currentQuestion.options.forEach(option => {
+                const li = document.createElement("li");
+                li.className = "option-item";
+                li.innerText = option;
+                const optionLetter = option.charAt(0); 
+                li.onclick = () => selectOption(li, optionLetter);
+                container.appendChild(li);
+            });
+
+            const feedback = document.getElementById("feedback-panel");
+            feedback.style.display = "none";
+            
+            const actionBtn = document.getElementById("action-btn");
+            actionBtn.innerText = "確認答案";
+            actionBtn.onclick = handleSubmit;
+            actionBtn.disabled = true;
+        }
+
+        function selectOption(element, letter) {
+            if (isSubmitted) return;
+
+            const currentQuestion = quizData[currentQuestionIndex];
+
+            if (currentQuestion.type === "multi") {
+                if (selectedAnswers.includes(letter)) {
+                    selectedAnswers = selectedAnswers.filter(ans => ans !== letter);
+                    element.classList.remove("selected");
+                } else {
+                    selectedAnswers.push(letter);
+                    element.classList.add("selected");
+                }
+            } else {
+                selectedAnswers = [letter];
+                const items = document.querySelectorAll(".option-item");
+                items.forEach(item => item.classList.remove("selected"));
+                element.classList.add("selected");
+            }
+
+            document.getElementById("action-btn").disabled = selectedAnswers.length === 0;
+        }
+
+        function handleSubmit() {
+            if (isSubmitted) return;
+            isSubmitted = true;
+
+            const currentQuestion = quizData[currentQuestionIndex];
+            const items = document.querySelectorAll(".option-item");
+            
+            selectedAnswers.sort();
+            const correctAnswers = [...currentQuestion.answer].sort();
+            const isCorrect = JSON.stringify(selectedAnswers) === JSON.stringify(correctAnswers);
+
+            if (isCorrect) {
+                score++;
+                showFeedback(true, `🎯 答對了！太棒了，獲得 1 點動物城積分！`);
+            } else {
+                showFeedback(false, `❌ 喔不！答錯了。正確答案是：${currentQuestion.answer.join('、')}`);
+            }
+
+            items.forEach(item => {
+                const letter = item.innerText.charAt(0);
+                if (correctAnswers.includes(letter)) {
+                    item.classList.add("correct-ans");
+                } else if (selectedAnswers.includes(letter)) {
+                    item.classList.add("wrong-ans");
+                }
+                item.classList.remove("selected");
+            });
+
+            const actionBtn = document.getElementById("action-btn");
+            if (currentQuestionIndex < quizData.length - 1) {
+                actionBtn.innerText = "下一題 ➔";
+                actionBtn.onclick = nextQuestion;
+            } else {
+                actionBtn.innerText = "查看總結算 ➔";
+                actionBtn.onclick = showResults;
+            }
+            actionBtn.disabled = false;
+        }
+
+        function showFeedback(isCorrect, text) {
+            const feedback = document.getElementById("feedback-panel");
+            feedback.innerText = text;
+            feedback.style.display = "block";
+            feedback.className = isCorrect ? "feedback-panel correct" : "feedback-panel wrong";
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        function showResults() {
+            document.getElementById("quiz-screen").style.display = "none";
+            document.getElementById("result-screen").style.display = "flex";
+            
+            document.getElementById("final-score").innerText = `${score} / 10 分`;
+            
+            const comment = document.getElementById("result-comment");
+            const resultImg = document.getElementById("result-img");
+
+            // 結算畫面圖片，同樣限制在 1-10 內有對應的編號圖
+            if (score === 10) {
+                comment.innerText = "🎖️ 滿分！你就是 Zootopia 最優秀的明星警官朱迪！";
+                resultImg.src = "zootopia/zootopia (4).png"; 
+            } else if (score >= 8) {
+                comment.innerText = "🦊 太厲害了！你擁有像尼克一樣靈活聰明的腦袋！";
+                resultImg.src = "zootopia/zootopia (3).png";
+            } else if (score >= 5) {
+                comment.innerText = "🐢 表現不錯，再加把勁就能跟上閃電（Flash）的速度了！";
+                resultImg.src = "zootopia/zootopia (1).png";
+            } else {
+                comment.innerText = "🔍 再多讀幾次歷史資料，你一定能解開所有謎題的！";
+                resultImg.src = "zootopia/zootopia (9).png";
+            }
+        }
+
+        function restartQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            document.getElementById("quiz-screen").style.display = "block";
+            document.getElementById("result-screen").style.display = "none";
+            initRandomQuestions();
+            loadQuestion();
+        }
+
+        window.onload = function() {
+            initRandomQuestions();
+            loadQuestion();
+        };
+    </script>
+</body>
+</html>
