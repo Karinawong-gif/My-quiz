@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>寶可夢歷史大挑戰 - 唐宋元篇</title>
+    <style>
+        :root {
+            --primary-red: #ff1c1c;
+            --primary-white: #ffffff;
+            --primary-black: #333333;
+            --correct-green: #4CAF50;
+            --wrong-red: #f44336;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Microsoft JhengHei", "微軟正黑體", sans-serif;
+            background: url('https://images7.alphacoders.com/592/592678.jpg') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        #game-container {
+            width: 90%;
+            max-width: 700px;
+            /* 對話框 95% 透明 */
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            position: relative;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .score-board {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-black);
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            display: inline-block;
+            padding: 5px 20px;
+            border-radius: 50px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        h2 {
+            color: #ffffff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9), -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+            margin-bottom: 30px;
+            line-height: 1.4;
+            font-size: 1.4rem;
+        }
+
+        .options-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        /* 長橢圓形精靈球按鈕（無文字半透明白底） */
+        .option-btn {
+            position: relative;
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            border: 3px solid var(--primary-black);
+            border-radius: 50px; 
+            background: linear-gradient(to bottom, var(--primary-red) 44%, var(--primary-black) 44%, var(--primary-black) 56%, var(--primary-white) 56%);
+            
+            /* 白色文字搭配強力黑色陰影描邊 */
+            color: #ffffff;
+            text-shadow: 2px 2px 2px rgba(0, 0, 0, 1), 
+                        -1.5px -1.5px 0 #000, 
+                         1.5px -1.5px 0 #000, 
+                        -1.5px  1.5px 0 #000, 
+                         1.5px  1.5px 0 #000;
+            
+            transition: transform 0.2s, box-shadow 0.2s;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding-left: 40px;
+            min-height: 50px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .option-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+
+        .option-btn.correct { 
+            background: var(--correct-green) !important; 
+            color: white !important; 
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8) !important;
+            border-color: #2e7d32;
+        }
+
+        .option-btn.wrong { 
+            background: var(--wrong-red) !important; 
+            color: white !important; 
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8) !important;
+            border-color: #c62828;
+        }
+
+        #pokemon-img {
+            position: absolute;
+            bottom: -15px;
+            right: 15px;
+            width: 130px;
+            height: 130px;
+            z-index: 2;
+            filter: drop-shadow(5px 5px 5px rgba(0,0,0,0.4));
+            pointer-events: none;
+        }
+
+        #feedback {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin: 20px 0;
+            min-height: 1.5em;
+        }
+
+        #next-btn {
+            background: var(--primary-red);
+            color: white;
+            border: 2px solid #fff;
+            padding: 10px 40px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            display: none;
+            margin: 0 auto;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        #next-btn:active { transform: translateY(2px); }
+
+        .result-page h1 { 
+            color: var(--primary-red); 
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+        .result-page p {
+            color: white;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.9);
+        }
+        .rank-title { 
+            font-size: 2rem; 
+            margin: 20px 0; 
+            color: #ffeb3b; 
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="quiz-ui">
+        <div class="score-board">目前得分：<span id="current-score">0</span> / 5</div>
+        <h2 id="question-text">載入中...</h2>
+        <div class="options-container" id="options-container"></div>
+        <div id="feedback"></div>
+        <button id="next-btn">下一題</button>
+        <img id="pokemon-img" src="" alt="Pokemon">
+    </div>
+</div>
+
+<script>
+    const soundCorrect = new Audio(''); 
+    const soundWrong = new Audio('');
+
+    /* 修改重點：精簡為精確的 5 道題目 */
+    const quizData = [
+        { q: "以下哪項對於唐朝盛世的描述是不正確的？", o: ["A. 國家經濟富裕", "B. 與其他國家貿易往來頻繁", "C. 擁有橫跨歐洲和亞洲的領土", "D. 得到鄰近地區和其他民族的尊崇"], a: 2 },
+        { q: "以下哪個地方是唐朝的首都？", o: ["A. 建康", "B. 長安", "C. 汴京", "D. 臨安"], a: 1 },
+        { q: "香港哪個地方在國家唐朝時期是海上交通重鎮？", o: ["A. 荃灣", "B. 中環", "C. 屯門", "D. 九龍城"], a: 2 },
+        { q: "以下哪座城市是宋朝的首都？", o: ["A. 長安", "B. 汴京", "C. 洛陽", "D. 大都"], a: 1 },
+        { q: "誰被尊稱為成吉思汗？", o: ["A. 忽必烈", "B. 文天祥", "C. 鐵木真", "D. 唐太宗"], a: 2 }
+    ];
+
+    let currentQuestIdx = 0;
+    let score = 0;
+
+    const questionText = document.getElementById('question-text');
+    const optionsContainer = document.getElementById('options-container');
+    const feedback = document.getElementById('feedback');
+    const nextBtn = document.getElementById('next-btn');
+    const scoreText = document.getElementById('current-score');
+    const pokeImg = document.getElementById('pokemon-img');
+
+    function loadQuestion() {
+        const data = quizData[currentQuestIdx];
+        questionText.innerText = `${currentQuestIdx + 1}. ${data.q}`;
+        optionsContainer.innerHTML = '';
+        feedback.innerText = '';
+        nextBtn.style.display = 'none';
+        
+        const pokeId = Math.floor(Math.random() * 151) + 1;
+        pokeImg.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokeId}.png`;
+
+        data.o.forEach((opt, idx) => {
+            const btn = document.createElement('div');
+            btn.className = 'option-btn';
+            btn.innerText = opt; 
+            btn.onclick = () => checkAnswer(idx, btn);
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selectedIdx, btn) {
+        const correctIdx = quizData[currentQuestIdx].a;
+        const allBtns = document.querySelectorAll('.option-btn');
+        
+        allBtns.forEach(b => b.style.pointerEvents = 'none');
+
+        if (selectedIdx === correctIdx) {
+            btn.classList.add('correct');
+            feedback.innerHTML = '<span style="color: #4CAF50; text-shadow: 1px 1px 2px #000;">⭐ 答對了！你太棒了！</span>';
+            score++;
+            scoreText.innerText = score;
+            if(soundCorrect.src && soundCorrect.location) soundCorrect.play().catch(e => {});
+        } else {
+            btn.classList.add('wrong');
+            allBtns[correctIdx].classList.add('correct');
+            feedback.innerHTML = `<span style="color: #ff5252; text-shadow: 1px 1px 2px #000;">❌ 答錯了，正確答案是：${quizData[currentQuestIdx].o[correctIdx]}</span>`;
+            if(soundWrong.src && soundWrong.location) soundWrong.play().catch(e => {});
+        }
+        
+        nextBtn.style.display = 'block';
+    }
+
+    nextBtn.onclick = () => {
+        currentQuestIdx++;
+        if (currentQuestIdx < quizData.length) {
+            loadQuestion();
+        } else {
+            showResult();
+        }
+    };
+
+    function showResult() {
+        let rank = "";
+        /* 調整結算評語的配分門檻 */
+        if (score === 5) rank = "精靈大師 🏆";
+        else if (score >= 3) rank = "資深訓練家 🎖️";
+        else rank = "新手訓練家 🌱";
+
+        document.getElementById('quiz-ui').innerHTML = `
+            <div class="result-page">
+                <h1>挑戰結束！</h1>
+                <p style="font-size: 1.5rem;">你的最終得分是</p>
+                <div style="font-size: 3rem; font-weight: bold; color: #ffeb3b; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">${score} / 5</div>
+                <div class="rank-title">${rank}</div>
+                <button onclick="location.reload()" id="next-btn" style="display:block;">重新挑戰</button>
+            </div>
+        `;
+    }
+
+    loadQuestion();
+</script>
+
+</body>
+</html>
