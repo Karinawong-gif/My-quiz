@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>吉伊卡哇除草檢定挑戰</title>
+    <style>
+        :root {
+            /* 修正為您資料夾內的 .avif 格式與正確拼法 */
+            --bg-image: url('chiikawa/chiikawa wallpeaper.avif');
+            --container-bg: rgba(255, 255, 255, 0.5); /* 白色 50% 半透明 */
+            --primary-pink: #FFC0CB; /* 選項底色：粉紅色 */
+            --primary-pink-hover: #FFD1DC;
+            --powder-blue: #B0E0E6; /* 答對：粉籃色 */
+            --wrong-red: #FF8A8A; /* 答錯：紅色 */
+            --text-dark: #444444;
+            --btn-gray: #777777;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, "Microsoft JhengHei";
+        }
+
+        body {
+            /* 確保背景圖完美置中且不重複 */
+            background: var(--bg-image) no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* 題目容器：白色 50% 半透明 + 毛玻璃效果 */
+        .game-container {
+            background: var(--container-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 25px;
+            width: 100%;
+            max-width: 680px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            color: var(--text-dark);
+            position: relative;
+            min-height: 520px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .score-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14pt;
+            font-weight: bold;
+            margin-bottom: 20px;
+            border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+            padding-bottom: 12px;
+        }
+
+        .score-points {
+            color: #FF69B4; 
+        }
+
+        .question-text {
+            font-size: 16pt;
+            font-weight: bold;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+        }
+
+        .q-type-badge {
+            background-color: #90CAF9;
+            color: white;
+            font-size: 10pt;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+            z-index: 5;
+        }
+
+        /* 選項按鈕：粉紅色底 */
+        .option-btn {
+            background-color: var(--primary-pink);
+            color: #444;
+            border: none;
+            border-bottom: 5px solid #FFB2C1;
+            border-radius: 12px;
+            padding: 14px 20px;
+            font-size: 13pt;
+            font-weight: bold;
+            text-align: left;
+            cursor: pointer;
+            transition: transform 0.1s ease, background-color 0.2s ease;
+            width: 100%;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: var(--primary-pink-hover);
+            transform: translateY(-2px);
+        }
+
+        .option-btn:active:not(:disabled) {
+            transform: translateY(2px);
+            border-bottom-width: 1px;
+            margin-bottom: 4px;
+        }
+
+        /* 答對後變粉籃色 */
+        .option-btn.correct {
+            background-color: var(--powder-blue) !important;
+            border-bottom-color: #98D0D6 !important;
+        }
+
+        .option-btn.wrong {
+            background-color: var(--wrong-red) !important;
+            border-bottom-color: #E57373 !important;
+        }
+
+        .option-btn.selected {
+            background-color: #FFD180; 
+            border-bottom-color: #FFB74D;
+        }
+
+        /* 右下角小人物 */
+        .character-sprite {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            width: 110px;
+            height: 110px;
+            object-fit: contain;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.9;
+        }
+
+        .feedback-container {
+            margin-top: 10px;
+            padding: 15px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.6);
+            font-size: 13pt;
+            font-weight: bold;
+            display: none;
+            z-index: 2;
+            line-height: 1.5;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .feedback-success { color: #00897B; }
+        .feedback-fail { color: #D32F2F; }
+
+        /* 按鈕水平置中 */
+        .control-panel {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 5px;
+            z-index: 10;
+            position: relative;
+            width: 100%;
+        }
+
+        .action-btn {
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 14px 50px;
+            font-size: 14pt;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .submit-btn {
+            background-color: #4DD0E1;
+            border-bottom: 4px solid #26C6DA;
+        }
+
+        .next-btn {
+            background-color: var(--btn-gray);
+            border-bottom: 4px solid #555;
+            display: none;
+        }
+
+        .result-screen {
+            text-align: center;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .result-title {
+            font-size: 26pt;
+            color: #FF69B4;
+            margin-bottom: 25px;
+        }
+
+        .result-badge {
+            font-size: 22pt;
+            font-weight: bold;
+            color: #5C6BC0;
+            margin-top: 15px;
+            margin-bottom: 35px;
+            background: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            border: 2px solid #FFC0CB;
+        }
+
+        .restart-btn {
+            background-color: #90CAF9;
+            border-bottom: 5px solid #64B5F6;
+            border-radius: 12px;
+            padding: 14px 40px;
+            font-size: 14pt;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <div id="quizSection" style="display: block; width: 100%;">
+            <div class="score-header">
+                <span id="progressText">第 1 / 5 題</span>
+                <span class="score-points" id="scoreText">目前積分：0 / 5</span>
+            </div>
+
+            <div class="question-text">
+                <span class="q-type-badge" id="typeBadge">單選題</span><span id="questionText">載入中...</span>
+            </div>
+
+            <div class="options-container" id="optionsContainer"></div>
+
+            <div class="feedback-container" id="feedbackContainer"></div>
+
+            <div class="control-panel">
+                <button class="action-btn submit-btn" id="submitBtn" onclick="submitMultipleChoice()" style="display: none;">確認提交 ✔</button>
+                <button class="action-btn next-btn" id="nextBtn" onclick="nextQuestion()">下一題 ➔</button>
+            </div>
+            
+            <img src="chiikawa/chiikawa (2).png" alt="Character" class="character-sprite" id="charSprite">
+        </div>
+
+        <div id="resultSection" class="result-screen">
+            <div class="result-title">🍃 除草檢定挑戰結束 🍃</div>
+            <div style="font-size: 18pt; margin-bottom: 10px;">總得分：<span id="finalScoreText">0</span> / 5</div>
+            <div style="font-size: 13pt; color: #666;">恭喜獲得：</div>
+            <div class="result-badge" id="badgeText">3 級除草證</div>
+            <button class="restart-btn" onclick="restartGame()">重新挑戰 ↺</button>
+        </div>
+    </div>
+
+    <audio id="sndCorrect" preload="auto"><source src="https://actions.google.com/sounds/v1/cartoon/cartoon_wink.ogg" type="audio/ogg"></audio>
+    <audio id="sndWrong" preload="auto"><source src="https://actions.google.com/sounds/v1/cartoon/slide_whistle_down.ogg" type="audio/ogg"></audio>
+
+    <script>
+        const fullQuestionPool = [
+            { question: "香港名字的起源與以下哪些傳説有關？（答案可多於一個。）", options: ["A. 紅香爐廟。", "B. 香品轉運的港口。", "C. 林姓海盜的名字。", "D. 石排灣瀑布和清甜的水質。"], answer: [0, 1, 3], isMultiple: true, robloxId: 1 },
+            { question: "以下哪些是香港名字由來的傳説？（答案可多於一個。）", options: ["A. 水質甘甜的湖泊。", "B. 香木轉運的港口。", "C. 香姑的名字。", "D. 金色香爐。"], answer: [1, 2], isMultiple: true, robloxId: 2 },
+            { question: "香港這個地名最早出現在哪個朝代的書本中？", options: ["A. 宋朝。", "B. 元朝。", "C. 明朝。", "D. 清朝。"], answer: 2, isMultiple: false, robloxId: 3 },
+            { question: "以下哪項對香港地名的描述是不正確的？", options: ["A. 香港島有石排灣這個地方。", "B. 石排灣附近有清朝時興建的「香港圍」。", "C. 香港的香品貿易曾經很蓬勃。", "D. 香港這個地名在清朝時才出現。"], answer: 3, isMultiple: false, robloxId: 4 },
+            { question: "以下哪些是早期香港居民大多從事的工作？（答案可多於一個。）", options: ["A. 捕魚。", "B. 狩獵。", "C. 耕種。", "D. 畜牧。"], answer: [0, 2], isMultiple: true, robloxId: 5 },
+            { question: "以下哪個地方在昔日有「媚珠池」的別名？", options: ["A. 元朗 錦田。", "B. 元朗 新田。", "C. 西貢 鹽田梓。", "D. 大埔 吐露港。"], answer: 3, isMultiple: false, robloxId: 6 },
+            { question: "為甚麼大埔 吐露港昔日有「媚珠池」的別名？", options: ["A. 當地的人從事漁業。", "B. 當地的人從事採珠業。", "C. 當地的人從事養珠業。", "D. 當地的人從事製鹽業。"], answer: 1, isMultiple: false, robloxId: 7 },
+            { question: "天后廟反映了早期的香港沿海居民以甚麼為生？", options: ["A. 畜牧。", "B. 狩獵。", "C. 耕種。", "D. 捕魚。"], answer: 3, isMultiple: false, robloxId: 8 },
+            { question: "以下哪項對張保仔的描述是不正確的？", options: ["A. 他曾經是農民。", "B. 他年輕時被海盜抓走。", "C. 他後來成為海盜的首領。", "D. 他最後向清政府投降。"], answer: 0, isMultiple: false, robloxId: 9 },
+            { question: "清朝的海盜對當時沿海居民有甚麼影響？", options: ["A. 海盜幫助居民捕魚，促進經濟發展。", "B. 海盜搶奪居民的財物，使他們的財產受到威脅。", "C. 海盜建造房屋，改善居民的生活條件。", "D. 海盜教導居民學習航海知識，增加就業機會。"], answer: 1, isMultiple: false, robloxId: 10 },
+            { question: "為甚麼清政府要建造東涌炮台？（答案可多於一個。）", options: ["A. 為了消滅海盜。", "B. 為了建造一個新的港口。", "C. 為了防止海盜攻擊沿海地區。", "D. 為了保障沿海居民的生命和財產安全。"], answer: [0, 2, 3], isMultiple: true, robloxId: 1 },
+            { question: "以下哪項對東涌炮台的描述是不正確的？", options: ["A. 位於大嶼山。", "B. 建造於明朝。", "C. 打擊和消滅海盜。", "D. 保護沿海居民。"], answer: 1, isMultiple: false, robloxId: 2 },
+            { question: "以下哪個國家於1841年佔領香港島？", options: ["A. 英國。", "B. 日本。", "C. 美國。", "D. 法國。"], answer: 0, isMultiple: false, robloxId: 3 },
+            { question: "以下哪項是香港開埠後的經濟活動？", options: ["A. 金融業。", "B. 採茶業。", "C. 採珠業。", "D. 轉口貿易。"], answer: 3, isMultiple: false, robloxId: 4 },
+            { question: "維多利亞港具有甚麼特點？", options: ["A. 水深港闊，而且終年不結冰，適合大型船隻停泊。", "B. 位於內陸，適合陸路貿易。", "C. 水較淺，而且終年不結冰，適合小型漁船停泊。", "D. 每年只有很少日子結冰。"], answer: 0, isMultiple: false, robloxId: 5 },
+            { question: "香港的地理位置對香港成為轉口港有甚麼幫助？", options: ["A. 位於中國 南海沿岸，是通往內地和鄰近地區的重要通道。", "B. 位於內陸，陸上交通方便貿易。", "C. 地理位置偏遠，方便船隻停泊。", "D. 有高山作為屏障，方便船隻避風。"], answer: 0, isMultiple: false, robloxId: 6 },
+            { question: "哪項政策令香港成為轉口港？", options: ["A. 限制港口貨物種類。", "B. 實施自由港政策，不徵收關税。", "C. 徵收高額關税，限制外國商人進入。", "D. 封鎖港口，防止外國船隻進入。"], answer: 1, isMultiple: false, robloxId: 7 },
+            { question: "以下哪項對香港開埠後的描述是不正確的？", options: ["A. 香港發展為轉口港。", "B. 受到海盜侵擾。", "C. 外國船隻進出港口不需要繳税。", "D. 香港實施自由港政策。"], answer: 1, isMultiple: false, robloxId: 8 },
+            { question: "1953年，香港哪個地方的木屋區發生大火？", options: ["A. 石硤尾。", "B. 調景嶺。", "C. 茶果嶺。", "D. 筲箕灣。"], answer: 0, isMultiple: false, robloxId: 9 },
+            { question: "1950至1970年代，香港為了解決房屋短缺問題而興建哪種類型的房屋？", options: ["A. 唐樓。", "B. 村屋。", "C. 木屋。", "D. 徙置大廈。"], answer: 3, isMultiple: false, robloxId: 10 },
+            { question: "以下哪些是大多數香港居民在1950至1970年代居住的房屋？（答案可多於一個。）", options: ["A. 四合院。", "B. 徙置大廈。", "C. 摩天大廈。", "D. 木屋。"], answer: [1, 3], isMultiple: true, robloxId: 1 },
+            { question: "香港在1963年發生甚麼事情導致居民要在大街上輪候食水？", options: ["A. 水荒。", "B. 火災。", "C. 勞工短缺。", "D. 水管爆裂。"], answer: 0, isMultiple: false, robloxId: 2 },
+            { question: "國家從1965年開始向香港供應哪條河流的水？", options: ["A. 長江。", "B. 黃河。", "C. 東江。", "D. 珠江。"], answer: 2, isMultiple: false, robloxId: 3 },
+            { question: "以下哪個水庫是香港儲水量最多的水庫？", options: ["A. 萬宜水庫。", "B. 城門水塘。", "C. 薄扶林水塘。", "D. 船灣淡水湖。"], answer: 0, isMultiple: false, robloxId: 4 },
+            { question: "1974年，香港成立了哪個部門以打擊貪污？", options: ["A. 警務處。", "B. 廉政公署。", "C. 消費者委員會。", "D. 消防處。"], answer: 1, isMultiple: false, robloxId: 5 },
+            { question: "1950至1970年代香港居民主要依靠甚麼謀生？（答案可多於一個。）", options: ["A. 勞力。", "B. 口才。", "C. 技術。", "D. 捐款。"], answer: [0, 2], isMultiple: true, robloxId: 6 },
+            { question: "以下哪項對「苦力」的描述是不正確的？", options: ["A. 依靠勞力。", "B. 替人修補破損的物品。", "C. 經常在碼頭附近工作。", "D. 1950至1970年代香港的常見職業。"], answer: 1, isMultiple: false, robloxId: 7 },
+            { question: "以下哪項對補鞋匠和裁縫的描述是不正確的？", options: ["A. 依靠勞力。", "B. 替人修補破損的物品。", "C. 1950至1970年代的常見職業。", "D. 現在已經完全沒有補鞋匠和裁縫了。"], answer: 3, isMultiple: false, robloxId: 8 },
+            { question: "以下哪項對大牌檔的描述是不正確的？", options: ["A. 只賣熟食。", "B. 食物價錢廉宜。", "C. 在街頭露天經營。", "D. 只提供西式食品。"], answer: 3, isMultiple: false, robloxId: 9 },
+            { question: "以下哪些是昔日香港居民的消閒活動？（答案可多於一個。）", options: ["A. 去戲棚看大戲。", "B. 到「大笪地」遊逛。", "C. 玩網上遊戲。", "D. 到香港公園遊玩。"], answer: [0, 1], isMultiple: true, robloxId: 10 },
+            { question: "以下哪些對1950至1970年代香港居民生活的描述是不正確的？（答案可多於一個。）", options: ["A. 很多人在工廠工作。", "B. 大多依靠技術 and 勞力為生。", "C. 假期時經常到外地旅遊。", "D. 互聯網興起，促進人際的溝通。"], answer: [2, 3], isMultiple: true, robloxId: 1 },
+            { question: "以下哪項不是1950至1970年代香港兒童的生活狀況？", options: ["A. 做工作幫補家計。", "B. 到兒童遊樂場玩耍。", "C. 玩網絡遊戲。", "D. 在設施簡陋的學校上課。"], answer: 2, isMultiple: false, robloxId: 2 },
+            { question: "以下哪項對天台小學的描述是不正確的？", options: ["A. 設施簡陋。", "B. 開設在徙置大廈的天台。", "C. 學生要在露天地方上課。", "D. 後來發展為天台中學。"], answer: 3, isMultiple: false, robloxId: 3 },
+            { question: "以下哪項不是1950至1970年代的香港兒童的生活情況？", options: ["A. 幫忙照顧弟妹。", "B. 參加各種各樣的興趣班。", "C. 到工廠工作，賺取金錢。", "D. 在家中幫忙穿膠花，幫補家計。"], answer: 1, isMultiple: false, robloxId: 4 },
+            { question: "以下哪項對發展新市鎮的描述是不正確的？", options: ["A. 新市鎮的社區設施齊備。", "B. 新市鎮的人口不斷增加。", "C. 新市鎮可以緩解市區的擁擠情況。", "D. 新市鎮的所有房屋都是公共屋邨。"], answer: 3, isMultiple: false, robloxId: 5 },
+            { question: "以下哪些不是1980年代香港居民的主要消閒活動？（答案可多於一個。）", options: ["A. 到戲棚看大戲。", "B. 到戲院看電影。", "C. 到商場購物。", "D. 到「大笪地」遊逛。"], answer: [0, 3], isMultiple: true, robloxId: 6 },
+            { question: "以下哪些對 1980 年代香港的描述是正確的？（答案可多於一個。）", options: ["A. 香港的經濟穩步發展。", "B. 居民生活質素提升了。", "C. 居民喜歡看網上節目。", "D. 消閒和娛樂活動產生變化。"], answer: [0, 1, 3], isMultiple: true, robloxId: 7 },
+            { question: "以下哪些是對香港1980年代小學教育的描述？（答案可多於一個。）", options: ["A. 大多是半日制。", "B. 大多是全日制。", "C. 課室中有風扇。", "D. 課室中有電腦。"], answer: [0, 2], isMultiple: true, robloxId: 8 },
+            { question: "以下哪些是香港回歸後推動的重點發展項目？（答案可多於一個。）", options: ["A. 青馬大橋。", "B. 啟德體育園。", "C. 西九文化區。", "D. 香港國際機場。"], answer: [1, 2], isMultiple: true, robloxId: 9 },
+            { question: "以下哪項重點發展項目有助香港發展創新科技？", options: ["A. 西九文化區。", "B. 亞洲國際博覽館。", "C. 啟德體育園。", "D. 香港科學園。"], answer: 3, isMultiple: false, robloxId: 10 }
+        ];
+
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedAnswers = [];
+
+        function initGame() {
+            const shuffled = [...fullQuestionPool].sort(() => 0.5 - Math.random());
+            // 關鍵修改 1：改為只抓取 5 題
+            currentQuestions = shuffled.slice(0, 5);
+            currentQuestionIndex = 0;
+            score = 0;
+            
+            document.getElementById("quizSection").style.display = "block";
+            document.getElementById("resultSection").style.display = "none";
+            showQuestion();
+        }
+
+        function showQuestion() {
+            selectedAnswers = [];
+            document.getElementById("feedbackContainer").style.display = "none";
+            document.getElementById("nextBtn").style.display = "none";
+            document.getElementById("submitBtn").style.display = "none";
+
+            const qData = currentQuestions[currentQuestionIndex];
+            
+            // 關鍵修改 2：將畫面的 10 題限制改為 5 題
+            document.getElementById("progressText").innerText = `第 ${currentQuestionIndex + 1} / 5 題`;
+            document.getElementById("scoreText").innerText = `目前積分：${score} / 5`;
+            document.getElementById("questionText").innerText = qData.question;
+            
+            const typeBadge = document.getElementById("typeBadge");
+            if(qData.isMultiple) {
+                typeBadge.innerText = "複選題";
+                typeBadge.style.backgroundColor = "#F06292";
+                document.getElementById("submitBtn").style.display = "block";
+            } else {
+                typeBadge.innerText = "單選題";
+                typeBadge.style.backgroundColor = "#90CAF9";
+            }
+
+            const imgIndex = qData.robloxId || 2;
+            document.getElementById("charSprite").src = `chiikawa/chiikawa (${imgIndex}).png`;
+
+            const container = document.getElementById("optionsContainer");
+            container.innerHTML = "";
+
+            qData.options.forEach((option, index) => {
+                const btn = document.createElement("button");
+                btn.className = "option-btn";
+                btn.innerText = option;
+                btn.onclick = () => selectOption(index, btn);
+                container.appendChild(btn);
+            });
+        }
+
+        function selectOption(index, btnElement) {
+            const qData = currentQuestions[currentQuestionIndex];
+            
+            if (!qData.isMultiple) {
+                checkSingleAnswer(index);
+            } else {
+                if (selectedAnswers.includes(index)) {
+                    selectedAnswers = selectedAnswers.filter(i => i !== index);
+                    btnElement.classList.remove("selected");
+                } else {
+                    selectedAnswers.push(index);
+                    btnElement.classList.add("selected");
+                }
+            }
+        }
+
+        function checkSingleAnswer(selectedIndex) {
+            const qData = currentQuestions[currentQuestionIndex];
+            const buttons = document.querySelectorAll(".options-container .option-btn");
+            buttons.forEach(btn => btn.disabled = true);
+
+            const feedback = document.getElementById("feedbackContainer");
+            feedback.style.display = "block";
+
+            if (selectedIndex === qData.answer) {
+                score++;
+                buttons[selectedIndex].classList.add("correct");
+                feedback.className = "feedback-container feedback-success";
+                feedback.innerHTML = "太棒了！答對了！✨";
+                playAudio("sndCorrect");
+            } else {
+                buttons[selectedIndex].classList.add("wrong");
+                buttons[qData.answer].classList.add("correct");
+                feedback.className = "feedback-container feedback-fail";
+                feedback.innerHTML = `喔不！答錯了，正確答案是：<br><span style="color:#E91E63;">${qData.options[qData.answer]}</span>`;
+                playAudio("sndWrong");
+            }
+            // 關鍵修改 3：積分分母同步改為 5
+            document.getElementById("scoreText").innerText = `目前積分：${score} / 5`;
+            document.getElementById("nextBtn").style.display = "block";
+        }
+
+        function submitMultipleChoice() {
+            const qData = currentQuestions[currentQuestionIndex];
+            const buttons = document.querySelectorAll(".options-container .option-btn");
+            
+            if(selectedAnswers.length === 0) {
+                alert("請至少選擇一個選項再提交！");
+                return;
+            }
+
+            document.getElementById("submitBtn").style.display = "none";
+            buttons.forEach(btn => btn.disabled = true);
+
+            selectedAnswers.sort((a, b) => a - b);
+            const correctAnswers = [...qData.answer].sort((a, b) => a - b);
+            const isCorrect = JSON.stringify(selectedAnswers) === JSON.stringify(correctAnswers);
+
+            buttons.forEach((btn, idx) => {
+                btn.classList.remove("selected");
+                if (correctAnswers.includes(idx)) {
+                    btn.classList.add("correct");
+                } else if (selectedAnswers.includes(idx)) {
+                    btn.classList.add("wrong");
+                }
+            });
+
+            const feedback = document.getElementById("feedbackContainer");
+            feedback.style.display = "block";
+
+            const correctTexts = correctAnswers.map(idx => qData.options[idx]).join("<br>");
+
+            if (isCorrect) {
+                score++;
+                feedback.className = "feedback-container feedback-success";
+                feedback.innerHTML = "太棒了！答對了！✨";
+                playAudio("sndCorrect");
+            } else {
+                feedback.className = "feedback-container feedback-fail";
+                feedback.innerHTML = `喔不！答錯了，正確答案是：<br><span style="color:#E91E63; font-size:12pt;">${correctTexts}</span>`;
+                playAudio("sndWrong");
+            }
+
+            // 關鍵修改 4：積分分母同步改為 5
+            document.getElementById("scoreText").innerText = `目前積分：${score} / 5`;
+            document.getElementById("nextBtn").style.display = "block";
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            // 關鍵修改 5：將換題判斷界線改為小於 5 題
+            if (currentQuestionIndex < 5) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById("quizSection").style.display = "none";
+            document.getElementById("resultSection").style.display = "flex";
+            document.getElementById("finalScoreText").innerText = score;
+
+            // 關鍵修改 6：根據 5 題的比例，重新權衡證書等級的給分門檻（可自由調整）
+            let badge = "";
+            if (score === 5) {
+                badge = "超級打工者資格證";
+            } else if (score >= 3) {
+                badge = "擁有 5 級除草證";
+            } else {
+                badge = "擁有 3 級除草證";
+            }
+            
+            document.getElementById("badgeText").innerText = badge;
+        }
+
+        function restartGame() { initGame(); }
+
+        function playAudio(id) {
+            const audio = document.getElementById(id);
+            if (audio) {
+                audio.currentTime = 0;
+                audio.play().catch(e => console.log("音效播不出:", e));
+            }
+        }
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>
