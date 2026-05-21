@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K-Pop Demon Hunter - 資訊與傳媒考驗</title>
+    <style>
+        :root {
+            /* 背景圖與資料夾結構 */
+            --wallpaper-url: url('kpop/kpop wallpaper.jpg');
+            
+            /* K-pop Demon Hunter 專屬暗黑霓虹配色 */
+            --neon-pink: #ff007f;
+            --neon-cyan: #00f3ff;
+            --neon-purple: #9d00ff;
+            /* 將文字預設為純白 */
+            --text-light: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            /* 微調漸層遮罩，確保背景公仔完全顯現不被過度遮擋 */
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), var(--wallpaper-url);
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-light);
+            overflow-x: hidden;
+        }
+
+        /* 遊戲主要容器 - 關鍵修改：做成 97% 透明度（0.03 不透明度）並加上微量毛玻璃，讓背景清晰的同時文字更好讀 */
+        .game-container {
+            width: 90%;
+            max-width: 720px;
+            background: rgba(0, 0, 0, 0.03); /* 97% 透明度 */
+            backdrop-filter: blur(2px); /* 極微量毛玻璃，優化文字可讀性 */
+            -webkit-backdrop-filter: blur(2px);
+            border: 2px solid var(--neon-pink);
+            /* 調整發光效果，使其更集中在邊框 */
+            box-shadow: 0 0 25px rgba(255, 0, 127, 0.4), inset 0 0 10px rgba(0, 243, 255, 0.1);
+            border-radius: 20px;
+            padding: 35px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        /* 狀態列 */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 12px;
+        }
+
+        .score-board, .progress-board {
+            font-size: 1.15rem;
+            font-weight: bold;
+            /* 在高透明背景下，為狀態文字加上黑邊與發光陰影，確保持續清晰 */
+            text-shadow: 0 0 8px var(--neon-cyan), 1px 1px 3px #000, -1px -1px 3px #000, 1px -1px 3px #000, -1px 1px 3px #000;
+            letter-spacing: 1px;
+        }
+
+        /* 題型標籤 */
+        .type-badge {
+            display: inline-block;
+            padding: 5px 14px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            /* 為標籤加上外陰影，與透明背景分離 */
+            box-shadow: 0 0 5px rgba(0,0,0,0.8);
+        }
+
+        .badge-single {
+            background: var(--neon-purple);
+            box-shadow: 0 0 10px var(--neon-purple);
+        }
+
+        .badge-multiple {
+            background: var(--neon-pink);
+            box-shadow: 0 0 10px var(--neon-pink);
+        }
+
+        /* 題目文字：大幅加強黑色描邊陰影，這是高透明容器仍清晰好讀的關鍵 */
+        .question-text {
+            font-size: 1.35rem;
+            line-height: 1.65;
+            margin-bottom: 28px;
+            /* 十字全方位重描邊 + 擴散陰影 */
+            text-shadow: 2px 2px 3px rgba(0, 0, 0, 1), 
+                         -2px -2px 3px rgba(0, 0, 0, 1), 
+                         2px -2px 3px rgba(0, 0, 0, 1), 
+                         -2px 2px 3px rgba(0, 0, 0, 1), 
+                         1px 1px 0 rgba(0, 0, 0, 1),
+                         -1px -1px 0 rgba(0, 0, 0, 1),
+                         0 0 8px rgba(0,0,0,1);
+            font-weight: 600;
+        }
+
+        /* 選項互動區域 */
+        .interactive-area {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 25px;
+            position: relative;
+            z-index: 5;
+        }
+
+        /* K-pop 獵人戰鬥風按鈕 - 選項文字也必須強描邊 */
+        .option-btn {
+            background: rgba(15, 10, 25, 0.6); /* 選項保持半透明黑色以承載文字，與題目高透明容器區分 */
+            border: 1px solid rgba(0, 243, 255, 0.4);
+            border-radius: 10px;
+            padding: 16px 22px;
+            color: var(--text-light);
+            font-size: 1.05rem;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+            /* 強描邊 */
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.9), 
+                         -1px -1px 2px rgba(0, 0, 0, 0.9), 
+                         1px -1px 2px rgba(0, 0, 0, 0.9), 
+                         -1px 1px 2px rgba(0, 0, 0, 0.9);
+            display: flex;
+            align-items: center;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            background: rgba(0, 243, 255, 0.2);
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 18px rgba(0, 243, 255, 0.55);
+        }
+
+        /* 多選點擊選中狀態 */
+        .option-btn.selected {
+            border-color: var(--neon-pink);
+            background: rgba(255, 0, 127, 0.35);
+            box-shadow: 0 0 18px rgba(255, 0, 127, 0.65);
+        }
+
+        /* 答題回饋效果 */
+        .option-btn.correct {
+            background: rgba(0, 210, 90, 0.5) !important;
+            border-color: #00ff66 !important;
+            box-shadow: 0 0 20px rgba(0, 255, 102, 0.7) !important;
+        }
+
+        .option-btn.wrong {
+            background: rgba(255, 5, 60, 0.5) !important;
+            border-color: #ff1a4a !important;
+            box-shadow: 0 0 20px rgba(255, 26, 74, 0.7) !important;
+        }
+
+        /* 角色小圖右下角容器 */
+        .character-sprite-box {
+            position: absolute;
+            right: 20px;
+            bottom: 20px;
+            width: 110px;
+            height: 110px;
+            pointer-events: none;
+            opacity: 0.95;
+            z-index: 1;
+        }
+
+        .character-sprite {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 0 10px var(--neon-cyan));
+        }
+
+        /* 答題結果回饋文字區：亦需要描邊 */
+        .feedback-area {
+            min-height: 45px;
+            margin-top: 15px;
+            font-size: 1.15rem;
+            font-weight: bold;
+            text-align: center;
+            /* 描邊 */
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 1), 
+                         -1px -1px 3px rgba(0, 0, 0, 1), 
+                         1px -1px 3px rgba(0, 0, 0, 1), 
+                         -1px 1px 3px rgba(0, 0, 0, 1);
+            z-index: 5;
+            position: relative;
+        }
+
+        .feedback-success { color: #00ff66; text-shadow: 0 0 8px rgba(0,255,102,0.6); }
+        .feedback-fail { color: #ff3366; text-shadow: 0 0 8px rgba(255,51,102,0.6); }
+
+        .action-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 15px;
+            position: relative;
+            z-index: 5;
+        }
+
+        /* 功能按鈕：提交與下一題 */
+        .nav-btn {
+            background: linear-gradient(135deg, #ff0066, #8800ff);
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(255, 0, 102, 0.5);
+            transition: all 0.2s ease;
+            display: none;
+        }
+
+        .nav-btn:hover {
+            transform: scale(1.06);
+            box-shadow: 0 0 25px rgba(255, 0, 102, 0.85);
+        }
+
+        /* 結算頁面樣式：文字均需要強力描邊 */
+        .result-screen {
+            text-align: center;
+            display: none;
+        }
+
+        .result-title {
+            font-size: 2.3rem;
+            color: var(--neon-cyan);
+            margin-bottom: 25px;
+            /* 強描邊 */
+            text-shadow: 0 0 12px var(--neon-cyan), 2px 2px 4px #000, -2px -2px 4px #000, 2px -2px 4px #000, -2px 2px 4px #000;
+        }
+
+        .badge-text {
+            font-size: 2rem;
+            color: var(--neon-pink);
+            margin: 20px 0;
+            /* 強描邊 */
+            text-shadow: 0 0 18px var(--neon-pink), 2px 2px 4px #000, -2px -2px 4px #000, 2px -2px 4px #000, -2px 2px 4px #000;
+            font-weight: bold;
+        }
+
+        .result-info {
+            font-size: 1.25rem; 
+            color: #ccc; 
+            /* 強描邊 */
+            text-shadow: 2px 2px 3px #000, -1px -1px 3px #000, 1px -1px 3px #000, -1px 1px 3px #000;
+        }
+
+        .restart-btn {
+            background: transparent;
+            border: 2px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-size: 1.05rem;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            margin-top: 25px;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+            /* 強描邊 */
+            text-shadow: 1px 1px 3px #000, -1px -1px 3px #000, 1px -1px 3px #000, -1px 1px 3px #000;
+        }
+
+        .restart-btn:hover {
+            background: var(--neon-cyan);
+            color: #0d0614;
+            box-shadow: 0 0 25px var(--neon-cyan);
+            /* hover時文字不再描邊 */
+            text-shadow: none;
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="sound-correct" src="https://assets.mixkit.co/active_storage/sfx/2019/2019-84.wav" preload="auto"></audio>
+    <audio id="sound-wrong" src="https://assets.mixkit.co/active_storage/sfx/2959/2959-84.wav" preload="auto"></audio>
+
+    <div class="game-container">
+        <div id="quiz-screen">
+            <div class="status-bar">
+                <div class="progress-board" id="progress-text">關卡: 1 / 10</div>
+                <div class="score-board" id="score-text">獵魔積分: 0 / 10</div>
+            </div>
+            
+            <div>
+                <span class="type-badge" id="type-badge">單選題</span>
+            </div>
+
+            <div class="question-text" id="question-box">載入題目中...</div>
+
+            <div class="interactive-area" id="options-container"></div>
+
+            <div class="feedback-area" id="feedback-box"></div>
+
+            <div class="action-container">
+                <button class="nav-btn" id="action-btn">提交答案</button>
+            </div>
+
+            <div class="character-sprite-box">
+                <img id="char-sprite" class="character-sprite" src="" alt="">
+            </div>
+        </div>
+
+        <div id="result-screen" class="result-screen">
+            <h2 class="result-title">⚡ 獵魔行動結算 ⚡</h2>
+            <p class="result-info">最終達成積分</p>
+            <div class="badge-text" id="final-score">0 / 10</div>
+            <p class="result-info" style="margin-bottom: 5px;">獲得稱號：</p>
+            <div class="badge-text" id="hunter-badge" style="font-size: 2.1rem; color: var(--neon-cyan);"></div>
+            <button class="restart-btn" onclick="initGame()">再次進入戰場</button>
+        </div>
+    </div>
+
+    <script>
+        // 完整18題題庫數據
+        const fullBank = [
+            {
+                question: "以下哪項是資訊科技為人們帶來的好處？",
+                options: ["A. 子軒經常玩電子遊戲到深夜。", "B. 黃先生運用應用程式預約診症。", "C. 美兒喜歡網上聊天，很少和同學談話。", "D. 博宇經常使用電子產品，使寫字能力降低。"],
+                answer: [1]
+            },
+            {
+                question: "以下哪項是資訊科技為人們帶來的負面影響？",
+                options: ["A. 網上購物盛行，實體店經營變得困難。", "B. 觀看網上影片，學煮新的菜式。", "C. 運用應用程式瞭解巴士到站時間。", "D. 為了照顧家人，用電腦在家遠程工作。"],
+                answer: [0]
+            },
+            {
+                question: "以下哪項不是沉迷網絡的後果？",
+                options: ["A. 睡眠不足。", "B. 使人情緒低落或暴躁易怒。", "C. 學業成績退步。", "D. 電腦病毒入侵電腦。"],
+                answer: [3]
+            },
+            {
+                question: "以下哪項資料不可以辨認個人身份？",
+                options: ["A. 姓名。", "B. 興趣。", "C. 相片。", "D. 身份證號碼。"],
+                answer: [1]
+            },
+            {
+                question: "以下哪些是不良資訊？（答案可多於一個。）",
+                options: ["A. 色情資訊。", "B. 暴力資訊。", "C. 天氣資訊。", "D. 賭博資訊。"],
+                answer: [0, 1, 3]
+            },
+            {
+                question: "如果金融系統受到網絡攻擊，會發生甚麼安全問題？（答案可多於一個。）",
+                options: ["A. 大規模停電。", "B. 自動車牌識別技術失靈。", "C. 銀行交易記錄可能被修改。", "D. 無法使用電子方式交易。"],
+                answer: [2, 3]
+            },
+            {
+                question: "以下哪項不是大眾傳媒？",
+                options: ["A. 電台。", "B. 雜誌。", "C. 互聯網。", "D. 閉路電視。"],
+                answer: [3]
+            },
+            {
+                question: "以下哪項是大眾傳媒？",
+                options: ["A. 學術期刊。", "B. 閉路電視。", "C. 社交媒體。", "D. 學校內聯網。"],
+                answer: [2]
+            },
+            {
+                question: "以下哪項不是大眾傳媒的功能？",
+                options: ["A. 監察政府。", "B. 提供娛樂。", "C. 提供上網服務。", "D. 教育市民大眾。"],
+                answer: [3]
+            },
+            {
+                question: "傳媒報道市民對公立醫院輪候時間長感到不滿。這反映傳媒有哪些功能？（答案可多於一個。）",
+                options: ["A. 教育市民大眾。", "B. 提供時事資訊。", "C. 提供娛樂資訊。", "D. 揭發社會問題。"],
+                answer: [1, 3]
+            },
+            {
+                question: "以下哪項對於傳媒的描述是正確的？",
+                options: ["A. 傳媒提供的資訊都是事實。", "B. 傳媒提出的意見都是對的。", "C. 傳媒有揭發社會問題的功能。", "D. 不同傳媒會用相同的角度報道同一件事情。"],
+                answer: [2]
+            },
+            {
+                question: "以下媒體提供的資訊中，哪項是事實？",
+                options: ["A. 應該定期檢視香港的無障礙設施。", "B. 香港近三分之一的的士可供輪椅上落。", "C. 香港交通接駁設施需提升無障礙性。", "D. 政府應該考慮修建安全監察系統察看無障礙設施出入口。"],
+                answer: [1]
+            },
+            {
+                question: "以下媒體提供的資訊中哪項是意見？",
+                options: ["A. 將軍澳日前發生抹窗意外。", "B. 將軍澳過往也曾發生抹窗意外。", "C. 類似意外事主大多有經常抹窗的習慣。", "D. 為避免此類意外，市民可安裝穩固窗花，抹窗前要關好及鎖上。"],
+                answer: [3]
+            },
+            {
+                question: "以下哪些是分辨資訊真偽的方法？（答案可多於一個。）",
+                options: ["A. 分析來源。", "B. 查核信息。", "C. 傳給朋友。", "D. 留意日期和圖片。"],
+                answer: [0, 1, 3]
+            },
+            {
+                question: "不正確的資訊對個人、社會和國家可能造成哪些影響？（答案可多於一個。）",
+                options: ["A. 有助於社會穩定。", "B. 提升公眾對傳媒的信任。", "C. 破壞市場穩定和經濟運作。", "D. 引發不必要的恐慌和焦慮。"],
+                answer: [2, 3]
+            },
+            {
+                question: "「營養師推薦營美多牌健骨奶粉。」這個廣告採用了哪種推銷策略？",
+                options: ["A. 名人效應。", "B. 專業信服。", "C. 減價促銷。", "D. 羊羣心態。"],
+                answer: [1]
+            },
+            {
+                question: "「秀妍牌洗髮露全城銷量第一。」這個廣告採用了哪種推銷策略？",
+                options: ["A. 名人效應。", "B. 專業信服。", "C. 減價促銷。", "D. 羊羣心態。"],
+                answer: [3]
+            },
+            {
+                question: "消費者有哪些權益和責任？（答案可多於一個。）",
+                options: ["A. 有責任檢查貨品。", "B. 有權知道貨品的資料。", "C. 有權更換破損的貨物。", "D. 有權隨意退換不喜歡的貨品。"],
+                answer: [0, 1, 2]
+            }
+        ];
+
+        let currentQuestions = [];
+        let currentIdx = 0;
+        let score = 0;
+        let selectedIndices = [];
+        let isAnswered = false;
+
+        function initGame() {
+            const shuffled = [...fullBank].sort(() => 0.5 - Math.random());
+            currentQuestions = shuffled.slice(0, 10);
+            
+            currentIdx = 0;
+            score = 0;
+            isAnswered = false;
+            
+            document.getElementById('result-screen').style.display = 'none';
+            document.getElementById('quiz-screen').style.display = 'block';
+            
+            updateScoreDisplay();
+            showQuestion();
+        }
+
+        function updateScoreDisplay() {
+            document.getElementById('score-text').innerText = `獵魔積分: ${score} / 10`;
+            document.getElementById('progress-text').innerText = `關卡: ${currentIdx + 1} / 10`;
+        }
+
+        function showQuestion() {
+            isAnswered = false;
+            selectedIndices = [];
+            
+            const qData = currentQuestions[currentIdx];
+            const isMultiple = qData.answer.length > 1;
+
+            const badge = document.getElementById('type-badge');
+            if(isMultiple) {
+                badge.innerText = "複選題 (多個答案)";
+                badge.className = "type-badge badge-multiple";
+            } else {
+                badge.innerText = "單選題";
+                badge.className = "type-badge badge-single";
+            }
+
+            document.getElementById('question-box').innerText = qData.question;
+            
+            const spriteImg = document.getElementById('char-sprite');
+            const characterNumber = currentIdx + 1;
+            
+            spriteImg.src = `kpop/kpop (${characterNumber}).png`;
+            
+            spriteImg.onerror = function() {
+                if (this.src.endsWith('.png')) {
+                    this.src = `kpop/kpop (${characterNumber}).jpg`;
+                } else {
+                    this.alt = "👿"; 
+                }
+            };
+
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            
+            qData.options.forEach((optText, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = optText;
+                btn.onclick = () => selectOption(index, isMultiple);
+                container.appendChild(btn);
+            });
+
+            document.getElementById('feedback-box').innerHTML = '';
+            const actionBtn = document.getElementById('action-btn');
+            actionBtn.style.display = isMultiple ? 'block' : 'none'; 
+            actionBtn.innerText = "提交答案";
+            actionBtn.onclick = () => checkAnswer(isMultiple);
+        }
+
+        function selectOption(idx, isMultiple) {
+            if (isAnswered) return;
+            const buttons = document.querySelectorAll('.option-btn');
+
+            if (!isMultiple) {
+                selectedIndices = [idx];
+                buttons[idx].classList.add('selected');
+                checkAnswer(false);
+            } else {
+                if (selectedIndices.includes(idx)) {
+                    selectedIndices = selectedIndices.filter(i => i !== idx);
+                    buttons[idx].classList.remove('selected');
+                } else {
+                    selectedIndices.push(idx);
+                    buttons[idx].classList.add('selected');
+                }
+            }
+        }
+
+        function checkAnswer(isMultiple) {
+            if (isAnswered) return;
+            if (isMultiple && selectedIndices.length === 0) {
+                alert('請至少選擇一個選項！');
+                return;
+            }
+
+            isAnswered = true;
+            const qData = currentQuestions[currentIdx];
+            const buttons = document.querySelectorAll('.option-btn');
+            const feedbackBox = document.getElementById('feedback-box');
+            
+            const correctAnswers = [...qData.answer].sort();
+            const playerAnswers = [...selectedIndices].sort();
+            const isCorrect = JSON.stringify(correctAnswers) === JSON.stringify(playerAnswers);
+
+            if (isCorrect) {
+                score++;
+                try { document.getElementById('sound-correct').play(); } catch(e){}
+                feedbackBox.innerHTML = `<span class="feedback-success">✦ 完美擊殺！答對了 ✦</span>`;
+            } else {
+                try { document.getElementById('sound-wrong').play(); } catch(e){}
+                const ansText = correctAnswers.map(i => ['A', 'B', 'C', 'D'][i]).join('、');
+                feedbackBox.innerHTML = `<span class="feedback-fail">☠ 獵魔失敗！正確答案是：[ ${ansText} ]</span>`;
+            }
+
+            buttons.forEach((btn, index) => {
+                btn.disabled = true;
+                if (correctAnswers.includes(index)) {
+                    btn.classList.add('correct'); 
+                } else if (playerAnswers.includes(index)) {
+                    btn.classList.add('wrong'); 
+                }
+            });
+
+            updateScoreDisplay();
+
+            const actionBtn = document.getElementById('action-btn');
+            actionBtn.style.display = 'block';
+            actionBtn.innerText = currentIdx < 9 ? "切換至下一場" : "查看獵魔成果";
+            actionBtn.onclick = nextStep;
+        }
+
+        function nextStep() {
+            if (currentIdx < 9) {
+                currentIdx++;
+                showQuestion();
+                updateScoreDisplay();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('quiz-screen').style.display = 'none';
+            document.getElementById('result-screen').style.display = 'block';
+            document.getElementById('final-score').innerText = `${score} / 10`;
+
+            let badge = "";
+            if (score === 10) badge = "👑 神級·巔峰惡魔獵手";
+            else if (score >= 8) badge = "⚡ 傳奇·不敗終結者";
+            else if (score >= 6) badge = "⚔ 高級·核心遊俠";
+            else if (score >= 4) badge = "🎤 實習·獵魔練習生";
+            else badge = "🍃 菜鳥·音樂界平民";
+            
+            document.getElementById('hunter-badge').innerText = badge;
+        }
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>
