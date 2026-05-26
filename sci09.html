@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K-Pop Demon Hunter - 航天與科技考驗</title>
+    <style>
+        :root {
+            /* 背景圖與資料夾結構 */
+            --wallpaper-url: url('kpop/kpop wallpaper.jpg');
+            
+            /* K-pop Demon Hunter 專屬暗黑霓虹配色 */
+            --neon-pink: #ff007f;
+            --neon-cyan: #00f3ff;
+            --neon-purple: #9d00ff;
+            /* 將文字預設為純白 */
+            --text-light: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            /* 微調漸層遮罩，確保背景公仔完全顯現不被過度遮擋 */
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), var(--wallpaper-url);
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-light);
+            overflow-x: hidden;
+        }
+
+        /* 遊戲主要容器 - 關鍵修改：做成 97% 透明度（0.03 不透明度）並加上微量毛玻璃，讓背景清晰的同時文字更好讀 */
+        .game-container {
+            width: 90%;
+            max-width: 720px;
+            background: rgba(0, 0, 0, 0.03); /* 97% 透明度 */
+            backdrop-filter: blur(2px); /* 極微量毛玻璃，優化文字可讀性 */
+            -webkit-backdrop-filter: blur(2px);
+            border: 2px solid var(--neon-pink);
+            /* 調整發光效果，使其更集中在邊框 */
+            box-shadow: 0 0 25px rgba(255, 0, 127, 0.4), inset 0 0 10px rgba(0, 243, 255, 0.1);
+            border-radius: 20px;
+            padding: 35px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        /* 狀態列 */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 12px;
+        }
+
+        .score-board, .progress-board {
+            font-size: 1.15rem;
+            font-weight: bold;
+            /* 在高透明背景下，為狀態文字加上黑邊與發光陰影，確保持續清晰 */
+            text-shadow: 0 0 8px var(--neon-cyan), 1px 1px 3px #000, -1px -1px 3px #000, 1px -1px 3px #000, -1px 1px 3px #000;
+            letter-spacing: 1px;
+        }
+
+        /* 題型標籤 */
+        .type-badge {
+            display: inline-block;
+            padding: 5px 14px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            /* 為標籤加上外陰影，與透明背景分離 */
+            box-shadow: 0 0 5px rgba(0,0,0,0.8);
+        }
+
+        .badge-single {
+            background: var(--neon-purple);
+            box-shadow: 0 0 10px var(--neon-purple);
+        }
+
+        .badge-multiple {
+            background: var(--neon-pink);
+            box-shadow: 0 0 10px var(--neon-pink);
+        }
+
+        /* 題目文字：大幅加強黑色描邊陰影，這是高透明容器仍清晰好讀的關鍵 */
+        .question-text {
+            font-size: 1.35rem;
+            line-height: 1.65;
+            margin-bottom: 28px;
+            /* 十字全方位重描邊 + 擴散陰影 */
+            text-shadow: 2px 2px 3px rgba(0, 0, 0, 1), 
+                         -2px -2px 3px rgba(0, 0, 0, 1), 
+                         2px -2px 3px rgba(0, 0, 0, 1), 
+                         -2px 2px 3px rgba(0, 0, 0, 1), 
+                         1px 1px 0 rgba(0, 0, 0, 1),
+                         -1px -1px 0 rgba(0, 0, 0, 1),
+                         0 0 8px rgba(0,0,0,1);
+            font-weight: 600;
+        }
+
+        /* 選項互動區域 */
+        .interactive-area {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 25px;
+            position: relative;
+            z-index: 5;
+        }
+
+        /* K-pop 獵人戰鬥風按鈕 - 選項文字也必須強描邊 */
+        .option-btn {
+            background: rgba(15, 10, 25, 0.6); /* 選項保持半透明黑色以承載文字，與題目高透明容器區分 */
+            border: 1px solid rgba(0, 243, 255, 0.4);
+            border-radius: 10px;
+            padding: 16px 22px;
+            color: var(--text-light);
+            font-size: 1.05rem;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+            /* 強描邊 */
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.9), 
+                         -1px -1px 2px rgba(0, 0, 0, 0.9), 
+                         1px -1px 2px rgba(0, 0, 0, 0.9), 
+                         -1px 1px 2px rgba(0, 0, 0, 0.9);
+            display: flex;
+            align-items: center;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            background: rgba(0, 243, 255, 0.2);
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 18px rgba(0, 243, 255, 0.55);
+        }
+
+        /* 多選點擊選中狀態 */
+        .option-btn.selected {
+            border-color: var(--neon-pink);
+            background: rgba(255, 0, 127, 0.35);
+            box-shadow: 0 0 18px rgba(255, 0, 127, 0.65);
+        }
+
+        /* 答題回饋效果 */
+        .option-btn.correct {
+            background: rgba(0, 210, 90, 0.5) !important;
+            border-color: #00ff66 !important;
+            box-shadow: 0 0 20px rgba(0, 255, 102, 0.7) !important;
+        }
+
+        .option-btn.wrong {
+            background: rgba(255, 5, 60, 0.5) !important;
+            border-color: #ff1a4a !important;
+            box-shadow: 0 0 20px rgba(255, 26, 74, 0.7) !important;
+        }
+
+        /* 角色小圖右下角容器 */
+        .character-sprite-box {
+            position: absolute;
+            right: 20px;
+            bottom: 20px;
+            width: 110px;
+            height: 110px;
+            pointer-events: none;
+            opacity: 0.95;
+            z-index: 1;
+        }
+
+        .character-sprite {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 0 10px var(--neon-cyan));
+        }
+
+        /* 答題結果回饋文字區：亦需要描邊 */
+        .feedback-area {
+            min-height: 45px;
+            margin-top: 15px;
+            font-size: 1.15rem;
+            font-weight: bold;
+            text-align: center;
+            /* 描邊 */
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 1), 
+                         -1px -1px 3px rgba(0, 0, 0, 1), 
+                         1px -1px 3px rgba(0, 0, 0, 1), 
+                         -1px 1px 3px rgba(0, 0, 0, 1);
+            z-index: 5;
+            position: relative;
+        }
+
+        .feedback-success { color: #00ff66; text-shadow: 0 0 8px rgba(0,255,102,0.6); }
+        .feedback-fail { color: #ff3366; text-shadow: 0 0 8px rgba(255,51,102,0.6); }
+
+        .action-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 15px;
+            position: relative;
+            z-index: 5;
+        }
+
+        /* 功能按鈕：提交與下一題 */
+        .nav-btn {
+            background: linear-gradient(135deg, #ff0066, #8800ff);
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(255, 0, 102, 0.5);
+            transition: all 0.2s ease;
+            display: none;
+        }
+
+        .nav-btn:hover {
+            transform: scale(1.06);
+            box-shadow: 0 0 25px rgba(255, 0, 102, 0.85);
+        }
+
+        /* 結算頁面樣式：文字均需要強力描邊 */
+        .result-screen {
+            text-align: center;
+            display: none;
+        }
+
+        .result-title {
+            font-size: 2.3rem;
+            color: var(--neon-cyan);
+            margin-bottom: 25px;
+            /* 強描邊 */
+            text-shadow: 0 0 12px var(--neon-cyan), 2px 2px 4px #000, -2px -2px 4px #000, 2px -2px 4px #000, -2px 2px 4px #000;
+        }
+
+        .badge-text {
+            font-size: 2rem;
+            color: var(--neon-pink);
+            margin: 20px 0;
+            /* 強描邊 */
+            text-shadow: 0 0 18px var(--neon-pink), 2px 2px 4px #000, -2px -2px 4px #000, 2px -2px 4px #000, -2px 2px 4px #000;
+            font-weight: bold;
+        }
+
+        .result-info {
+            font-size: 1.25rem; 
+            color: #ccc; 
+            /* 強描邊 */
+            text-shadow: 2px 2px 3px #000, -1px -1px 3px #000, 1px -1px 3px #000, -1px 1px 3px #000;
+        }
+
+        .restart-btn {
+            background: transparent;
+            border: 2px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-size: 1.05rem;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            margin-top: 25px;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+            /* 強描邊 */
+            text-shadow: 1px 1px 3px #000, -1px -1px 3px #000, 1px -1px 3px #000, -1px 1px 3px #000;
+        }
+
+        .restart-btn:hover {
+            background: var(--neon-cyan);
+            color: #0d0614;
+            box-shadow: 0 0 25px var(--neon-cyan);
+            /* hover時文字不再描邊 */
+            text-shadow: none;
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="sound-correct" src="https://assets.mixkit.co/active_storage/sfx/2019/2019-84.wav" preload="auto"></audio>
+    <audio id="sound-wrong" src="https://assets.mixkit.co/active_storage/sfx/2959/2959-84.wav" preload="auto"></audio>
+
+    <div class="game-container">
+        <div id="quiz-screen">
+            <div class="status-bar">
+                <div class="progress-board" id="progress-text">關卡: 1 / 10</div>
+                <div class="score-board" id="score-text">獵魔積分: 0 / 10</div>
+            </div>
+            
+            <div>
+                <span class="type-badge" id="type-badge">單選題</span>
+            </div>
+
+            <div class="question-text" id="question-box">載入題目中...</div>
+
+            <div class="interactive-area" id="options-container"></div>
+
+            <div class="feedback-area" id="feedback-box"></div>
+
+            <div class="action-container">
+                <button class="nav-btn" id="action-btn">提交答案</button>
+            </div>
+
+            <div class="character-sprite-box">
+                <img id="char-sprite" class="character-sprite" src="" alt="">
+            </div>
+        </div>
+
+        <div id="result-screen" class="result-screen">
+            <h2 class="result-title">⚡ 獵魔行動結算 ⚡</h2>
+            <p class="result-info">最終達成積分</p>
+            <div class="badge-text" id="final-score">0 / 10</div>
+            <p class="result-info" style="margin-bottom: 5px;">獲得稱號：</p>
+            <div class="badge-text" id="hunter-badge" style="font-size: 2.1rem; color: var(--neon-cyan);"></div>
+            <button class="restart-btn" onclick="initGame()">再次進入戰場</button>
+        </div>
+    </div>
+
+    <script>
+        // 已更新為最新的「單元九 航天與科技」完整42題題庫數據
+        const fullBank = [
+            {
+                question: "以下哪位是第一位進入太空的國家航天員？",
+                options: ["A. 楊利偉。", "B. 翟志剛。", "C. 劉洋。", "D. 王亞平。"],
+                answer: [0]
+            },
+            {
+                question: "以下哪位是第一位進行太空漫步的國家航天員？",
+                options: ["A. 楊利偉。", "B. 翟志剛。", "C. 劉洋。", "D. 王亞平。"],
+                answer: [1]
+            },
+            {
+                question: "以下哪些是乘坐「神舟十四號」升空的國家航天員？",
+                options: ["A. 翟志剛。", "B. 陳冬。", "C. 劉洋。", "D. 蔡旭哲。"],
+                answer: [1, 2, 3]
+            },
+            {
+                question: "航天員在太空中睡覺時需要使用甚麼物品輔助？",
+                options: ["A. 擠壓式飲品。", "B. 睡袋。", "C. 防刮太陽眼鏡。", "D. 航天服。"],
+                answer: [1]
+            },
+            {
+                question: "為甚麼航天員進食的時候，要閉口咀嚼和不説話？",
+                options: ["A. 避免食物從口中掉出來，在太空艙內漂浮。", "B. 仔細品嚐食物味道。", "C. 節省氧氣供應。", "D. 減少噪音，以免干擾其他航天員。"],
+                answer: [0]
+            },
+            {
+                question: "以下哪項對航天員在太空生活的描述是不正確的？",
+                options: ["A. 進食時閉口不言。", "B. 在太空艙內飄浮。", "C. 睡覺時要固定身體。", "D. 不可以在太空艙內運動。"],
+                answer: [3]
+            },
+            {
+                question: "為甚麼航天員無法在太空艙中淋浴？",
+                options: ["A. 太空中沒有氣壓。", "B. 水珠在失重狀態下會漂浮。", "C. 太空艙裏沒有排污水的系統。", "D. 避免漏電。"],
+                answer: [1]
+            },
+            {
+                question: "太空中的環境與地球有甚麼不同？",
+                options: ["A. 太空有充足的氧氣。", "B. 太空充滿高速飛行的微塵。", "C. 太空的温度變化很少。", "D. 太空沒有輻射。"],
+                answer: [1]
+            },
+            {
+                question: "以下哪項產品能幫助航天員在艙外工作？",
+                options: ["A. 氧氣面罩。", "B. 滑翔衣。", "C. 氣墊球鞋。", "D. 航天服。"],
+                answer: [3]
+            },
+            {
+                question: "以下哪項不是太空環境的特點？",
+                options: ["A. 沒有氧氣和氣壓。", "B. 充滿高速飛行的微塵。", "C. 有強烈的輻射。", "D. 温度變化少。"],
+                answer: [3]
+            },
+            {
+                question: "航天服怎樣幫助航天員適應太空環境？",
+                options: ["A. 能夠隔熱。", "B. 阻擋太空的輻射和微塵。", "C. 讓航天員在睡覺時固定身體。", "D. 讓航天員可以呼吸。"],
+                answer: [0, 1, 3]
+            },
+            {
+                question: "以下哪項不是航天員面罩上的塗料的作用？",
+                options: ["A. 提供氧氣。", "B. 阻隔輻射。", "C. 防刮、防霧、易排水。", "D. 減少水跡刮痕。"],
+                answer: [0]
+            },
+            {
+                question: "航天員的頭盔有甚麼特點？",
+                options: ["A. 能防碰撞。", "B. 質量輕。", "C. 有特殊的塗料。", "D. 有良好的減震功能。"],
+                answer: [0, 1, 3]
+            },
+            {
+                question: "以下哪項是擠壓式飲品的用途？",
+                options: ["A. 為飲料提升營養價值。", "B. 增加飲料保質期。", "C. 防止飲料在太空環境中飄浮。", "D. 保持飲料的温度。"],
+                answer: [2]
+            },
+            {
+                question: "以下哪些產品能幫助航天員適應太空環境？",
+                options: ["A. 智能電話。", "B. 電燈。", "C. 航天服。", "D. 擠壓式飲品。"],
+                answer: [2, 3]
+            },
+            {
+                question: "以下哪些產品應用了太空科技？",
+                options: ["A. 記憶枕。", "B. 防刮太陽眼鏡。", "C. 氣墊球鞋。", "D. 盒裝飲品。"],
+                answer: [0, 1, 2]
+            },
+            {
+                question: "以下哪項是環繞地球並在空間軌道運行的無人航天器？",
+                options: ["A. 人造衞星。", "B. 航天飛機。", "C. 火箭。", "D. 飛機。"],
+                answer: [0]
+            },
+            {
+                question: "以下哪些對人造衞星的描述是正確的？",
+                options: ["A. 是人造物體。", "B. 需要航天員在裏面操作。", "C. 圍繞地球並在空間軌道運行。", "D. 所有人造衞星的功能都是一樣的。"],
+                answer: [0, 2]
+            },
+            {
+                question: "以下哪項不是人造衞星的用途？",
+                options: ["A. 監察天氣。", "B. 探索宇宙。", "C. 回收太空垃圾。", "D. 觀測地球環境和資源。"],
+                answer: [2]
+            },
+            {
+                question: "以下哪項不是人造衞星的用途？",
+                options: ["A. 定位和導航。", "B. 進行深海探測。", "C. 監察天氣。", "D. 探索宇宙。"],
+                answer: [1]
+            },
+            {
+                question: "以下哪項是通訊衞星的用途？",
+                options: ["A. 拍攝氣象照片。", "B. 提供機艙上網服務。", "C. 進行月球採樣。", "D. 探索宇宙。"],
+                answer: [1]
+            },
+            {
+                question: "以下哪項是氣象衞星的用途？",
+                options: ["A. 汽車導航系統。", "B. 提供機艙上網服務。", "C. 拍攝氣象照片。", "D. 觀測地球環境和資源。"],
+                answer: [2]
+            },
+            {
+                question: "以下哪項是導航衞星的用途？",
+                options: ["A. 提供用户位置資訊。", "B. 衞星電視直播。", "C. 監察天氣。", "D. 探索宇宙。"],
+                answer: [0]
+            },
+            {
+                question: "以下哪項是地球觀測衞星的應用？",
+                options: ["A. 定位和導航。", "B. 提供機艙上網服務。", "C. 拍攝氣象照片。", "D. 觀測地球環境和資源。"],
+                answer: [3]
+            },
+            {
+                question: "以下哪項是科學研究衞星的應用？",
+                options: ["A. 提供機艙上網服務。", "B. 探索宇宙。", "C. 汽車導航服務。", "D. 傳送地球高空的氣象圖。"],
+                answer: [1]
+            },
+            {
+                question: "以下哪些是通訊衞星的應用？",
+                options: ["A. 提供機艙上網服務。", "B. 衞星電視直播。", "C. 汽車導航系統。", "D. 傳送地球高空的氣象圖。"],
+                answer: [0, 1]
+            },
+            {
+                question: "國家第一枚人造衞星的名稱是甚麼？",
+                options: ["A. 「東方紅一號」。", "B. 「北斗一號」。", "C. 「天問一號」。", "D. 「實踐一號」。"],
+                answer: [0]
+            },
+            {
+                question: "國家第一枚人造衞星「東方紅一號」在哪一年成功發射？",
+                options: ["A. 2001 年。", "B. 1988 年。", "C. 1970 年。", "D. 1965 年。"],
+                answer: [2]
+            },
+            {
+                question: "我國在哪一年成為世界上第三個獨立開展載人航天的國家？",
+                options: ["A. 1970 年。", "B. 2008 年。", "C. 2011 年。", "D. 2003 年。"],
+                answer: [3]
+            },
+            {
+                question: "「神舟七號」升空對國家的航天科技發展有甚麼重大意義？",
+                options: ["A. 首次有國家航天員進行艙外活動。", "B. 國家第一枚人造衞星發射成功。", "C. 國家首個太空實驗室升空。", "D. 國家首次繞月拍攝高清照片。"],
+                answer: [0]
+            },
+            {
+                question: "國家首顆用於月球探測的人造衞星的名稱是甚麼？",
+                options: ["A. 「東方紅一號」。", "B. 「嫦娥一號」。", "C. 「天問一號」。", "D. 「實踐一號」。"],
+                answer: [1]
+            },
+            {
+                question: "在 2013 年成功登月的國家探月車的名稱是甚麼？",
+                options: ["A. 「天問一號 」。", "B. 「嫦娥一號 」。", "C. 「玉兔號」。", "D. 「祝融號」。"],
+                answer: [2]
+            },
+            {
+                question: "「嫦娥一號」發射成功對國家的航天科技發展有甚麼重大意義？",
+                options: ["A. 首次有國家航天員進行艙外活動。", "B. 國家第一枚人造衞星發射成功。", "C. 國家首個太空實驗室升空。", "D. 國家首次繞月拍攝高清照片。"],
+                answer: [3]
+            },
+            {
+                question: "以下哪個航天器成功從月球採集樣品帶回地球？",
+                options: ["A. 「玉兔號」。", "B. 「嫦娥一號」。", "C. 「嫦娥五號」。", "D. 「天問一號」。"],
+                answer: [2]
+            },
+            {
+                question: "「天宮空間站」由幾個艙段组成？",
+                options: ["A. 1個。", "B. 2個。", "C. 3個。", "D. 4個。"],
+                answer: [2]
+            },
+            {
+                question: "國際民航組織官方認證國家的哪個系統為全球民航導航系統標準之一？",
+                options: ["A. 「星鏈衞星導航系統」。", "B. 「北斗衞星導航系統」。", "C. 「準天頂衞星導航系統」。", "D. 「東方紅衞星導航系統」。"],
+                answer: [1]
+            },
+            {
+                question: "以下哪項是「天宮空間站」的航天科技任務？",
+                options: ["A. 作為全球民航導航系統標準之一。", "B. 展開國際合作研究項目。", "C. 獲取不同的火星影像。", "D. 繞月拍攝高清照片。"],
+                answer: [1]
+            },
+            {
+                question: "「嫦娥六號」發射成功對國家的航天科技發展有甚麼重大意義？",
+                options: ["A. 世界首次月球背面採樣。", "B. 世界首次月球正面採樣。", "C. 國家首次從月球採樣。", "D. 國家首次繞月拍攝高清照片。"],
+                answer: [0]
+            },
+            {
+                question: "以下哪項是我國深空探索方面的航天科技？",
+                options: ["A. 「神舟七號」。", "B. 「嫦娥六號」。", "C. 「東方紅一號」。", "D. 「北斗衞星導航系统」。"],
+                answer: [1]
+            },
+            {
+                question: "以下哪一項是我國載人航天方面的航天科技？",
+                options: ["A. 「玉兔號」。", "B. 「嫦娥一號」。", "C. 「天宫空間站」。", "D. 「東方紅一號」。"],
+                answer: [2]
+            },
+            {
+                question: "以下哪一項是我國人造衞星方面的航天科技？",
+                options: ["A. 「神舟五號」。", "B. 「嫦娥五號」。", "C. 「天宫一號」。", "D. 「北斗衞星導航系统」。"],
+                answer: [3]
+            },
+            {
+                question: "我國研發了甚麼航天科技，成為第二個成功登陸火星的國家？",
+                options: ["A. 「玉兔號」。", "B. 「嫦娥一號」。", "C. 「天宮一號」。", "D. 「天問一號」。"],
+                answer: [3]
+            }
+        ];
+
+        let currentQuestions = [];
+        let currentIdx = 0;
+        let score = 0;
+        let selectedIndices = [];
+        let isAnswered = false;
+
+        function initGame() {
+            // 從42題題庫中隨機抽取10題進行遊戲
+            const shuffled = [...fullBank].sort(() => 0.5 - Math.random());
+            currentQuestions = shuffled.slice(0, 10);
+            
+            currentIdx = 0;
+            score = 0;
+            isAnswered = false;
+            
+            document.getElementById('result-screen').style.display = 'none';
+            document.getElementById('quiz-screen').style.display = 'block';
+            
+            updateScoreDisplay();
+            showQuestion();
+        }
+
+        function updateScoreDisplay() {
+            document.getElementById('score-text').innerText = `獵魔積分: ${score} / 10`;
+            document.getElementById('progress-text').innerText = `關卡: ${currentIdx + 1} / 10`;
+        }
+
+        function showQuestion() {
+            isAnswered = false;
+            selectedIndices = [];
+            
+            const qData = currentQuestions[currentIdx];
+            const isMultiple = qData.answer.length > 1;
+
+            const badge = document.getElementById('type-badge');
+            if(isMultiple) {
+                badge.innerText = "複選題 (多個答案)";
+                badge.className = "type-badge badge-multiple";
+            } else {
+                badge.innerText = "單選題";
+                badge.className = "type-badge badge-single";
+            }
+
+            document.getElementById('question-box').innerText = qData.question;
+            
+            const spriteImg = document.getElementById('char-sprite');
+            const characterNumber = (currentIdx % 10) + 1; // 循環1-10的圖片
+            
+            spriteImg.src = `kpop/kpop (${characterNumber}).png`;
+            
+            spriteImg.onerror = function() {
+                if (this.src.endsWith('.png')) {
+                    this.src = `kpop/kpop (${characterNumber}).jpg`;
+                } else {
+                    this.alt = "👿"; 
+                }
+            };
+
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            
+            qData.options.forEach((optText, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = optText;
+                btn.onclick = () => selectOption(index, isMultiple);
+                container.appendChild(btn);
+            });
+
+            document.getElementById('feedback-box').innerHTML = '';
+            const actionBtn = document.getElementById('action-btn');
+            actionBtn.style.display = isMultiple ? 'block' : 'none'; 
+            actionBtn.innerText = "提交答案";
+            actionBtn.onclick = () => checkAnswer(isMultiple);
+        }
+
+        function selectOption(idx, isMultiple) {
+            if (isAnswered) return;
+            const buttons = document.querySelectorAll('.option-btn');
+
+            if (!isMultiple) {
+                selectedIndices = [idx];
+                buttons[idx].classList.add('selected');
+                checkAnswer(false);
+            } else {
+                if (selectedIndices.includes(idx)) {
+                    selectedIndices = selectedIndices.filter(i => i !== idx);
+                    buttons[idx].classList.remove('selected');
+                } else {
+                    selectedIndices.push(idx);
+                    buttons[idx].classList.add('selected');
+                }
+            }
+        }
+
+        function checkAnswer(isMultiple) {
+            if (isAnswered) return;
+            if (isMultiple && selectedIndices.length === 0) {
+                alert('請至少選擇一個選項！');
+                return;
+            }
+
+            isAnswered = true;
+            const qData = currentQuestions[currentIdx];
+            const buttons = document.querySelectorAll('.option-btn');
+            const feedbackBox = document.getElementById('feedback-box');
+            
+            const correctAnswers = [...qData.answer].sort();
+            const playerAnswers = [...selectedIndices].sort();
+            const isCorrect = JSON.stringify(correctAnswers) === JSON.stringify(playerAnswers);
+
+            if (isCorrect) {
+                score++;
+                try { document.getElementById('sound-correct').play(); } catch(e){}
+                feedbackBox.innerHTML = `<span class="feedback-success">✦ 完美擊殺！答對了 ✦</span>`;
+            } else {
+                try { document.getElementById('sound-wrong').play(); } catch(e){}
+                const ansText = correctAnswers.map(i => ['A', 'B', 'C', 'D'][i]).join('、');
+                feedbackBox.innerHTML = `<span class="feedback-fail">☠ 獵魔失敗！正確答案是：[ ${ansText} ]</span>`;
+            }
+
+            buttons.forEach((btn, index) => {
+                btn.disabled = true;
+                if (correctAnswers.includes(index)) {
+                    btn.classList.add('correct'); 
+                } else if (playerAnswers.includes(index)) {
+                    btn.classList.add('wrong'); 
+                }
+            });
+
+            updateScoreDisplay();
+
+            const actionBtn = document.getElementById('action-btn');
+            actionBtn.style.display = 'block';
+            actionBtn.innerText = currentIdx < 9 ? "切換至下一場" : "查看獵魔成果";
+            actionBtn.onclick = nextStep;
+        }
+
+        function nextStep() {
+            if (currentIdx < 9) {
+                currentIdx++;
+                showQuestion();
+                updateScoreDisplay();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('quiz-screen').style.display = 'none';
+            document.getElementById('result-screen').style.display = 'block';
+            document.getElementById('final-score').innerText = `${score} / 10`;
+
+            let badge = "";
+            if (score === 10) badge = "👑 神級·巔峰航天獵手";
+            else if (score >= 8) badge = "⚡ 傳奇·太空終結者";
+            else if (score >= 6) badge = "⚔ 高級·星際遊俠";
+            else if (score >= 4) badge = "🎤 實習·地面練習生";
+            else badge = "🍃 菜鳥·地球平民";
+            
+            document.getElementById('hunter-badge').innerText = badge;
+        }
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>

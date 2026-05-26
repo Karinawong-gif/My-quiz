@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zootopia 常識大挑戰！</title>
+    <style>
+        :root {
+            --primary-color: #2c3e6b; /* 警服藍 */
+            --secondary-color: #e67e22; /* 胡蘿蔔橙 */
+            --success-color: #2ec4b6; /* 答對：草綠色 */
+            --danger-color: #e74c3c; /* 答錯：警告紅 */
+            --bg-glass: rgba(255, 255, 255, 0.88); /* 半透明毛玻璃底色 */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'PingFang HK', 'Helvetica Neue', Arial, sans-serif, "Microsoft JhengHei";
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: url('zootopia/zootopia wallpaper.jpg') no-repeat center center fixed;
+            background-size: cover;
+            padding: 20px;
+        }
+
+        .quiz-container {
+            background: var(--bg-glass);
+            width: 100%;
+            max-width: 680px;
+            border-radius: 24px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+            padding: 30px;
+            position: relative;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 4px solid var(--primary-color);
+            min-height: 550px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px dashed #bdc3c7;
+        }
+
+        .quiz-info {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--primary-color);
+            background: #edf2f7;
+            padding: 6px 14px;
+            border-radius: 12px;
+        }
+
+        .score-info {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--secondary-color);
+            background: #fef3c7;
+            padding: 6px 14px;
+            border-radius: 12px;
+        }
+
+        .question-box {
+            margin-bottom: 25px;
+        }
+
+        .q-type {
+            display: inline-block;
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            color: white;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+        .q-type.single { background-color: #3498db; }
+        .q-type.multi { background-color: #9b59b6; }
+
+        .question-text {
+            font-size: 20px;
+            color: #2c3e50;
+            font-weight: bold;
+            line-height: 1.6;
+        }
+
+        .options-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+            z-index: 5;
+        }
+
+        .option-item {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-bottom: 5px solid #cbd5e1;
+            border-radius: 14px;
+            padding: 14px 20px;
+            font-size: 17px;
+            font-weight: bold;
+            color: #4a5568;
+            cursor: pointer;
+            transition: transform 0.1s ease, background-color 0.2s ease;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .option-item:hover {
+            border-color: var(--primary-color);
+            background: #f7fafc;
+        }
+
+        .option-item.selected {
+            background: #fff3e0;
+            border-color: var(--secondary-color);
+            color: #d35400;
+        }
+
+        .option-item.correct-ans {
+            background: #e6fffa !important;
+            border-color: var(--success-color) !important;
+            border-bottom-color: #17a2b8 !important;
+            color: #234e52 !important;
+        }
+
+        .option-item.wrong-ans {
+            background: #fff5f5 !important;
+            border-color: var(--danger-color) !important;
+            border-bottom-color: #c0392b !important;
+            color: #742a2a !important;
+        }
+
+        .feedback-panel {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 14px;
+            display: none;
+            font-size: 16px;
+            font-weight: bold;
+            line-height: 1.6;
+            text-align: center;
+        }
+        .feedback-panel.correct {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 2px solid var(--success-color);
+        }
+        .feedback-panel.wrong {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 2px solid var(--danger-color);
+        }
+
+        .footer-action {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .btn-submit, .btn-next {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-bottom: 4px solid #1a2544;
+            padding: 12px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: all 0.1s;
+        }
+
+        .btn-submit:active, .btn-next:active {
+            transform: translateY(2px);
+            border-bottom-width: 1px;
+        }
+
+        .btn-submit:disabled {
+            background: #cbd5e1;
+            border-bottom-color: #94a3b8;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .avatar-deco {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            pointer-events: none;
+        }
+
+        .result-screen {
+            text-align: center;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .result-screen h2 {
+            font-size: 28px;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+        .result-score {
+            font-size: 44px;
+            color: var(--secondary-color);
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .result-img {
+            width: 140px;
+            height: 140px;
+            object-fit: contain;
+            margin-bottom: 20px;
+        }
+        .btn-restart {
+            background: var(--secondary-color);
+            border-bottom: 4px solid #d35400;
+            color: white;
+            border: none;
+            padding: 12px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 14px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container">
+        <div id="quiz-screen" style="width: 100%;">
+            <div class="quiz-header">
+                <div class="quiz-info" id="progress-text">第 1 / 10 題</div>
+                <div class="score-info" id="score-text">目前 Zootopia 積分：0 / 10</div>
+            </div>
+
+            <div class="question-box">
+                <div id="question-type" class="q-type single">單選題</div>
+                <div class="question-text" id="question-text">題目載入中...</div>
+            </div>
+
+            <ul class="options-list" id="options-container"></ul>
+
+            <div class="feedback-panel" id="feedback-panel"></div>
+
+            <div class="footer-action">
+                <div>
+                    <button class="btn-submit" id="action-btn" onclick="handleSubmit()">確認答案</button>
+                </div>
+                <img src="zootopia/zootopia (1).png" class="avatar-deco" id="avatar-deco" alt="Zootopia" onerror="handleImgError(this)">
+            </div>
+        </div>
+
+        <div class="result-screen" id="result-screen">
+            <h2>🎉 挑戰完成！</h2>
+            <img src="zootopia/zootopia (4).png" class="result-img" id="result-img" alt="Result" onerror="handleImgError(this)">
+            <div class="result-score" id="final-score">0 / 10 分</div>
+            <p id="result-comment" style="font-size: 18px; margin-bottom: 25px; font-weight: bold; color: #4a5568;"></p>
+            <button class="btn-restart" onclick="restartQuiz()">再換一組 10 題 ↺</button>
+        </div>
+    </div>
+
+    <script>
+        // 已更新為最新的科學領域常識題庫（生活中的科學）
+        const allQuizData = [
+            { id: "S4b_u8_01k_001_1", text: "以下哪項東西會發光？", type: "single", options: ["A. 鏡子。", "B. 電燈。", "C. 玻璃窗。", "D. 牆壁。"], answer: ["B"] },
+            { id: "S4b_u8_01k_002_1", text: "以下哪些東西是光源？（答案可多於一個。）", type: "multi", options: ["A. 電燈。", "B. 膠尺。", "C. 月亮。", "D. 太陽。"], answer: ["A", "D"] },
+            { id: "S4b_u8_01k_003_1", text: "以下哪項東西不會發光？", type: "single", options: ["A. 太陽。", "B. 火焰。", "C. 月亮。", "D. 電燈。"], answer: ["C"] },
+            { id: "S4b_u8_01k_004_2", text: "以下哪些東西不會發光？（答案可多於一個。）", type: "multi", options: ["A. 投影機。", "B. 鋁箔。", "C. 紙偶。", "D. 電筒。"], answer: ["B", "C"] },
+            { id: "S4b_u8_01k_005_2", text: "以下哪項有關光的描述是正確的？", type: "single", options: ["A. 因為有光，人們才能夠看見東西。", "B. 來自物體的反射光不是光。", "C. 光只可以來自光源。", "D. 人們只能夠看見會發光的東西。"], answer: ["A"] },
+            { id: "S4b_u8_01k_006_2", text: "以下哪些有關光的描述是正確的？（答案可多於一個。）", type: "multi", options: ["A. 太陽和電燈都是光源。", "B. 光可以來自光源，也可以是來自物體的反射光。", "C. 物體只會在白天時反射光。", "D. 人們只能夠看見會發光的東西。"], answer: ["A", "B"] },
+            { id: "S4b_u8_01k_007_1", text: "光可以穿透以下哪項物體？", type: "single", options: ["A. 鏡子。", "B. 木桌子。", "C. 玻璃窗。", "D. 牆壁。"], answer: ["C"] },
+            { id: "S4b_u8_01k_008_2", text: "以下哪項有關光的描述是不正確的？", type: "single", options: ["A. 光可以穿過任何物體。", "B. 光照射在不透明的物體上時，會產生影子。", "C. 光可以穿過透明的物體。", "D. 光照射在鏡子上，會改變行走的方向。"], answer: ["A"] },
+            { id: "S4b_u8_01k_009_1", text: "為甚麼光照射在鏡子上，會形成清晰的像？（答案可多於一個。）", type: "multi", options: ["A. 因為光照射在鏡子上，會沿着多個不同的方向反射。", "B. 因為鏡子表面平滑。", "C. 因為鏡子表面粗糙。", "D. 因為光照射在鏡子上，會沿着一個特定的方向反射。"], answer: ["B", "D"] },
+            { id: "S4b_u8_01k_010_1", text: "為甚麼光照射在鋁箔上，會形成朦朧的像？（答案可多於一個。）", type: "multi", options: ["A. 因為光照射在鋁箔上，會沿着多個不同的方向反射。", "B. 因為光照射在鋁箔上，會沿着一個特定的方向反射。", "C. 因為鋁箔表面粗糙。", "D. 因為鋁箔表面平滑。"], answer: ["A", "C"] },
+            { id: "S4b_u8_01k_011_1", text: "光照射在以下哪些東西上，會形成清晰的像？（答案可多於一個。）", type: "multi", options: ["A. 保鮮紙。", "B. 鏡子。", "C. 有波紋的水面。", "D. 平靜的水面。"], answer: ["B", "D"] },
+            { id: "S4b_u8_01k_012_2", text: "以下哪個表面能形成清晰的像？", type: "single", options: ["A. 泥地。", "B. 已關機的手機屏幕。", "C. 有波紋的水面。", "D. 砂紙。"], answer: ["B"] },
+            { id: "S4b_u8_01k_013_1", text: "光照射在以下哪些東西上，會形成朦朧的像？（答案可多於一個。）", type: "multi", options: ["A. 有波紋的水面。", "B. 鏡子。", "C. 鋁箔。", "D. 平靜的水面。"], answer: ["A", "C"] },
+            { id: "S4b_u8_01k_014_1", text: "為甚麼光照射在平靜的水面上，會形成清晰的倒影？（答案可多於一個。）", type: "multi", options: ["A. 因為平靜的水面會把光沿多個不同的方向反射。", "B. 因為平靜的水面表面平滑。", "C. 因為平靜的水面會把光沿一個特定的方向反射。", "D. 因為平靜的水面表面凹凸不平。"], answer: ["B", "C"] },
+            { id: "S4b_u8_01k_015_1", text: "為甚麼光照射在有波紋的水面上，會形成朦朧的倒影？（答案可多於一個。）", type: "multi", options: ["A. 因為有波紋的水面會把光沿多個不同的方向反射。", "B. 因為有波紋的水面表面凹凸不平。", "C. 因為有波紋的水面會把光沿一個特定的方向反射。", "D. 因為有波紋的水面表面平滑。"], answer: ["A", "B"] },
+            { id: "S4b_u8_01k_016_2", text: "地面的水窪要形成清晰的倒影，以下哪些是必要的條件？（答案可多於一個。）", type: "multi", options: ["A. 水窪的表面有波紋。", "B. 有光源。", "C. 水窪的表面平滑。", "D. 水窪的表面凹凸不平。"], answer: ["B", "C"] },
+            { id: "S4b_u8_01k_017_1", text: "為甚麼我們在地球可以看見光亮的月亮？", type: "single", options: ["A. 因為月亮自身會發光。", "B. 因為白天時月亮會吸收太陽光，在晚上把光釋放出來。", "C. 因為太陽光照射月球，月球反射太陽光到地球。", "D. 因為地球上的光照射月球，月球把光反射回地球。"], answer: ["C"] },
+            { id: "S4b_u8_01k_018_1", text: "向左方推動桌面上的橡皮，會向哪個方向產生摩擦力？", type: "single", options: ["A. 向左。", "B. 向右。", "C. 向上。", "D. 向下。"], answer: ["B"] },
+            { id: "S4b_u8_01k_019_1", text: "以下哪項有關摩擦力的描述是不正確的？", type: "single", options: ["A. 摩擦力會使物體運動減慢。", "B. 摩擦力的方向與物體運動的方向相反。", "C. 摩擦力的方向與物體運動的方向相同。", "D. 摩擦力是物體相互接觸時，它們之間的運動所產生的阻力。"], answer: ["C"] },
+            { id: "S4b_u8_01k_020_1", text: "以下哪項物品在桌面上運動時，產生的摩擦力最小？", type: "single", options: ["A. 一本書。", "B. 一根羽毛。", "C. 一個筆袋。", "D. 一個水壺。"], answer: ["B"] },
+            { id: "S4b_u8_01k_021_2", text: "在以下哪個表面上拖動行李箱，產生的摩擦力最小？", type: "single", options: ["A. 馬路。", "B. 行人路。", "C. 瓷磚地板。", "D. 草地。"], answer: ["C"] },
+            { id: "S4b_u8_01k_022_2", text: "汽車在以下哪個地方行駛時，產生的摩擦力最小？", type: "single", options: ["A. 水泥平地。", "B. 鋪滿沙石的路。", "C. 草地。", "D. 崎嶇不平的山路。"], answer: ["A"] },
+            { id: "S4b_u8_01k_023_1", text: "玩具車在以下哪種物品的表面上運動時，產生的摩擦力最大？", type: "single", options: ["A. 紙張。", "B. 玻璃。", "C. 幼砂紙。", "D. 粗砂紙。"], answer: ["D"] },
+            { id: "S4b_u8_01k_024_1", text: "物體之間摩擦力的大小受以下哪些因素影響？（答案可多於一個。）", type: "multi", options: ["A. 物體的重量。", "B. 物體的高度。", "C. 物體運動的速度。", "D. 物體表面是平滑還是粗糙。"], answer: ["A", "D"] },
+            { id: "S4b_u8_01k_025_2", text: "以下哪項有關摩擦力的描述是正確的？", type: "single", options: ["A. 摩擦力會令物體運動加快。", "B. 物體越輕，在另一表面上運動時，產生的摩擦力越小。", "C. 物體表面越平滑，另一物體在這表面上運動時，摩擦力越大。", "D. 物體越重，在另一表面上運動時，產生的摩擦力越小。"], answer: ["B"] },
+            { id: "S4b_u8_01k_026_1", text: "人們用以下哪種工具來量度摩擦力的大小？", type: "single", options: ["A. 計時器。", "B. 彈簧秤。", "C. 電子秤。", "D. 天秤。"], answer: ["B"] },
+            { id: "S4b_u8_01k_027_1", text: "以下哪些產品的設計能增加摩擦力？（答案可多於一個。）", type: "multi", options: ["A. 瓶蓋上的坑紋。", "B. 防滑襪子。", "C. 水滑梯。", "D. 筆桿的紋理。"], answer: ["A", "B", "D"] },
+            { id: "S4b_u8_01k_028_1", text: "以下哪些產品的設計能減少摩擦力？（答案可多於一個。）", type: "multi", options: ["A. 單車的剎車皮。", "B. 潤滑劑。", "C. 筆桿的紋理。", "D. 水滑梯。"], answer: ["B", "D"] },
+            { id: "S4b_u8_01k_029_1", text: "水滑梯的設計怎樣減少摩擦力？（答案可多於一個。）", type: "multi", options: ["A. 水滑梯用表面粗糙的物料製造。", "B. 水的潤滑作用能減少水滑梯與泳衣表面之間的摩擦力。", "C. 水滑梯用表面平滑的物料製造。", "D. 水滑梯的表面有凹凸不平的紋理。"], answer: ["B", "C"] },
+            { id: "S4b_u8_01k_030_1", text: "以下哪些情況會增加摩擦力？（答案可多於一個。）", type: "multi", options: ["A. 路面被雨水覆蓋。", "B. 筆桿有凹凸不平的紋理。", "C. 在樓梯鋪設防滑條。", "D. 在椅腳加裝輪子。"], answer: ["B", "C"] }
+        ];
+
+        let quizData = []; 
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedAnswers = [];
+        let isSubmitted = false;
+
+        function handleImgError(img) {
+            if (img.src.endsWith(".png")) {
+                img.src = img.src.replace(".png", ".webp");
+            } else if (img.src.endsWith(".webp")) {
+                img.src = img.src.replace(".webp", ".jpg");
+            }
+        }
+
+        function initRandomQuestions() {
+            let shuffled = [...allQuizData];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            quizData = shuffled.slice(0, 10);
+            quizData.forEach(q => {
+                q.options.sort();
+            });
+        }
+
+        function loadQuestion() {
+            isSubmitted = false;
+            selectedAnswers = [];
+            
+            const currentQuestion = quizData[currentQuestionIndex];
+            
+            document.getElementById("progress-text").innerText = `第 ${currentQuestionIndex + 1} / ${quizData.length} 題`;
+            document.getElementById("score-text").innerText = `目前 Zootopia 積分：${score} / ${quizData.length}`;
+            
+            const randomAvatarNum = Math.floor(Math.random() * 10) + 1;
+            document.getElementById("avatar-deco").src = `zootopia/zootopia (${randomAvatarNum}).png`;
+
+            const typeLabel = document.getElementById("question-type");
+            if(currentQuestion.type === "multi") {
+                typeLabel.innerText = "複選題（答案可多於一個）";
+                typeLabel.className = "q-type multi";
+            } else {
+                typeLabel.innerText = "單選題";
+                typeLabel.className = "q-type single";
+            }
+
+            document.getElementById("question-text").innerText = currentQuestion.text;
+
+            const container = document.getElementById("options-container");
+            container.innerHTML = "";
+            
+            currentQuestion.options.forEach(option => {
+                const li = document.createElement("li");
+                li.className = "option-item";
+                li.innerText = option;
+                const optionLetter = option.charAt(0); 
+                li.onclick = () => selectOption(li, optionLetter);
+                container.appendChild(li);
+            });
+
+            const feedback = document.getElementById("feedback-panel");
+            feedback.style.display = "none";
+            
+            const actionBtn = document.getElementById("action-btn");
+            actionBtn.innerText = "確認答案";
+            actionBtn.onclick = handleSubmit;
+            actionBtn.disabled = true;
+        }
+
+        function selectOption(element, letter) {
+            if (isSubmitted) return;
+
+            const currentQuestion = quizData[currentQuestionIndex];
+
+            if (currentQuestion.type === "multi") {
+                if (selectedAnswers.includes(letter)) {
+                    selectedAnswers = selectedAnswers.filter(ans => ans !== letter);
+                    element.classList.remove("selected");
+                } else {
+                    selectedAnswers.push(letter);
+                    element.classList.add("selected");
+                }
+            } else {
+                selectedAnswers = [letter];
+                const items = document.querySelectorAll(".option-item");
+                items.forEach(item => item.classList.remove("selected"));
+                element.classList.add("selected");
+            }
+
+            document.getElementById("action-btn").disabled = selectedAnswers.length === 0;
+        }
+
+        function handleSubmit() {
+            if (isSubmitted) return;
+            isSubmitted = true;
+
+            const currentQuestion = quizData[currentQuestionIndex];
+            const items = document.querySelectorAll(".option-item");
+            
+            selectedAnswers.sort();
+            const correctAnswers = [...currentQuestion.answer].sort();
+            const isCorrect = JSON.stringify(selectedAnswers) === JSON.stringify(correctAnswers);
+
+            if (isCorrect) {
+                score++;
+                showFeedback(true, `🎯 答對了！太棒了，獲得 1 點動物城積分！`);
+            } else {
+                showFeedback(false, `❌ 喔不！答錯了。正確答案是：${currentQuestion.answer.join('、')}`);
+            }
+
+            items.forEach(item => {
+                const letter = item.innerText.charAt(0);
+                if (correctAnswers.includes(letter)) {
+                    item.classList.add("correct-ans");
+                } else if (selectedAnswers.includes(letter)) {
+                    item.classList.add("wrong-ans");
+                }
+                item.classList.remove("selected");
+            });
+
+            const actionBtn = document.getElementById("action-btn");
+            if (currentQuestionIndex < quizData.length - 1) {
+                actionBtn.innerText = "下一題 ➔";
+                actionBtn.onclick = nextQuestion;
+            } else {
+                actionBtn.innerText = "查看總結算 ➔";
+                actionBtn.onclick = showResults;
+            }
+            actionBtn.disabled = false;
+        }
+
+        function showFeedback(isCorrect, text) {
+            const feedback = document.getElementById("feedback-panel");
+            feedback.innerText = text;
+            feedback.style.display = "block";
+            feedback.className = isCorrect ? "feedback-panel correct" : "feedback-panel wrong";
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        function showResults() {
+            document.getElementById("quiz-screen").style.display = "none";
+            document.getElementById("result-screen").style.display = "flex";
+            
+            document.getElementById("final-score").innerText = `${score} / 10 分`;
+            
+            const comment = document.getElementById("result-comment");
+            const resultImg = document.getElementById("result-img");
+
+            if (score === 10) {
+                comment.innerText = "🎖️ 滿分！你就是 Zootopia 最優秀的明星警官朱迪！";
+                resultImg.src = "zootopia/zootopia (4).png"; 
+            } else if (score >= 8) {
+                comment.innerText = "🦊 太厲害了！你擁有像尼克一樣靈活聰明的腦袋！";
+                resultImg.src = "zootopia/zootopia (3).png";
+            } else if (score >= 5) {
+                comment.innerText = "🐢 表現不錯，再加把勁就能跟上閃電（Flash）的速度了！";
+                resultImg.src = "zootopia/zootopia (1).png";
+            } else {
+                comment.innerText = "🔍 再多複習幾次科學原理，你一定能解開所有謎題的！";
+                resultImg.src = "zootopia/zootopia (9).png";
+            }
+        }
+
+        function restartQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            document.getElementById("quiz-screen").style.display = "block";
+            document.getElementById("result-screen").style.display = "none";
+            initRandomQuestions();
+            loadQuestion();
+        }
+
+        window.onload = function() {
+            initRandomQuestions();
+            loadQuestion();
+        };
+    </script>
+</body>
+</html>

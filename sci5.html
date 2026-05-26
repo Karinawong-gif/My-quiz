@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roblox 科學探究大冒險！</title>
+    <style>
+        /* CSS 變數配置 */
+        :root {
+            --roblox-bg: url('https://images5.alphacoders.com/121/thumb-1920-1217521.jpg');
+            --rbx-dark-alpha: rgba(25, 25, 25, 0.75);
+            --rbx-green: #00B06F;
+            --rbx-green-dark: #008F58;
+            --rbx-red: #D32F2F;
+            --rbx-red-dark: #9A2121;
+            --rbx-gray: #393B3D;
+            --rbx-gray-dark: #232527;
+            --rbx-blue: #0074BD;
+            --rbx-blue-dark: #005A92;
+            --rbx-text: #FFFFFF;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, "Microsoft JhengHei";
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background-image: var(--roblox-bg);
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-attachment: fixed;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        /* 題目容器（毛玻璃效果） */
+        .game-container {
+            width: 90%;
+            max-width: 650px;
+            background: var(--rbx-dark-alpha);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.14);
+            border-radius: 16px;
+            padding: 30px;
+            color: var(--rbx-text);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+            position: relative;
+            z-index: 10;
+        }
+
+        /* 陰影文字確保清晰度 */
+        h1, h2, h3, p, .score-board, .feedback, .question-text {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+        }
+
+        /* 計分板 */
+        .score-board {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.1rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #FFD700;
+        }
+
+        /* 題型標籤 */
+        .question-type-badge {
+            background-color: #FF9800;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            vertical-align: middle;
+            margin-left: 8px;
+            text-shadow: none;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 25px;
+        }
+
+        /* Roblox 風格立體按鈕（預設狀態） */
+        .btn-option {
+            background-color: var(--rbx-green);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 14px 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-align: left;
+            cursor: pointer;
+            position: relative;
+            box-shadow: 0 5px 0 var(--rbx-green-dark);
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+            z-index: 12;
+        }
+
+        /* 懸停彈簧動畫效果 */
+        .btn-option:hover:not(:disabled) {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 0 var(--rbx-green-dark);
+        }
+
+        /* 多選點擊時的選取中狀態（亮藍色） */
+        .btn-option.selected {
+            background-color: var(--rbx-blue) !important;
+            box-shadow: 0 5px 0 var(--rbx-blue-dark) !important;
+            transform: translateY(2px);
+        }
+
+        /* 最終回饋狀態：正確綠、錯誤紅 */
+        .btn-option.correct {
+            background-color: #00B06F !important;
+            box-shadow: 0 5px 0 #008F58 !important;
+        }
+
+        .btn-option.wrong {
+            background-color: var(--rbx-red) !important;
+            box-shadow: 0 5px 0 var(--rbx-red-dark) !important;
+        }
+
+        .btn-option:disabled {
+            cursor: not-allowed;
+            opacity: 0.95;
+        }
+
+        /* 回饋文字區 */
+        .feedback {
+            margin: 20px 0;
+            font-size: 1.25rem;
+            font-weight: bold;
+            min-height: 35px;
+            text-align: center;
+        }
+
+        /* 功能控制鈕 */
+        .control-area {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn-action {
+            display: block;
+            width: 100%;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.1s ease;
+        }
+
+        .btn-submit {
+            background-color: #FF9800;
+            box-shadow: 0 4px 0 #E65100;
+        }
+        .btn-submit:hover:not(:disabled) {
+            background-color: #FFA726;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #E65100;
+        }
+
+        .btn-next {
+            background-color: var(--rbx-gray);
+            box-shadow: 0 4px 0 var(--rbx-gray-dark);
+        }
+        .btn-next:hover {
+            background-color: #4f5153;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 var(--rbx-gray-dark);
+        }
+
+        .btn-action:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.4);
+        }
+
+        .hidden { display: none !important; }
+
+        /* 右下角動態角色容器 */
+        .avatar-container {
+            position: absolute;
+            bottom: -15px;
+            right: -15px;
+            width: 120px;
+            height: 120px;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* 結算頁面 */
+        .result-screen {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .badge-title {
+            font-size: 2.2rem;
+            color: #FFD700;
+            margin: 20px 0;
+            animation: bounce 1s infinite alternate;
+        }
+
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <div id="quiz-screen">
+            <div class="score-board">
+                <span id="progress-text">題目：1 / 10</span>
+                <span id="score-text">目前 Robux 積分：0 / 10</span>
+            </div>
+            
+            <div class="question-text">
+                <span id="question-field">載入題目中...</span>
+                <span id="type-badge" class="question-type-badge">單選題</span>
+            </div>
+            
+            <div class="options-container" id="options-field"></div>
+            
+            <div class="feedback hidden" id="feedback-field"></div>
+            
+            <div class="control-area">
+                <button class="btn-action btn-submit" id="btn-submit-action">確認送出 ✔</button>
+                <button class="btn-action btn-next hidden" id="btn-next-action">下一題 ➔</button>
+            </div>
+        </div>
+
+        <div id="result-screen" class="result-screen hidden">
+            <h2>🎉 挑戰完成！ 🎉</h2>
+            <p style="font-size: 1.4rem;">你的最終得分</p>
+            <div class="badge-title" id="final-score">0 / 10</div>
+            <p style="font-size: 1.2rem;">獲得專屬稱號：</p>
+            <div class="badge-title" id="roblox-rank" style="font-size: 2rem; color: #00E6FF;">-</div>
+            <button class="btn-action btn-submit" onclick="restartGame()" style="margin-top: 30px;">再次挑戰 ↻</button>
+        </div>
+
+        <div class="avatar-container">
+            <img id="roblox-avatar" class="avatar-img" src="" alt="Roblox Character">
+        </div>
+    </div>
+
+    <audio id="sound-correct" src="https://www.soundjay.com/buttons/sounds/button-09a.mp3"></audio> 
+    <audio id="sound-wrong" src="https://www.soundjay.com/buttons/sounds/button-10a.mp3"></audio>
+
+    <script>
+        // 全新單元五「科學探究之路」22 題完整題庫
+        const pool = [
+            { question: "以下哪項不是科學探究的必要步驟？", options: ["A. 測試假説。", "B. 提出假説。", "C. 分析和反思結果。", "D. 推翻原有的科學知識。"], answer: [3] },
+            { question: "進行科學探究時，以下哪項不是應有的步驟？", options: ["A. 分析結果。", "B. 刪改數據。", "C. 進行測試。", "D. 觀察和提問。"], answer: [1] },
+            { question: "以下哪項不是確立新的科學知識的過程之一？", options: ["A. 為驗證假説進行測試。", "B. 只憑觀察就下結論。", "C. 思考使測試更加準確的方法。", "D. 留心觀察日常生活中的事物。"], answer: [1] },
+            { question: "以下哪位科學家提出了證據，否定了「地平説」？", options: ["A. 埃拉托色尼。", "B. 歐幾里得。", "C. 伽利略。", "D. 阿基米德。"], answer: [0] },
+            { question: "科學家埃拉托色尼發現在亞歷山大和阿斯旺兩個城市的日影長度不同，否定了哪一個科學理論？", options: ["A. 「地圓説」。", "B. 「地心説」。", "C. 「地平説」。", "D. 「日心説」。"], answer: [2] },
+            { question: "從「地平説」到「地圓説」的改變説明甚麼？", options: ["A. 科學知識永遠不變。", "B. 古代人比現代人聰明。", "C. 科學知識會隨着新證據得到核實而被推翻。", "D. 所有古代的科學理論都是錯的。"], answer: [2] },
+            { question: "古代和現代的科學探究方法有甚麼相同的地方？", options: ["A. 都不需要證據驗證假説。", "B. 都使用相同的科技設備。", "C. 都需要嚴謹的觀察和論證。", "D. 提出的理論都是完全正確的。"], answer: [2] },
+            { question: "進行公平測試時，需要考慮哪個問題？", options: ["A. 相信直覺判斷。", "B. 使用昂貴的器材。", "C. 只改變一個因素。", "D. 刪除不符合假説的結果。"], answer: [2] },
+            { question: "以下哪些是設計公平測試時要考慮的要素？（答案可多於一個。）", options: ["A. 要量度的變數。", "B. 要控制的因素。", "C. 要測試的因素。", "D. 重複進行測試的次數。"], answer: [0, 1, 2] },
+            { question: "在「光的強度會不會影響植物生長」測試中，要量度以下哪個變數？", options: ["A. 光的強度。", "B. 葉片的大小。", "C. 泥土的水分。", "D. 陽光照射的時間。"], answer: [1] },
+            { question: "如果想探究檸檬汁能不能減慢蘋果變色，要量度以下哪個變數？", options: ["A. 蘋果的大小。", "B. 有沒有加入檸檬汁。", "C. 環境温度。", "D. 果肉變色所需要的時間。"], answer: [3] },
+            { question: "如果想瞭解紙飛機的形狀怎樣影響飛行距離，要測試以下哪個因素？", options: ["A. 紙張的顏色。", "B. 紙張的大小。", "C. 紙飛機的形狀。", "D. 紙飛機飛行的距離。"], answer: [2] },
+            { question: "如果想驗證「鹽能加速冰熔化」這個假説，要測試以下哪個因素？", options: ["A. 有沒有加鹽。", "B. 冰塊的大小。", "C. 熔化時的温度。", "D. 冰塊熔化所需的時間。"], answer: [0] },
+            { question: "如果想公平地比較兩種清潔劑的效用，要量度以下哪個變數？", options: ["A. 清潔劑的品牌。", "B. 清潔時加入的水的份量。", "C. 清潔時加入的清潔劑的份量。", "D. 使用清潔劑清洗後污漬的大小。"], answer: [3] },
+            { question: "如果想瞭解不同品牌的肥料對植物生長的影響，進行公平測試時應該怎樣做？", options: ["A. 同時改變肥料的品牌和澆水量。", "B. 只改變肥料的品牌，其他因素保持不變。", "C. 只使用一個品牌的肥料作測試。", "D. 量度肥料的使用量作為變數。"], answer: [1] },
+            { question: "如果想比較温度怎樣影響食鹽在水中溶解的速度，進行公平測試時應該怎樣做？", options: ["A. 不斷往燒杯中加食鹽。", "B. 燒杯裏的水量可以不同。", "C. 測試的因素是水的温度。", "D. 量度的變數是水的温度。"], answer: [2] },
+            { question: "如果想測試可以攪拌怎樣加快食鹽在水中溶解的速度，可以怎樣設計測試？", options: ["A. 一組攪拌，一組不攪拌。", "B. 一組攪拌，一組加熱水的温度。", "C. 一組攪拌，一組使用顆粒較大的食鹽。", "D. 兩組都攪拌。"], answer: [0] },
+            { question: "如果同學想要探究聲音的高低與物體長短的關係，可以怎樣設計測試？", options: ["A. 使用長短和物料都不同的間尺進行測試。", "B. 使用長短和物料都相同的間尺進行測試。", "C. 使用長短相同，但是物料不同的間尺進行測試。", "D. 使用長短不同，但是物料相同的間尺進行測試。"], answer: [3] },
+            { question: "以下哪項體現了科學探究精神？", options: ["A. 嚴謹地進行測試和驗證。", "B. 完全相信所有書本的知識。", "C. 只接受支持自己想法或觀點的證據。", "D. 觀察到的現象就是正確的，不做任何測試證明。"], answer: [0] },
+            { question: "我們應該怎樣進行科學探究？", options: ["A. 進行嚴謹的測試和論證。", "B. 不理會舊有理論和知識。", "C. 忽視實驗中不能驗證假説的證據。", "D. 只做簡單的測試以最快得到結果。"], answer: [0] },
+            { question: "如果測試結果不能驗證提出的假説，我們應該怎樣做？", options: ["A. 隱瞞結果。", "B. 指責測試工具。", "C. 思考有問題的地方，重新做測試。", "D. 修改測試數據，讓結果符合假説。"], answer: [2] },
+            { question: "進行公平測試時，以下哪些是正確的行為？", options: ["A. 只測試一種因素。", "B. 不理會異常的測試結果。", "C. 只記錄成功的測試結果。", "D. 測試過程中不斷修改測試方法。"], answer: [0] }
+        ];
+
+        let currentQuestions = [];
+        let currentIndex = 0;
+        let score = 0;
+        let selectedAnswers = []; 
+
+        const progressText = document.getElementById('progress-text');
+        const scoreText = document.getElementById('score-text');
+        const questionField = document.getElementById('question-field');
+        const typeBadge = document.getElementById('type-badge');
+        const optionsField = document.getElementById('options-field');
+        const feedbackField = document.getElementById('feedback-field');
+        const btnSubmitAction = document.getElementById('btn-submit-action');
+        const btnNextAction = document.getElementById('btn-next-action');
+        const avatarImg = document.getElementById('roblox-avatar');
+
+        // 初始化遊戲：隨機抽 10 題
+        function initGame() {
+            const shuffled = [...pool].sort(() => 0.5 - Math.random());
+            currentQuestions = shuffled.slice(0, 10); 
+            currentIndex = 0;
+            score = 0;
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            showQuestion();
+        }
+
+        // 渲染題目與選項
+        function showQuestion() {
+            feedbackField.classList.add('hidden');
+            btnNextAction.classList.add('hidden');
+            btnSubmitAction.classList.remove('hidden');
+            optionsField.innerHTML = '';
+            selectedAnswers = [];
+
+            const qData = currentQuestions[currentIndex];
+            
+            progressText.innerText = `題目：${currentIndex + 1} / 10`;
+            scoreText.innerText = `目前 Robux 積分：${score} / 10`;
+            questionField.innerText = qData.question;
+
+            // 自動根據解答陣列的長度來調整單選、多選提示
+            if (qData.answer.length > 1) {
+                typeBadge.innerText = "多選題（可多選）";
+                typeBadge.style.backgroundColor = "#FF9800";
+            } else {
+                typeBadge.innerText = "單選題";
+                typeBadge.style.backgroundColor = "#0074BD";
+            }
+
+            // 隨機挑選本機 Roblox 資料夾中的 1~10 號 PNG 貼圖
+            const randomImageNumber = Math.floor(Math.random() * 10) + 1;
+            avatarImg.src = `Roblox/guest (${randomImageNumber}).png`;
+
+            // 生成立體選項按鈕
+            qData.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-option';
+                btn.innerText = opt;
+                btn.onclick = () => toggleOption(idx, btn);
+                optionsField.appendChild(btn);
+            });
+        }
+
+        // 點擊切換選取狀態
+        function toggleOption(idx, btn) {
+            const qData = currentQuestions[currentIndex];
+            
+            if (qData.answer.length === 1) {
+                // 單選題邏輯
+                const allButtons = optionsField.querySelectorAll('.btn-option');
+                allButtons.forEach(b => b.classList.remove('selected'));
+                selectedAnswers = [idx];
+                btn.classList.add('selected');
+            } else {
+                // 多選題邏輯
+                if (selectedAnswers.includes(idx)) {
+                    selectedAnswers = selectedAnswers.filter(item => item !== idx);
+                    btn.classList.remove('selected');
+                } else {
+                    selectedAnswers.push(idx);
+                    btn.classList.add('selected');
+                }
+            }
+        }
+
+        // 確認送出判定邏輯
+        btnSubmitAction.onclick = () => {
+            if (selectedAnswers.length === 0) {
+                alert("請至少選擇一個答案再送出！");
+                return;
+            }
+
+            const qData = currentQuestions[currentIndex];
+            const allButtons = optionsField.querySelectorAll('.btn-option');
+
+            allButtons.forEach(btn => btn.disabled = true);
+            btnSubmitAction.classList.add('hidden');
+
+            // 比對多選或單選是否完全一致
+            const playerSorted = [...selectedAnswers].sort((a, b) => a - b);
+            const correctSorted = [...qData.answer].sort((a, b) => a - b);
+            const isFullyCorrect = playerSorted.length === correctSorted.length && 
+                                   playerSorted.every((val, index) => val === correctSorted[index]);
+
+            // 擷取正確答案的字母代號 (如 A、B、C)
+            const correctLabels = qData.answer.map(i => qData.options[i].trim().substring(0, 1)).join('、');
+
+            // 反饋按鈕視覺轉變
+            allButtons.forEach((btn, idx) => {
+                btn.classList.remove('selected');
+                if (qData.answer.includes(idx)) {
+                    btn.classList.add('correct'); // 正確答案變綠色
+                } else if (selectedAnswers.includes(idx)) {
+                    btn.classList.add('wrong'); // 選錯的變紅色
+                }
+            });
+
+            // 得分與音效
+            if (isFullyCorrect) {
+                score++;
+                scoreText.innerText = `目前 Robux 積分：${score} / 10`;
+                feedbackField.innerText = "✨ 太棒了！全答對了！ ✨";
+                feedbackField.style.color = "#00B06F";
+                document.getElementById('sound-correct').currentTime = 0;
+                document.getElementById('sound-correct').play().catch(e => {});
+            } else {
+                feedbackField.innerText = `喔不！沒全對。正確答案是：[ ${correctLabels} ]`;
+                feedbackField.style.color = "#FF5252";
+                document.getElementById('sound-wrong').currentTime = 0;
+                document.getElementById('sound-wrong').play().catch(e => {});
+            }
+
+            feedbackField.classList.remove('hidden');
+            btnNextAction.classList.remove('hidden');
+        };
+
+        // 下一題流程
+        btnNextAction.onclick = () => {
+            currentIndex++;
+            if (currentIndex < currentQuestions.length) {
+                showQuestion();
+            } else {
+                showEndScreen();
+            }
+        };
+
+        // 結算畫面
+        function showEndScreen() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            document.getElementById('final-score').innerText = `${score} / 10`;
+
+            let rank = "";
+            if (score === 10) {
+                rank = "👑 Roblox 科學創造神 (Builderman) 👑";
+            } else if (score >= 7) {
+                rank = "🛠️ 資深科學開發者 (Developer) 🛠️";
+            } else {
+                rank = "🎒 科學萌新小路過 (Noob) 🎒";
+            }
+            document.getElementById('roblox-rank').innerText = rank;
+        }
+
+        function restartGame() {
+            initGame();
+        }
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>
