@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roblox Knowledge Adventure!</title>
+    <style>
+        /* CSS 變數配置 */
+        :root {
+            --roblox-bg: url('https://images5.alphacoders.com/121/thumb-1920-1217521.jpg');
+            --rbx-dark-alpha: rgba(25, 25, 25, 0.75);
+            --rbx-green: #00B06F;
+            --rbx-green-dark: #008F58;
+            --rbx-red: #D32F2F;
+            --rbx-red-dark: #9A2121;
+            --rbx-gray: #393B3D;
+            --rbx-gray-dark: #232527;
+            --rbx-blue: #0074BD;
+            --rbx-blue-dark: #005A92;
+            --rbx-text: #FFFFFF;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, "Microsoft JhengHei";
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background-image: var(--roblox-bg);
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-attachment: fixed;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        /* 題目容器（毛玻璃效果） */
+        .game-container {
+            width: 90%;
+            max-width: 650px;
+            background: var(--rbx-dark-alpha);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.14);
+            border-radius: 16px;
+            padding: 30px;
+            color: var(--rbx-text);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+            position: relative;
+            z-index: 10;
+        }
+
+        /* 陰影文字確保清晰度 */
+        h1, h2, h3, p, .score-board, .feedback, .question-text {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+        }
+
+        /* 計分板 */
+        .score-board {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.1rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #FFD700;
+        }
+
+        /* 題型標籤 */
+        .question-type-badge {
+            background-color: #0074BD;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            vertical-align: middle;
+            margin-left: 8px;
+            text-shadow: none;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 25px;
+        }
+
+        /* Roblox 風格立體按鈕（預設狀態） */
+        .btn-option {
+            background-color: var(--rbx-green);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 14px 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-align: left;
+            cursor: pointer;
+            position: relative;
+            box-shadow: 0 5px 0 var(--rbx-green-dark);
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+            z-index: 12;
+        }
+
+        /* 懸停彈簧動畫效果 */
+        .btn-option:hover:not(:disabled) {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 0 var(--rbx-green-dark);
+        }
+
+        /* 點擊時的選取中狀態（亮藍色） */
+        .btn-option.selected {
+            background-color: var(--rbx-blue) !important;
+            box-shadow: 0 5px 0 var(--rbx-blue-dark) !important;
+            transform: translateY(2px);
+        }
+
+        /* 最終回饋狀態：正確綠、錯誤紅 */
+        .btn-option.correct {
+            background-color: #00B06F !important;
+            box-shadow: 0 5px 0 #008F58 !important;
+        }
+
+        .btn-option.wrong {
+            background-color: var(--rbx-red) !important;
+            box-shadow: 0 5px 0 var(--rbx-red-dark) !important;
+        }
+
+        .btn-option:disabled {
+            cursor: not-allowed;
+            opacity: 0.95;
+        }
+
+        /* 回饋文字區 */
+        .feedback {
+            margin: 20px 0;
+            font-size: 1.25rem;
+            font-weight: bold;
+            min-height: 35px;
+            text-align: center;
+        }
+
+        /* 功能控制鈕 */
+        .control-area {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn-action {
+            display: block;
+            width: 100%;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.1s ease;
+        }
+
+        .btn-submit {
+            background-color: #FF9800;
+            box-shadow: 0 4px 0 #E65100;
+        }
+        .btn-submit:hover:not(:disabled) {
+            background-color: #FFA726;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #E65100;
+        }
+
+        .btn-next {
+            background-color: var(--rbx-gray);
+            box-shadow: 0 4px 0 var(--rbx-gray-dark);
+        }
+        .btn-next:hover {
+            background-color: #4f5153;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 var(--rbx-gray-dark);
+        }
+
+        .btn-action:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.4);
+        }
+
+        .hidden { display: none !important; }
+
+        /* 右下角動態角色容器 */
+        .avatar-container {
+            position: absolute;
+            bottom: -15px;
+            right: -15px;
+            width: 120px;
+            height: 120px;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* 結算頁面 */
+        .result-screen {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .badge-title {
+            font-size: 2.2rem;
+            color: #FFD700;
+            margin: 20px 0;
+            animation: bounce 1s infinite alternate;
+        }
+
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <div id="quiz-screen">
+            <div class="score-board">
+                <span id="progress-text">Question: 1 / --</span>
+                <span id="score-text">Current Robux Points: 0 / --</span>
+            </div>
+            
+            <div class="question-text">
+                <span id="question-field">Loading question...</span>
+                <span id="type-badge" class="question-type-badge">True or False</span>
+            </div>
+            
+            <div class="options-container" id="options-field"></div>
+            
+            <div class="feedback hidden" id="feedback-field"></div>
+            
+            <div class="control-area">
+                <button class="btn-action btn-submit" id="btn-submit-action">Submit ✔</button>
+                <button class="btn-action btn-next hidden" id="btn-next-action">Next ➔</button>
+            </div>
+        </div>
+
+        <div id="result-screen" class="result-screen hidden">
+            <h2>🎉 Challenge Completed! 🎉</h2>
+            <p style="font-size: 1.4rem;">Your Final Score</p>
+            <div class="badge-title" id="final-score">0 / 0</div>
+            <p style="font-size: 1.2rem;">You Earned Roblox Title:</p>
+            <div class="badge-title" id="roblox-rank" style="font-size: 2rem; color: #00E6FF;">-</div>
+            <button class="btn-action btn-submit" onclick="restartGame()" style="margin-top: 30px;">Play Again ↻</button>
+        </div>
+
+        <div class="avatar-container">
+            <img id="roblox-avatar" class="avatar-img" src="" alt="Roblox Character">
+        </div>
+    </div>
+
+    <audio id="sound-correct" src="https://www.soundjay.com/buttons/sounds/button-09a.mp3"></audio> 
+    <audio id="sound-wrong" src="https://www.soundjay.com/buttons/sounds/button-10a.mp3"></audio>
+
+    <script>
+        // 替換為最新的 10 題常識科能源 True/False 題庫數據
+        const pool = [
+            { question: "Coal, natural gas and oil are natural resources that will be used up.", options: ["A. True (✔)", "B. False (✘)"], answer: [0] },
+            { question: "Oil can be refined into petrol, diesel and LPG.", options: ["A. True (✔)", "B. False (✘)"], answer: [0] },
+            { question: "Coal and natural gas are not fuels for producing electricity.", options: ["A. True (✔)", "B. False (✘)"], answer: [1] },
+            { question: "Natural gas can be used to produce electricity.", options: ["A. True (✔)", "B. False (✘)"], answer: [0] },
+            { question: "Coal, oil and natural gas are man-made. They are not resources in the natural environment.", options: ["A. True (✔)", "B. False (✘)"], answer: [1] },
+            { question: "Using renewable energy to replace non-renewable energy can help reduce carbon dioxide emissions.", options: ["A. True (✔)", "B. False (✘)"], answer: [0] },
+            { question: "The application of renewable energy is limited by factors such as weather, climate and land. Therefore, it has not become the main source of energy in the world.", options: ["A. True (✔)", "B. False (✘)"], answer: [0] },
+            { question: "Nowadays, renewable energy has become the main source of energy in the world.", options: ["A. True (✔)", "B. False (✘)"], answer: [1] },
+            { question: "Without energy, planes cannot fly and the aviation industry cannot operate normally.", options: ["A. True (✔)", "B. False (✘)"], answer: [0] },
+            { question: "Modern manufacturing industry uses machines to produce products. The process needs energy.", options: ["A. True (✔)", "B. False (✘)"], answer: [0] }
+        ];
+
+        let currentQuestions = [];
+        let currentIndex = 0;
+        let score = 0;
+        let selectedAnswers = []; 
+
+        const progressText = document.getElementById('progress-text');
+        const scoreText = document.getElementById('score-text');
+        const questionField = document.getElementById('question-field');
+        const typeBadge = document.getElementById('type-badge');
+        const optionsField = document.getElementById('options-field');
+        const feedbackField = document.getElementById('feedback-field');
+        const btnSubmitAction = document.getElementById('btn-submit-action');
+        const btnNextAction = document.getElementById('btn-next-action');
+        const avatarImg = document.getElementById('roblox-avatar');
+
+        // 初始化遊戲：隨機打亂次序
+        function initGame() {
+            currentQuestions = [...pool].sort(() => 0.5 - Math.random());
+            currentIndex = 0;
+            score = 0;
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            showQuestion();
+        }
+
+        // 渲染題目與選項
+        function showQuestion() {
+            feedbackField.classList.add('hidden');
+            btnNextAction.classList.add('hidden');
+            btnSubmitAction.classList.remove('hidden');
+            optionsField.innerHTML = '';
+            selectedAnswers = [];
+
+            const qData = currentQuestions[currentIndex];
+            const totalQs = currentQuestions.length;
+            
+            progressText.innerText = `Question: ${currentIndex + 1} / ${totalQs}`;
+            scoreText.innerText = `Current Robux Points: ${score} / ${totalQs}`;
+            questionField.innerText = qData.question;
+
+            // 固定顯示為 True or False 題型
+            typeBadge.innerText = "True or False";
+            typeBadge.style.backgroundColor = "#0074BD";
+
+            // 隨機挑選本機 Roblox 資料夾中的 1~10 號 PNG 貼圖
+            const randomImageNumber = Math.floor(Math.random() * 10) + 1;
+            avatarImg.src = `Roblox/guest (${randomImageNumber}).png`;
+
+            // 生成立體選項按鈕
+            qData.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-option';
+                btn.innerText = opt;
+                btn.onclick = () => toggleOption(idx, btn);
+                optionsField.appendChild(btn);
+            });
+        }
+
+        // 點擊切換選取狀態（單選互斥）
+        function toggleOption(idx, btn) {
+            const allButtons = optionsField.querySelectorAll('.btn-option');
+            allButtons.forEach(b => b.classList.remove('selected'));
+            selectedAnswers = [idx];
+            btn.classList.add('selected');
+        }
+
+        // 確認送出與判定邏輯
+        btnSubmitAction.onclick = () => {
+            if (selectedAnswers.length === 0) {
+                alert("Please select an answer before submitting!");
+                return;
+            }
+
+            const qData = currentQuestions[currentIndex];
+            const allButtons = optionsField.querySelectorAll('.btn-option');
+            const totalQs = currentQuestions.length;
+
+            allButtons.forEach(btn => btn.disabled = true);
+            btnSubmitAction.classList.add('hidden');
+
+            const isFullyCorrect = selectedAnswers[0] === qData.answer[0];
+            const correctLabel = qData.answer[0] === 0 ? "True (✔)" : "False (✘)";
+
+            // 反饋按鈕視覺轉變
+            allButtons.forEach((btn, idx) => {
+                btn.classList.remove('selected');
+                if (qData.answer.includes(idx)) {
+                    btn.classList.add('correct'); // 正確答案變綠
+                } else if (selectedAnswers.includes(idx)) {
+                    btn.classList.add('wrong'); // 選錯的變紅
+                }
+            });
+
+            // 得分與音效控制
+            if (isFullyCorrect) {
+                score++;
+                scoreText.innerText = `Current Robux Points: ${score} / ${totalQs}`;
+                feedbackField.innerText = "✨ Excellent! You got it right! ✨";
+                feedbackField.style.color = "#00B06F";
+                document.getElementById('sound-correct').currentTime = 0;
+                document.getElementById('sound-correct').play().catch(e => {});
+            } else {
+                feedbackField.innerText = `Oh no! Incorrect. Correct answer: [ ${correctLabel} ]`;
+                feedbackField.style.color = "#FF5252";
+                document.getElementById('sound-wrong').currentTime = 0;
+                document.getElementById('sound-wrong').play().catch(e => {});
+            }
+
+            feedbackField.classList.remove('hidden');
+            btnNextAction.classList.remove('hidden');
+        };
+
+        // 下一題流程
+        btnNextAction.onclick = () => {
+            currentIndex++;
+            if (currentIndex < currentQuestions.length) {
+                showQuestion();
+            } else {
+                showEndScreen();
+            }
+        };
+
+        // 結算畫面
+        function showEndScreen() {
+            const totalQs = currentQuestions.length;
+            const percentage = score / totalQs;
+
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            document.getElementById('final-score').innerText = `${score} / ${totalQs}`;
+
+            let rank = "";
+            if (score === totalQs) {
+                rank = "👑 Roblox Builderman 👑";
+            } else if (percentage >= 0.7) {
+                rank = "🛠️ Senior Developer 🛠️";
+            } else {
+                rank = "🎒 Rookie Noob 🎒";
+            }
+            document.getElementById('roblox-rank').innerText = rank;
+        }
+
+        function restartGame() {
+            initGame();
+        }
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>

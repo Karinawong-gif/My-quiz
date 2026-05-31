@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Science Challenge - Properties & Changes of Matter</title>
+    <style>
+        :root {
+            --bg-image: url('chiikawa/chiikawa wallpeaper.avif');
+            --container-bg: rgba(255, 255, 255, 0.5); /* Semi-transparent white 50% */
+            --primary-pink: #FFC0CB; /* Option background: Pink */
+            --primary-pink-hover: #FFD1DC;
+            --powder-blue: #B0E0E6; /* Correct: Powder Blue */
+            --wrong-red: #FF8A8A; /* Wrong: Red */
+            --text-dark: #444444;
+            --btn-gray: #777777;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, "Microsoft JhengHei";
+        }
+
+        body {
+            background: var(--bg-image) no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: var(--container-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 25px;
+            width: 100%;
+            max-width: 680px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            color: var(--text-dark);
+            position: relative;
+            min-height: 520px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .score-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14pt;
+            font-weight: bold;
+            margin-bottom: 20px;
+            border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+            padding-bottom: 12px;
+        }
+
+        .score-points {
+            color: #FF69B4; 
+        }
+
+        .question-text {
+            font-size: 16pt;
+            font-weight: bold;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+        }
+
+        .q-type-badge {
+            background-color: #90CAF9;
+            color: white;
+            font-size: 10pt;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+            z-index: 5;
+        }
+
+        .option-btn {
+            background-color: var(--primary-pink);
+            color: #444;
+            border: none;
+            border-bottom: 5px solid #FFB2C1;
+            border-radius: 12px;
+            padding: 14px 20px;
+            font-size: 14pt;
+            font-weight: bold;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.1s ease, background-color 0.2s ease;
+            width: 100%;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: var(--primary-pink-hover);
+            transform: translateY(-2px);
+        }
+
+        .option-btn:active:not(:disabled) {
+            transform: translateY(2px);
+            border-bottom-width: 1px;
+            margin-bottom: 4px;
+        }
+
+        .option-btn.correct {
+            background-color: var(--powder-blue) !important;
+            border-bottom-color: #98D0D6 !important;
+        }
+
+        .option-btn.wrong {
+            background-color: var(--wrong-red) !important;
+            border-bottom-color: #E57373 !important;
+        }
+
+        .character-sprite {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            width: 110px;
+            height: 110px;
+            object-fit: contain;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.9;
+        }
+
+        .feedback-container {
+            margin-top: 10px;
+            padding: 15px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.6);
+            font-size: 13pt;
+            font-weight: bold;
+            display: none;
+            z-index: 2;
+            line-height: 1.5;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .feedback-success { color: #00897B; }
+        .feedback-fail { color: #D32F2F; }
+
+        .control-panel {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 5px;
+            z-index: 10;
+            position: relative;
+            width: 100%;
+        }
+
+        .action-btn {
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 14px 50px;
+            font-size: 14pt;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .next-btn {
+            background-color: var(--btn-gray);
+            border-bottom: 4px solid #555;
+            display: none;
+        }
+
+        .result-screen {
+            text-align: center;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .result-title {
+            font-size: 24pt;
+            color: #FF69B4;
+            margin-bottom: 25px;
+            font-weight: bold;
+        }
+
+        .result-badge {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #5C6BC0;
+            margin-top: 15px;
+            margin-bottom: 35px;
+            background: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            border: 2px solid #FFC0CB;
+        }
+
+        .restart-btn {
+            background-color: #90CAF9;
+            border-bottom: 5px solid #64B5F6;
+            border-radius: 12px;
+            padding: 14px 40px;
+            font-size: 14pt;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <div id="quizSection" style="display: block; width: 100%;">
+            <div class="score-header">
+                <span id="progressText">Question 1 / 26</span>
+                <span class="score-points" id="scoreText">Current Score: 0 / 26</span>
+            </div>
+
+            <div class="question-text">
+                <span class="q-type-badge" id="typeBadge">True / False</span><span id="questionText">Loading...</span>
+            </div>
+
+            <div class="options-container" id="optionsContainer"></div>
+
+            <div class="feedback-container" id="feedbackContainer"></div>
+
+            <div class="control-panel">
+                <button class="action-btn next-btn" id="nextBtn" onclick="nextQuestion()">Next Question ➔</button>
+            </div>
+            
+            <img src="chiikawa/chiikawa (2).png" alt="Character" class="character-sprite" id="charSprite">
+        </div>
+
+        <div id="resultSection" class="result-screen">
+            <div class="result-title">🎉 Challenge Completed 🎉</div>
+            <div style="font-size: 18pt; margin-bottom: 10px;">Total Score: <span id="finalScoreText">0</span> / 26</div>
+            <div style="font-size: 13pt; color: #666;">Rank Achieved:</div>
+            <div class="result-badge" id="badgeText">Evaluating...</div>
+            <button class="restart-btn" onclick="restartGame()">Try Again ↺</button>
+        </div>
+    </div>
+
+    <audio id="sndCorrect" preload="auto"><source src="https://actions.google.com/sounds/v1/cartoon/cartoon_wink.ogg" type="audio/ogg"></audio>
+    <audio id="sndWrong" preload="auto"><source src="https://actions.google.com/sounds/v1/cartoon/slide_whistle_down.ogg" type="audio/ogg"></audio>
+
+    <script>
+        const fullQuestionPool = [
+            { id: "SE4b_u7_04k_001_1", question: "Most metals are hard.", options: ["True (ü)", "False ()"], answer: 0 },
+            { id: "SE4b_u7_04k_002_1", question: "Metals are usually dull.", options: ["True (ü)", "False ()"], answer: 1 },
+            { id: "SE4b_u7_04k_003_1", question: "Metals are usually good thermal conductors.", options: ["True (ü)", "False ()"], answer: 0 },
+            { id: "SE4b_u7_04k_004_1", question: "Wood is a poor thermal conductor.", options: ["True (ü)", "False ()"], answer: 0 },
+            { id: "SE4b_u7_04k_005_1", question: "Copper is commonly used to make cables because it can conduct electricity.", options: ["True (ü)", "False ()"], answer: 0 },
+            { id: "SE4b_u7_04k_006_1", question: "The pins of a plug should be made of metal, while the case should be made of non-metal.", options: ["True (ü)", "False ()"], answer: 0 },
+            { id: "SE4b_u7_04k_007_1", question: "The pins and case of a plug must be made of metal.", options: ["True (ü)", "False ()"], answer: 1 },
+            { id: "SE4b_u7_04k_008_1", question: "A wooden rod conducts heat faster than a metal rod.", options: ["True (ü)", "False ()"], answer: 1 },
+            { id: "SE4b_u7_04k_009_1", question: "Metals conduct electricity, so they are suitable for making the body of a cooking pot.", options: ["True (ü)", "False ()"], answer: 1 },
+            { id: "SE4b_u7_04k_010_1", question: "An iron pan can cook food quickly because iron is a good thermal conductor. It transfers heat fast.", options: ["True (ü)", "False ()"], answer: 0 },
+            { id: "SE4b_u7_04k_011_1", question: "The handles of cooking pots are made of non-metals because they insulate heat and prevent burns.", options: ["True (ü)", "False ()"], answer: 0 },
+            { id: "SE4b_u7_04k_012_1", question: "The body of a cooking pot is made of metal because it conducts heat well and can cook food quickly.", options: ["True (ü)", "False ()"], answer: 0 },
+            { id: "SE4b_u7_04k_013_1", question: "The handle of a pot is made of non-metals because non-metals are good thermal conductors. They can insulate heat.", options: ["True (ü)", "False ()"], answer: 1 },
+            { id: "SE4b_u7_04k_014_1", question: "Cloth is a good thermal conductor, so cloth gloves can insulate heat.", options: ["True (ü)", "False ()"], answer: 1 },
+            { id: "SE4b_u7_04k_015_1", question: "Since cloth and plastic are insulators, people use them to make insulated gloves.", options: ["True (ü)", "False ()"], answer: 1 },
+            { id: "SE4b_u7_04k_016_1", question: "Water freezing is a physical change.", options: ["True (ü)", "False ()"], answer: 0 },
+            { id: "SE4b_u7_04k_017_1", question: "Water evaporating into water vapour is a physical change.", options: ["True (ü)", "False ()"], answer: 0 },
+            { id: "SE4b_u7_04k_018_1", question: "Tearing paper is a chemical change.", options: ["True (ü)", "False ()"], answer: 1 },
+            { id: "SE4b_u7_04k_019_1", question: "The melting of a candle is a chemical change.", options: ["True (ü)", "False ()"], answer: 1 },
+            { id: "SE4b_u7_04k_020_2", question: "Pressing an iron block into an iron sheet is a physical change.", options: ["True (ü)", "False ()"], answer: 0 },
+            { id: "SE4b_u7_04k_021_1", question: "When food turns mouldy, it produces new matter.", options: ["True (ü)", "False ()"], answer: 0 },
+            { id: "SE4b_u7_04k_022_1", question: "The changes that occur in eggs during cooking are physical changes.", options: ["True (ü)", "False ()"], answer: 1 },
+            { id: "SE4b_u7_04k_023_1", question: "Milk going bad is a physical change.", options: ["True (ü)", "False ()"], answer: 1 },
+            { id: "SE4b_u7_04k_024_1", question: "An iron nail becomes shinier when it rusts.", options: ["True (ü)", "False ()"], answer: 1 },
+            { id: "SE4b_u7_04k_025_1", question: "New matter is produced after an iron nail rusts. There are great differences between the matter before and after rusting.", options: ["True (ü)", "False ()"], answer: 0 },
+            { id: "SE4b_u7_04k_026_1", question: "Burning oil and composting food waste are physical changes.", options: ["True (ü)", "False ()"], answer: 1 }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        function initGame() {
+            // Direct order, no random shuffle
+            currentQuestionIndex = 0;
+            score = 0;
+            
+            document.getElementById("quizSection").style.display = "block";
+            document.getElementById("resultSection").style.display = "none";
+            showQuestion();
+        }
+
+        function showQuestion() {
+            document.getElementById("feedbackContainer").style.display = "none";
+            document.getElementById("nextBtn").style.display = "none";
+
+            const qData = fullQuestionPool[currentQuestionIndex];
+            const totalQ = fullQuestionPool.length;
+            
+            document.getElementById("progressText").innerText = `Question ${currentQuestionIndex + 1} / ${totalQ}`;
+            document.getElementById("scoreText").innerText = `Current Score: ${score} / ${totalQ}`;
+            document.getElementById("questionText").innerText = qData.question;
+            
+            const typeBadge = document.getElementById("typeBadge");
+            typeBadge.innerText = "True / False";
+            typeBadge.style.backgroundColor = "#90CAF9";
+
+            // Rotate character images nicely over 26 questions
+            const imgIndex = (currentQuestionIndex % 6) + 1; 
+            document.getElementById("charSprite").src = `chiikawa/chiikawa (${imgIndex}).png`;
+
+            const container = document.getElementById("optionsContainer");
+            container.innerHTML = "";
+
+            qData.options.forEach((option, index) => {
+                const btn = document.createElement("button");
+                btn.className = "option-btn";
+                btn.innerText = option;
+                btn.onclick = () => checkAnswer(index);
+                container.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selectedIndex) {
+            const qData = fullQuestionPool[currentQuestionIndex];
+            const totalQ = fullQuestionPool.length;
+            const buttons = document.querySelectorAll(".options-container .option-btn");
+            buttons.forEach(btn => btn.disabled = true);
+
+            const feedback = document.getElementById("feedbackContainer");
+            feedback.style.display = "block";
+
+            if (selectedIndex === qData.answer) {
+                score++;
+                buttons[selectedIndex].classList.add("correct");
+                feedback.className = "feedback-container feedback-success";
+                feedback.innerHTML = "Fantastic! That's correct! ✨";
+                playAudio("sndCorrect");
+            } else {
+                buttons[selectedIndex].classList.add("wrong");
+                buttons[qData.answer].classList.add("correct");
+                feedback.className = "feedback-container feedback-fail";
+                feedback.innerHTML = `Oops! That's incorrect. The correct answer is:<br><span style="color:#E91E63;">${qData.options[qData.answer]}</span>`;
+                playAudio("sndWrong");
+            }
+            document.getElementById("scoreText").innerText = `Current Score: ${score} / ${totalQ}`;
+            document.getElementById("nextBtn").style.display = "block";
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < fullQuestionPool.length) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            const totalQ = fullQuestionPool.length;
+            document.getElementById("quizSection").style.display = "none";
+            document.getElementById("resultSection").style.display = "flex";
+            document.getElementById("finalScoreText").innerText = score;
+
+            let rank = "";
+            const ratio = score / totalQ;
+            if (score === totalQ) {
+                rank = "Grand Master Scholar 👑";
+            } else if (ratio >= 0.85) {
+                rank = "Expert Scientist 🔬";
+            } else if (ratio >= 0.6) {
+                rank = "Capable Apprentice 🍃";
+            } else {
+                rank = "Novice Explorer 🌱";
+            }
+            
+            document.getElementById("badgeText").innerText = rank;
+        }
+
+        function restartGame() { initGame(); }
+
+        function playAudio(id) {
+            const audio = document.getElementById(id);
+            if (audio) {
+                audio.currentTime = 0;
+                audio.play().catch(e => console.log("Audio play blocked:", e));
+            }
+        }
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>
