@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roblox 知識大冒險！</title>
+    <style>
+        /* CSS 變數配置 */
+        :root {
+            --roblox-bg: url('https://images5.alphacoders.com/121/thumb-1920-1217521.jpg');
+            --rbx-dark-alpha: rgba(25, 25, 25, 0.75);
+            --rbx-green: #00B06F;
+            --rbx-green-dark: #008F58;
+            --rbx-red: #D32F2F;
+            --rbx-red-dark: #9A2121;
+            --rbx-gray: #393B3D;
+            --rbx-gray-dark: #232527;
+            --rbx-blue: #0074BD;
+            --rbx-blue-dark: #005A92;
+            --rbx-text: #FFFFFF;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, "Microsoft JhengHei";
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background-image: var(--roblox-bg);
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-attachment: fixed;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        /* 題目容器（毛玻璃效果） */
+        .game-container {
+            width: 90%;
+            max-width: 650px;
+            background: var(--rbx-dark-alpha);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.14);
+            border-radius: 16px;
+            padding: 30px;
+            color: var(--rbx-text);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+            position: relative;
+            z-index: 10;
+        }
+
+        /* 陰影文字確保清晰度 */
+        h1, h2, h3, p, .score-board, .feedback, .question-text {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+        }
+
+        /* 計分板 */
+        .score-board {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.1rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #FFD700;
+        }
+
+        /* 題型標籤 */
+        .question-type-badge {
+            background-color: #FF9800;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            vertical-align: middle;
+            margin-left: 8px;
+            text-shadow: none;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 25px;
+        }
+
+        /* Roblox 風格立體按鈕（預設狀態） */
+        .btn-option {
+            background-color: var(--rbx-green);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 14px 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-align: left;
+            cursor: pointer;
+            position: relative;
+            box-shadow: 0 5px 0 var(--rbx-green-dark);
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+            z-index: 12;
+        }
+
+        /* 懸停彈簧動畫效果 */
+        .btn-option:hover:not(:disabled) {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 0 var(--rbx-green-dark);
+        }
+
+        /* 多選點擊時的選取中狀態（亮藍色） */
+        .btn-option.selected {
+            background-color: var(--rbx-blue) !important;
+            box-shadow: 0 5px 0 var(--rbx-blue-dark) !important;
+            transform: translateY(2px);
+        }
+
+        /* 最終回饋狀態：正確綠、錯誤紅 */
+        .btn-option.correct {
+            background-color: #00B06F !important;
+            box-shadow: 0 5px 0 #008F58 !important;
+        }
+
+        .btn-option.wrong {
+            background-color: var(--rbx-red) !important;
+            box-shadow: 0 5px 0 var(--rbx-red-dark) !important;
+        }
+
+        .btn-option:disabled {
+            cursor: not-allowed;
+            opacity: 0.95;
+        }
+
+        /* 回饋文字區 */
+        .feedback {
+            margin: 20px 0;
+            font-size: 1.25rem;
+            font-weight: bold;
+            min-height: 35px;
+            text-align: center;
+        }
+
+        /* 功能控制鈕 */
+        .control-area {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn-action {
+            display: block;
+            width: 100%;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.1s ease;
+        }
+
+        .btn-submit {
+            background-color: #FF9800;
+            box-shadow: 0 4px 0 #E65100;
+        }
+        .btn-submit:hover:not(:disabled) {
+            background-color: #FFA726;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #E65100;
+        }
+
+        .btn-next {
+            background-color: var(--rbx-gray);
+            box-shadow: 0 4px 0 var(--rbx-gray-dark);
+        }
+        .btn-next:hover {
+            background-color: #4f5153;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 var(--rbx-gray-dark);
+        }
+
+        .btn-action:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.4);
+        }
+
+        .hidden { display: none !important; }
+
+        /* 右下角動態角色容器 */
+        .avatar-container {
+            position: absolute;
+            bottom: -15px;
+            right: -15px;
+            width: 120px;
+            height: 120px;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* 結算頁面 */
+        .result-screen {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .badge-title {
+            font-size: 2.2rem;
+            color: #FFD700;
+            margin: 20px 0;
+            animation: bounce 1s infinite alternate;
+        }
+
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <div id="quiz-screen">
+            <div class="score-board">
+                <span id="progress-text">題目：1 / 10</span>
+                <span id="score-text">目前 Robux 積分：0 / 10</span>
+            </div>
+            
+            <div class="question-text">
+                <span id="question-field">載入題目中...</span>
+                <span id="type-badge" class="question-type-badge">單選題</span>
+            </div>
+            
+            <div class="options-container" id="options-field"></div>
+            
+            <div class="feedback hidden" id="feedback-field"></div>
+            
+            <div class="control-area">
+                <button class="btn-action btn-submit" id="btn-submit-action">確認送出 ✔</button>
+                <button class="btn-action btn-next hidden" id="btn-next-action">下一題 ➔</button>
+            </div>
+        </div>
+
+        <div id="result-screen" class="result-screen hidden">
+            <h2>🎉 挑戰完成！ 🎉</h2>
+            <p style="font-size: 1.4rem;">你的最終得分</p>
+            <div class="badge-title" id="final-score">0 / 10</div>
+            <p style="font-size: 1.2rem;">獲得 Roblox 專屬稱號：</p>
+            <div class="badge-title" id="roblox-rank" style="font-size: 2rem; color: #00E6FF;">-</div>
+            <button class="btn-action btn-submit" onclick="restartGame()" style="margin-top: 30px;">再次挑戰 ↻</button>
+        </div>
+
+        <div class="avatar-container">
+            <img id="roblox-avatar" class="avatar-img" src="" alt="Roblox Character">
+        </div>
+    </div>
+
+    <audio id="sound-correct" src="https://www.soundjay.com/buttons/sounds/button-09a.mp3"></audio> 
+    <audio id="sound-wrong" src="https://www.soundjay.com/buttons/sounds/button-10a.mp3"></audio>
+
+    <script>
+        // 已修改為最新的常識題目數據（包含單選與多選題）
+        const pool = [
+            { question: "以下哪些地方適合一家人假日時進行活動？", options: ["A. 圖書館。", "B. 海灘。", "C. 學校。", "D. 公園。"], answer: [0, 1, 3] },
+            { question: "以下哪位不是家人？", options: ["A. 媽媽。", "B. 同學。", "C. 哥哥。", "D. 妹妹。"], answer: [1] },
+            { question: "以下哪位是家人？", options: ["A. 姑母。", "B. 老師。", "C. 表哥。", "D. 妹妹。"], answer: [3] },
+            { question: "以下哪些是可以與家人一起進行的活動？", options: ["A. 看電影。", "B. 上課。", "C. 上茶樓。", "D. 逛超級市場。"], answer: [0, 2, 3] },
+            { question: "以下哪項家中的工作是小朋友可以幫忙的？", options: ["A. 煮食。", "B. 清潔窗户。", "C. 清潔電器。", "D. 整理衣服。"], answer: [4] },
+            { question: "誰是我們的長輩？", options: ["A. 堂哥。", "B. 嬸嬸。", "C. 哥哥。", "D. 表姐。"], answer: [1] },
+            { question: "爸爸的姐姐是誰？", options: ["A. 伯母。", "B. 姑母。", "C. 舅母。", "D. 姨母。"], answer: [1] },
+            { question: "叔叔與爸爸是甚麼關係？", options: ["A. 叔叔是爸爸的弟弟。", "B. 叔叔是爸爸的哥哥。", "C. 叔叔是爸爸的兒子。", "D. 叔叔是爸爸的擺設。"], answer: [0] },
+            { question: "堂兄是以下哪位親戚的兒子？", options: ["A. 姑丈。", "B. 伯父。", "C. 爸爸。", "D. 外祖母。"], answer: [1] },
+            { question: "伯父的兒子比我年長，我應該怎樣稱呼他？", options: ["A. 表兄。", "B. 堂弟。", "C. 堂兄。", "D. 舅父。"], answer: [2] },
+            { question: "以下哪位不是祖父母的兒女？", options: ["A. 叔叔。", "B. 嬸嬸。", "C. 爸爸。", "D. 姑母。"], answer: [1] },
+            { question: "以下親戚中，誰和爸爸的姓氏相同？", options: ["A. 外祖母。", "B. 表哥。", "C. 堂哥。", "D. 姨母。"], answer: [2] },
+            { question: "舅父與媽媽是甚麼關係？", options: ["A. 舅父是媽媽的祖父。", "B. 舅父是媽媽的丈夫。", "C. 舅父是媽媽的父親。", "D. 舅父是媽媽的兄弟。"], answer: [3] },
+            { question: "佳佳是姨母的女兒，她比我小兩歲，我應該怎樣稱呼她？", options: ["A. 妹妹。", "B. 姐姐。", "C. 表妹。", "D. 堂妹。"], answer: [2] },
+            { question: "表姐可能是以下哪位親戚的女兒？", options: ["A. 姑母。", "B. 嬸嬸。", "C. 舅母。", "D. 祖母。"], answer: [0, 2] },
+            { question: "以下親戚中，誰是媽媽的兄弟姊妹？", options: ["A. 姑母。", "B. 伯父。", "C. 舅父。", "D. 姨母。"], answer: [2, 3] },
+            { question: "以下哪些人是家人？", options: ["A. 爸爸。", "B. 老師。", "C. 同學。", "D. 姐姐。"], answer: [0, 3] },
+            { question: "以下哪些人是祖父母的兒子？", options: ["A. 爸爸。", "B. 姑母。", "C. 舅父。", "D. 叔父。"], answer: [0, 3] },
+            { question: "以下哪些是對媽媽的兄弟姐妹的稱呼？", options: ["A. 舅父。", "B. 伯父。", "C. 姨母。", "D. 姑母。"], answer: [0, 2] },
+            { question: "我們應該怎樣與家人相處？", options: ["A. 跟哥哥爭奪玩具。", "B. 幫家人做家務。", "C. 不參加家庭活動。", "D. 不開心時發脾氣。"], answer: [1] },
+            { question: "以下哪些是與家人融洽相處的方法？", options: ["A. 向家人發脾氣。", "B. 讓家人負責所有的家務。", "C. 與兄弟姊妹分享玩具。", "D. 幫助照顧弟弟和妹妹。"], answer: [2, 3] },
+            { question: "在家中，我們可以幫助家人做甚麼？", options: ["A. 修理電器。", "B. 煮食。", "C. 拿取簡單物品。", "D. 更換燈泡。"], answer: [2] },
+            { question: "我們可以分擔家中的甚麼工作？", options: ["A. 煮食。", "B. 抹窗。", "C. 收拾玩具。", "D. 整理衣服。"], answer: [2, 3] },
+            { question: "媽媽生病時，我們可以怎樣關心她？", options: ["A. 媽媽吃藥時，給她送上一杯水。", "B. 向媽媽發脾氣。", "C. 要求媽媽給自己買玩具。", "D. 保持安靜，讓媽媽休息。"], answer: [0, 3] },
+            { question: "要令媽媽開心，我們應該怎樣做？", options: ["A. 聽她的話。", "B. 主動收拾玩具。", "C. 向她發脾氣。", "D. 飯後幫忙收拾碗筷。"], answer: [0, 1, 3] },
+            { question: "當姐姐成績不好時，我們應該怎樣做？", options: ["A. 取笑她。", "B. 安慰她。", "C. 鼓勵她。", "D. 不理會她。"], answer: [1, 2] },
+            { question: "我們應該怎樣與親戚相處？", options: ["A. 互相幫助。", "B. 互不理睬。", "C. 常常來往。", "D. 常常吵架。"], answer: [0, 2] },
+            { question: "我們可以怎樣與親戚保持聯絡？", options: ["A. 多去探訪親戚。", "B. 拒絕親戚的探訪。", "C. 經常致電問候親戚。", "D. 不參與親戚舉辦的活動。"], answer: [0, 2] },
+            { question: "以下哪些是禮貌招待親戚的行為？", options: ["A. 熱情地招待親戚。", "B. 親戚到訪時上前歡迎。", "C. 與親戚吵架。", "D. 親戚離開時跟他們道別。"], answer: [0, 1, 3] },
+            { question: "以下哪些是招待親戚應有的態度？", options: ["A. 跟親戚聊天。", "B. 不打擾長輩談話。", "C. 不理睬親戚。", "D. 把玩具收起，不讓親戚觸碰。"], answer: [0, 1] },
+            { question: "親戚帶了禮物到訪，我們應該怎樣做？", options: ["A. 跟親戚道別。", "B. 向親戚説：「謝謝！」", "C. 立即打開禮物。", "D. 向親戚説：「對不起！」"], answer: [1] },
+            { question: "如果爺爺到訪，你應該怎樣做？", options: ["A. 躲在房間玩電子遊戲。", "B. 向爺爺發脾氣。", "C. 和爺爺談天。", "D. 不理會爺爺。"], answer: [2] },
+            { question: "以下哪些是與家人相處時應有的行為或態度？", options: ["A. 有禮貌地説話。", "B. 責備家人。", "C. 愛護家人。", "D. 跟兄弟姊妹爭奪玩具。"], answer: [0, 2] },
+            { question: "以下哪項是愛護家人的表現？", options: ["A. 教導妹妹做功課。", "B. 嘲笑弟弟不懂做功課。", "C. 把媽媽收拾好的房間弄亂。", "D. 打擾生病的哥哥睡覺。"], answer: [0] },
+            { question: "以下哪些是愛護家人的表現？", options: ["A. 給下班回家的爸爸奉茶。", "B. 給祖母按摩。", "C. 給睡着了的媽媽蓋上被子。", "D. 跟兄弟姊妹爭讀圖書。"], answer: [0, 1, 2] },
+            { question: "爸爸答應思思星期天帶她到公園玩耍。到了星期天，爸爸突然要去上班。思思應該怎樣做？", options: ["A. 向爸爸發脾氣。", "B. 對爸爸説：「不要緊，還有媽媽陪着我。」", "C. 獨自去公園玩耍。", "D. 大聲哭鬧。"], answer: [1] },
+            { question: "樂樂想和哥哥玩，但是哥哥正在温習，拒絕和樂樂玩。樂樂應該怎樣做？", options: ["A. 向哥哥發脾氣。", "B. 對哥哥説：「哥哥，加油！今天我自己玩吧。」", "C. 向媽媽投訴哥哥。", "D. 一星期不理會哥哥。"], answer: [1] },
+            { question: "子清玩耍後，把玩具散滿地上，到媽媽下班回家還沒有收拾。子清應該怎樣做？", options: ["A. 立刻收拾玩具。", "B. 任由玩具散落一地。", "C. 叫媽媽收拾玩具。", "D. 把更多玩具拿出來玩。"], answer: [0] },
+            { question: "以下哪個説法不正確？", options: ["A. 一家人要相親相愛。", "B. 愛護家人能讓大家相處融洽。", "C. 當家人不開心時，應該多關心他們。", "D. 只要家人愛護我們，我們不用愛護家人。"], answer: [3] },
+            { question: "以下哪項是快樂家庭的表現？", options: ["A. 一家人互不理睬。", "B. 兄弟姊妹從不做家務。", "C. 一家人相親相愛，互相體諒。", "D. 經常向家人發脾氣。"], answer: [2] },
+            { question: "經常對家人發脾氣會導致甚麼情況？", options: ["A. 增進家人間的感情。", "B. 使家人開心。", "C. 實現自己的願望。", "D. 使家人難受。"], answer: [3] },
+            { question: "以下哪些是尊敬長輩的行為？", options: ["A. 給長輩奉茶。", "B. 替長輩拿東西。", "C. 對長輩不瞅不睬。", "D. 耐心地聆聽長輩的話。"], answer: [0, 1, 3] }
+        ];
+
+        let currentQuestions = [];
+        let currentIndex = 0;
+        let score = 0;
+        let selectedAnswers = []; 
+
+        const progressText = document.getElementById('progress-text');
+        const scoreText = document.getElementById('score-text');
+        const questionField = document.getElementById('question-field');
+        const typeBadge = document.getElementById('type-badge');
+        const optionsField = document.getElementById('options-field');
+        const feedbackField = document.getElementById('feedback-field');
+        const btnSubmitAction = document.getElementById('btn-submit-action');
+        const btnNextAction = document.getElementById('btn-next-action');
+        const avatarImg = document.getElementById('roblox-avatar');
+
+        // 初始化遊戲：隨機抽 10 題
+        function initGame() {
+            const shuffled = [...pool].sort(() => 0.5 - Math.random());
+            currentQuestions = shuffled.slice(0, 10); 
+            currentIndex = 0;
+            score = 0;
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            showQuestion();
+        }
+
+        // 渲染題目與選項
+        function showQuestion() {
+            feedbackField.classList.add('hidden');
+            btnNextAction.classList.add('hidden');
+            btnSubmitAction.classList.remove('hidden');
+            optionsField.innerHTML = '';
+            selectedAnswers = [];
+
+            const qData = currentQuestions[currentIndex];
+            
+            progressText.innerText = `題目：${currentIndex + 1} / 10`;
+            scoreText.innerText = `目前 Robux 積分：${score} / 10`;
+            questionField.innerText = qData.question;
+
+            // 判斷多選與單選提示標籤
+            if (qData.answer.length > 1) {
+                typeBadge.innerText = "多選題（可多選）";
+                typeBadge.style.backgroundColor = "#FF9800";
+            } else {
+                typeBadge.innerText = "單選題";
+                typeBadge.style.backgroundColor = "#0074BD";
+            }
+
+            // 隨機挑選 1~10 號 PNG 貼圖（若本機有建立此資料夾，即可對應顯示）
+            const randomImageNumber = Math.floor(Math.random() * 10) + 1;
+            avatarImg.src = `Roblox/guest (${randomImageNumber}).png`;
+
+            // 生成立體選項按鈕
+            qData.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-option';
+                btn.innerText = opt;
+                btn.onclick = () => toggleOption(idx, btn);
+                optionsField.appendChild(btn);
+            });
+        }
+
+        // 點擊切換選取狀態
+        function toggleOption(idx, btn) {
+            const qData = currentQuestions[currentIndex];
+            
+            if (qData.answer.length === 1) {
+                // 單選題：互斥切換
+                const allButtons = optionsField.querySelectorAll('.btn-option');
+                allButtons.forEach(b => b.classList.remove('selected'));
+                selectedAnswers = [idx];
+                btn.classList.add('selected');
+            } else {
+                // 多選題：自由勾選與取消
+                if (selectedAnswers.includes(idx)) {
+                    selectedAnswers = selectedAnswers.filter(item => item !== idx);
+                    btn.classList.remove('selected');
+                } else {
+                    selectedAnswers.push(idx);
+                    btn.classList.add('selected');
+                }
+            }
+        }
+
+        // 確認送出與完全對判定邏輯
+        btnSubmitAction.onclick = () => {
+            if (selectedAnswers.length === 0) {
+                alert("請至少選擇一個答案再送出！");
+                return;
+            }
+
+            const qData = currentQuestions[currentIndex];
+            const allButtons = optionsField.querySelectorAll('.btn-option');
+
+            allButtons.forEach(btn => btn.disabled = true);
+            btnSubmitAction.classList.add('hidden');
+
+            // 雙向排序後比對陣列內容是否完美一致
+            const playerSorted = [...selectedAnswers].sort((a, b) => a - b);
+            const correctSorted = [...qData.answer].sort((a, b) => a - b);
+            const isFullyCorrect = playerSorted.length === correctSorted.length && 
+                                   playerSorted.every((val, index) => val === correctSorted[index]);
+
+            // 轉換正確答案字母代號
+            const correctLabels = qData.answer.map(i => qData.options[i].trim().substring(0, 1)).join('、');
+
+            // 反饋按鈕視覺轉變
+            allButtons.forEach((btn, idx) => {
+                btn.classList.remove('selected');
+                if (qData.answer.includes(idx)) {
+                    btn.classList.add('correct'); // 正確答案強制變綠
+                } else if (selectedAnswers.includes(idx)) {
+                    btn.classList.add('wrong'); // 選錯的強制變紅
+                }
+            });
+
+            // 得分與音效控制
+            if (isFullyCorrect) {
+                score++;
+                scoreText.innerText = `目前 Robux 積分：${score} / 10`;
+                feedbackField.innerText = "✨ 太棒了！全答對了！ ✨";
+                feedbackField.style.color = "#00B06F";
+                document.getElementById('sound-correct').currentTime = 0;
+                document.getElementById('sound-correct').play().catch(e => {});
+            } else {
+                feedbackField.innerText = `喔不！沒全對。正確答案是：[ ${correctLabels} ]`;
+                feedbackField.style.color = "#FF5252";
+                document.getElementById('sound-wrong').currentTime = 0;
+                document.getElementById('sound-wrong').play().catch(e => {});
+            }
+
+            feedbackField.classList.remove('hidden');
+            btnNextAction.classList.remove('hidden');
+        };
+
+        // 下一題流程
+        btnNextAction.onclick = () => {
+            currentIndex++;
+            if (currentIndex < currentQuestions.length) {
+                showQuestion();
+            } else {
+                showEndScreen();
+            }
+        };
+
+        // 結算畫面
+        function showEndScreen() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            document.getElementById('final-score').innerText = `${score} / 10`;
+
+            let rank = "";
+            if (score === 10) {
+                rank = "👑 Roblox 創造神 (Builderman) 👑";
+            } else if (score >= 7) {
+                rank = "🛠️ 資深開發者 (Developer) 🛠️";
+            } else {
+                rank = "🎒 萌新小路過 (Noob) 🎒";
+            }
+            document.getElementById('roblox-rank').innerText = rank;
+        }
+
+        function restartGame() {
+            initGame();
+        }
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>

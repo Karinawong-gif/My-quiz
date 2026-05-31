@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>吉伊卡哇除草檢定挑戰</title>
+    <style>
+        :root {
+            /* 修正為您資料夾內的 .avif 格式與正確拼法 */
+            --bg-image: url('chiikawa/chiikawa wallpeaper.avif');
+            --container-bg: rgba(255, 255, 255, 0.5); /* 白色 50% 半透明 */
+            --primary-pink: #FFC0CB; /* 選項底色：粉紅色 */
+            --primary-pink-hover: #FFD1DC;
+            --powder-blue: #B0E0E6; /* 答對：粉籃色 */
+            --wrong-red: #FF8A8A; /* 答錯：紅色 */
+            --text-dark: #444444;
+            --btn-gray: #777777;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, "Microsoft JhengHei";
+        }
+
+        body {
+            /* 確保背景圖完美置中且不重複 */
+            background: var(--bg-image) no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* 題目容器：白色 50% 半透明 + 毛玻璃效果 */
+        .game-container {
+            background: var(--container-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 25px;
+            width: 100%;
+            max-width: 680px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            color: var(--text-dark);
+            position: relative;
+            min-height: 520px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .score-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14pt;
+            font-weight: bold;
+            margin-bottom: 20px;
+            border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+            padding-bottom: 12px;
+        }
+
+        .score-points {
+            color: #FF69B4; 
+        }
+
+        .question-text {
+            font-size: 16pt;
+            font-weight: bold;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+        }
+
+        .q-type-badge {
+            background-color: #90CAF9;
+            color: white;
+            font-size: 10pt;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+            z-index: 5;
+        }
+
+        /* 選項按鈕：粉紅色底 */
+        .option-btn {
+            background-color: var(--primary-pink);
+            color: #444;
+            border: none;
+            border-bottom: 5px solid #FFB2C1;
+            border-radius: 12px;
+            padding: 14px 20px;
+            font-size: 13pt;
+            font-weight: bold;
+            text-align: left;
+            cursor: pointer;
+            transition: transform 0.1s ease, background-color 0.2s ease;
+            width: 100%;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: var(--primary-pink-hover);
+            transform: translateY(-2px);
+        }
+
+        .option-btn:active:not(:disabled) {
+            transform: translateY(2px);
+            border-bottom-width: 1px;
+            margin-bottom: 4px;
+        }
+
+        /* 答對後變粉籃色 */
+        .option-btn.correct {
+            background-color: var(--powder-blue) !important;
+            border-bottom-color: #98D0D6 !important;
+        }
+
+        .option-btn.wrong {
+            background-color: var(--wrong-red) !important;
+            border-bottom-color: #E57373 !important;
+        }
+
+        .option-btn.selected {
+            background-color: #FFD180; 
+            border-bottom-color: #FFB74D;
+        }
+
+        /* 右下角小人物 */
+        .character-sprite {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            width: 110px;
+            height: 110px;
+            object-fit: contain;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.9;
+        }
+
+        .feedback-container {
+            margin-top: 10px;
+            padding: 15px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.6);
+            font-size: 13pt;
+            font-weight: bold;
+            display: none;
+            z-index: 2;
+            line-height: 1.5;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .feedback-success { color: #00897B; }
+        .feedback-fail { color: #D32F2F; }
+
+        /* 按鈕水平置中 */
+        .control-panel {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 5px;
+            z-index: 10;
+            position: relative;
+            width: 100%;
+        }
+
+        .action-btn {
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 14px 50px;
+            font-size: 14pt;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .submit-btn {
+            background-color: #4DD0E1;
+            border-bottom: 4px solid #26C6DA;
+        }
+
+        .next-btn {
+            background-color: var(--btn-gray);
+            border-bottom: 4px solid #555;
+            display: none;
+        }
+
+        .result-screen {
+            text-align: center;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .result-title {
+            font-size: 26pt;
+            color: #FF69B4;
+            margin-bottom: 25px;
+        }
+
+        .result-badge {
+            font-size: 22pt;
+            font-weight: bold;
+            color: #5C6BC0;
+            margin-top: 15px;
+            margin-bottom: 35px;
+            background: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            border: 2px solid #FFC0CB;
+        }
+
+        .restart-btn {
+            background-color: #90CAF9;
+            border-bottom: 5px solid #64B5F6;
+            border-radius: 12px;
+            padding: 14px 40px;
+            font-size: 14pt;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <div id="quizSection" style="display: block; width: 100%;">
+            <div class="score-header">
+                <span id="progressText">第 1 / 10 題</span>
+                <span class="score-points" id="scoreText">目前積分：0 / 10</span>
+            </div>
+
+            <div class="question-text">
+                <span class="q-type-badge" id="typeBadge">單選題</span><span id="questionText">載入中...</span>
+            </div>
+
+            <div class="options-container" id="optionsContainer"></div>
+
+            <div class="feedback-container" id="feedbackContainer"></div>
+
+            <div class="control-panel">
+                <button class="action-btn submit-btn" id="submitBtn" onclick="submitMultipleChoice()" style="display: none;">確認提交 ✔</button>
+                <button class="action-btn next-btn" id="nextBtn" onclick="nextQuestion()">下一題 ➔</button>
+            </div>
+            
+            <img src="chiikawa/chiikawa (2).png" alt="Character" class="character-sprite" id="charSprite">
+        </div>
+
+        <div id="resultSection" class="result-screen">
+            <div class="result-title">🍃 除草檢定挑戰結束 🍃</div>
+            <div style="font-size: 18pt; margin-bottom: 10px;">總得分：<span id="finalScoreText">0</span> / 10</div>
+            <div style="font-size: 13pt; color: #666;">恭喜獲得：</div>
+            <div class="result-badge" id="badgeText">3 級除草證</div>
+            <button class="restart-btn" onclick="restartGame()">重新挑戰 ↺</button>
+        </div>
+    </div>
+
+    <audio id="sndCorrect" preload="auto"><source src="https://actions.google.com/sounds/v1/cartoon/cartoon_wink.ogg" type="audio/ogg"></audio>
+    <audio id="sndWrong" preload="auto"><source src="https://actions.google.com/sounds/v1/cartoon/slide_whistle_down.ogg" type="audio/ogg"></audio>
+
+    <script>
+        const fullQuestionPool = [
+            { question: "以下哪個是屬於家裏的地方？", options: ["A. 客廳。", "B. 課室。", "C. 操場。", "D. 遊樂場。"], answer: 0, isMultiple: false, robloxId: 1 },
+            { question: "以下哪個是家中用來煮食的地方？", options: ["A. 客廳。", "B. 書房。", "C. 飯廳。", "D. 廚房。"], answer: 3, isMultiple: false, robloxId: 2 },
+            { question: "以下哪個是家中用來洗臉和刷牙的地方？", options: ["A. 客廳。", "B. 浴室。", "C. 廚房。", "D. 睡房。"], answer: 1, isMultiple: false, robloxId: 3 },
+            { question: "以下哪項是浴室裏的物品？", options: ["A. 鞋櫃。", "B. 馬桶。", "C. 茶几。", "D. 牀。"], answer: 1, isMultiple: false, robloxId: 4 },
+            { question: "馬桶和洗手盆應該設置在家中哪個地方？", options: ["A. 廚房。", "B. 浴室。", "C. 飯廳。", "D. 書房。"], answer: 1, isMultiple: false, robloxId: 5 },
+            { question: "以下哪種家居物品可以幫助我們冷藏食物？", options: ["A. 電視機。", "B. 雪櫃。", "C. 電腦。", "D. 書櫃。"], answer: 1, isMultiple: false, robloxId: 6 },
+            { question: "以下哪些家居物品能為我們提供資訊？（答案可多於一個。）", options: ["A. 電腦。", "B. 電視機。", "C. 冷氣機。", "D. 書桌。"], answer: [0, 1], isMultiple: true, robloxId: 7 },
+            { question: "以下哪些電器和科技產品能幫助我們保持家居清潔衞生？（答案可多於一個。）", options: ["A. 電燈。", "B. 自動吸塵洗地機。", "C. 抽濕機。", "D. 電視機。"], answer: [1, 2], isMultiple: true, robloxId: 8 },
+            { question: "以下哪種家居物品需要能源才能運作？", options: ["A. 鞋櫃。", "B. 衣櫃。", "C. 熨斗。", "D. 書桌。"], answer: 2, isMultiple: false, robloxId: 9 },
+            { question: "舒適的家居不一定需要以下哪個條件？", options: ["A. 豪華的佈置。", "B. 整潔和衞生的環境。", "C. 充足的光線。", "D. 流通的空氣。"], answer: 0, isMultiple: false, robloxId: 10 },
+            { question: "為甚麼我們要保持家居整潔和衞生？", options: ["A. 減少病菌和蚊蟲滋生。", "B. 令家居寧靜。", "C. 可以節約能源。", "D. 令空氣流通。"], answer: 0, isMultiple: false, robloxId: 1 },
+            { question: "以下哪項不是保持家居清潔的行為？", options: ["A. 整理牀鋪。", "B. 在牀上吃東西。", "C. 收拾衣物。", "D. 清理房間內的垃圾。"], answer: 1, isMultiple: false, robloxId: 2 },
+            { question: "以下哪項是注意家居安全的行為？", options: ["A. 給陌生人開門。", "B. 小心使用電器。", "C. 在家中玩火柴。", "D. 把大型的垃圾棄置在走火通道上。"], answer: 1, isMultiple: false, robloxId: 3 },
+            { question: "以下哪些行為容易造成兒童家居意外？（答案可多於一個。）", options: ["A. 在沙發上看電視。", "B. 和朋友下棋。", "C. 嘗試不同藥物的味道。", "D. 把繩索繞在頸部。"], answer: [2, 3], isMultiple: true, robloxId: 4 },
+            { question: "以下哪些行為容易導致家居意外？（答案可多於一個。）", options: ["A. 不清理浴室地面的積水。", "B. 收拾玩後的玩具。", "C. 把玩水果刀。", "D. 爬上打開了的窗户。"], answer: [0, 2, 3], isMultiple: true, robloxId: 5 },
+            { question: "小朋友可以接觸以下哪種物品？", options: ["A. 紙杯。", "B. 化學品。", "C. 水果刀。", "D. 點火用品。"], answer: 0, isMultiple: false, robloxId: 6 },
+            { question: "以下哪個是在家中使用能源的正確做法？", options: ["A. 用濕的手觸摸電器開關。", "B. 使用煤氣煮食時，保持空氣流通。", "C. 把幾個電器接駁到同一個插座。", "D. 使用損壞了的電器。"], answer: 1, isMultiple: false, robloxId: 7 },
+            { question: "使用能源和電器時，我們應該注意甚麼？", options: ["A. 用濕的手觸摸電器開關。", "B. 使用電器後關上電源。", "C. 在爐火旁邊堆放雜物。", "D. 未經成人許可，獨自在家中使用爐具。"], answer: 1, isMultiple: false, robloxId: 8 },
+            { question: "當陌生人按門鈴時，我們應該怎樣做？", options: ["A. 立即開門，並以禮相待。", "B. 不要開門，並通知家人。", "C. 請妹妹代為開門。", "D. 開門讓對方進入屋內，再告訴家人。"], answer: 1, isMultiple: false, robloxId: 9 },
+            { question: "家中有人暈倒時，我們應該怎樣做？（答案可多於一個。）", options: ["A. 保持冷靜。", "B. 立即通知成人。", "C. 躲在門後。", "D. 大聲哭泣。"], answer: [0, 1], isMultiple: true, robloxId: 10 },
+            { question: "家中發生火警時，我們應該怎樣做？", options: ["A. 大聲哭泣。", "B. 立即通知成人，並請成人致電 999 報警求助。", "C. 自行救火。", "D. 乘搭升降機逃生。"], answer: 1, isMultiple: false, robloxId: 1 },
+            { question: "祖父在家中跌傷，我們應該怎樣做？", options: ["A. 把祖父留在家中。", "B. 通知家中的成人。", "C. 自己帶祖父到診所。", "D. 大聲哭泣。"], answer: 1, isMultiple: false, robloxId: 2 },
+            { question: "以下哪些不是愛惜家居物品的做法？（答案可多於一個。）", options: ["A. 安坐在沙發上。", "B. 在飯桌上塗鴉。", "C. 用力關上衣櫃的門。", "D. 攀爬書櫃。"], answer: [1, 2, 3], isMultiple: true, robloxId: 3 },
+            { question: "我們要養成哪些保持家居整潔和衞生的生活習慣？（答案可多於一個。）", options: ["A. 如廁後立即沖水。", "B.隨處亂放衣服。", "C. 玩完玩具後，把玩具放回玩具箱。", "D. 隨處亂放垃圾。"], answer: [0, 2], isMultiple: true, robloxId: 4 },
+            { question: "以下哪些是節約能源的表現？（答案可多於一個。）", options: ["A. 關掉不使用的電燈。", "B. 開冷氣機時打開窗户。", "C. 洗手後關掉水龍頭。", "D. 睡覺時開着電視機。"], answer: [0, 2], isMultiple: true, robloxId: 5 },
+            { question: "我們不應該把玩或接觸以下哪些物品，以免發生意外？（答案可多於一個。）", options: ["A. 橡皮擦。", "B. 利器。", "C. 打火機。", "D. 化學品。"], answer: [1, 2, 3], isMultiple: true, robloxId: 6 },
+            { question: "以下哪些是注意家居安全的表現？（答案可多於一個。）", options: ["A. 隨意把玩利器。", "B. 遠離化學品。", "C. 不開門給陌生人。", "D. 用濕的手觸摸電器開關。"], answer: [1, 2], isMultiple: true, robloxId: 7 }
+        ];
+
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedAnswers = [];
+
+        function initGame() {
+            const shuffled = [...fullQuestionPool].sort(() => 0.5 - Math.random());
+            currentQuestions = shuffled.slice(0, 10);
+            currentQuestionIndex = 0;
+            score = 0;
+            
+            document.getElementById("quizSection").style.display = "block";
+            document.getElementById("resultSection").style.display = "none";
+            showQuestion();
+        }
+
+        function showQuestion() {
+            selectedAnswers = [];
+            document.getElementById("feedbackContainer").style.display = "none";
+            document.getElementById("nextBtn").style.display = "none";
+            document.getElementById("submitBtn").style.display = "none";
+
+            const qData = currentQuestions[currentQuestionIndex];
+            
+            document.getElementById("progressText").innerText = `第 ${currentQuestionIndex + 1} / 10 題`;
+            document.getElementById("scoreText").innerText = `目前積分：${score} / 10`;
+            document.getElementById("questionText").innerText = qData.question;
+            
+            const typeBadge = document.getElementById("typeBadge");
+            if(qData.isMultiple) {
+                typeBadge.innerText = "複選題";
+                typeBadge.style.backgroundColor = "#F06292";
+                document.getElementById("submitBtn").style.display = "block";
+            } else {
+                typeBadge.innerText = "單選題";
+                typeBadge.style.backgroundColor = "#90CAF9";
+            }
+
+            const imgIndex = qData.robloxId || 2;
+            document.getElementById("charSprite").src = `chiikawa/chiikawa (${imgIndex}).png`;
+
+            const container = document.getElementById("optionsContainer");
+            container.innerHTML = "";
+
+            qData.options.forEach((option, index) => {
+                const btn = document.createElement("button");
+                btn.className = "option-btn";
+                btn.innerText = option;
+                btn.onclick = () => selectOption(index, btn);
+                container.appendChild(btn);
+            });
+        }
+
+        function selectOption(index, btnElement) {
+            const qData = currentQuestions[currentQuestionIndex];
+            
+            if (!qData.isMultiple) {
+                checkSingleAnswer(index);
+            } else {
+                if (selectedAnswers.includes(index)) {
+                    selectedAnswers = selectedAnswers.filter(i => i !== index);
+                    btnElement.classList.remove("selected");
+                } else {
+                    selectedAnswers.push(index);
+                    btnElement.classList.add("selected");
+                }
+            }
+        }
+
+        function checkSingleAnswer(selectedIndex) {
+            const qData = currentQuestions[currentQuestionIndex];
+            const buttons = document.querySelectorAll(".options-container .option-btn");
+            buttons.forEach(btn => btn.disabled = true);
+
+            const feedback = document.getElementById("feedbackContainer");
+            feedback.style.display = "block";
+
+            if (selectedIndex === qData.answer) {
+                score++;
+                buttons[selectedIndex].classList.add("correct");
+                feedback.className = "feedback-container feedback-success";
+                feedback.innerHTML = "太棒了！答對了！✨";
+                playAudio("sndCorrect");
+            } else {
+                buttons[selectedIndex].classList.add("wrong");
+                buttons[qData.answer].classList.add("correct");
+                feedback.className = "feedback-container feedback-fail";
+                feedback.innerHTML = `喔不！答錯了，正確答案是：<br><span style="color:#E91E63;">${qData.options[qData.answer]}</span>`;
+                playAudio("sndWrong");
+            }
+            document.getElementById("scoreText").innerText = `目前積分：${score} / 10`;
+            document.getElementById("nextBtn").style.display = "block";
+        }
+
+        function submitMultipleChoice() {
+            const qData = currentQuestions[currentQuestionIndex];
+            const buttons = document.querySelectorAll(".options-container .option-btn");
+            
+            if(selectedAnswers.length === 0) {
+                alert("請至少選擇一個選項再提交！");
+                return;
+            }
+
+            document.getElementById("submitBtn").style.display = "none";
+            buttons.forEach(btn => btn.disabled = true);
+
+            selectedAnswers.sort((a, b) => a - b);
+            const correctAnswers = [...qData.answer].sort((a, b) => a - b);
+            const isCorrect = JSON.stringify(selectedAnswers) === JSON.stringify(correctAnswers);
+
+            buttons.forEach((btn, idx) => {
+                btn.classList.remove("selected");
+                if (correctAnswers.includes(idx)) {
+                    btn.classList.add("correct");
+                } else if (selectedAnswers.includes(idx)) {
+                    btn.classList.add("wrong");
+                }
+            });
+
+            const feedback = document.getElementById("feedbackContainer");
+            feedback.style.display = "block";
+
+            const correctTexts = correctAnswers.map(idx => qData.options[idx]).join("<br>");
+
+            if (isCorrect) {
+                score++;
+                feedback.className = "feedback-container feedback-success";
+                feedback.innerHTML = "太棒了！答對了！✨";
+                playAudio("sndCorrect");
+            } else {
+                feedback.className = "feedback-container feedback-fail";
+                feedback.innerHTML = `喔不！答錯了，正確答案是：<br><span style="color:#E91E63; font-size:12pt;">${correctTexts}</span>`;
+                playAudio("sndWrong");
+            }
+
+            document.getElementById("scoreText").innerText = `目前積分：${score} / 10`;
+            document.getElementById("nextBtn").style.display = "block";
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < 10) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById("quizSection").style.display = "none";
+            document.getElementById("resultSection").style.display = "flex";
+            document.getElementById("finalScoreText").innerText = score;
+
+            let badge = "";
+            if (score === 10) {
+                badge = "超級打工者資格證";
+            } else if (score >= 7) {
+                badge = "擁有 5 級除草證";
+            } else {
+                badge = "擁有 3 級除草證";
+            }
+            
+            document.getElementById("badgeText").innerText = badge;
+        }
+
+        function restartGame() { initGame(); }
+
+        function playAudio(id) {
+            const audio = document.getElementById(id);
+            if (audio) {
+                audio.currentTime = 0;
+                audio.play().catch(e => console.log("音效播不出:", e));
+            }
+        }
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>
