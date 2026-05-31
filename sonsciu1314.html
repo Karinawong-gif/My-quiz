@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zootopia General Knowledge Challenge!</title>
+    <style>
+        :root {
+            --primary-color: #2c3e6b; /* Police Blue */
+            --secondary-color: #e67e22; /* Carrot Orange */
+            --success-color: #2ec4b6; /* Correct: Grass Green */
+            --danger-color: #e74c3c; /* Incorrect: Warning Red */
+            --bg-glass: rgba(255, 255, 255, 0.88); /* Semi-transparent frosted glass style */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: url('zootopia/zootopia wallpaper.jpg') no-repeat center center fixed;
+            background-size: cover;
+            padding: 20px;
+        }
+
+        .quiz-container {
+            background: var(--bg-glass);
+            width: 100%;
+            max-width: 680px;
+            border-radius: 24px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+            padding: 30px;
+            position: relative;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 4px solid var(--primary-color);
+            min-height: 550px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px dashed #bdc3c7;
+        }
+
+        .quiz-info {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--primary-color);
+            background: #edf2f7;
+            padding: 6px 14px;
+            border-radius: 12px;
+        }
+
+        .score-info {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--secondary-color);
+            background: #fef3c7;
+            padding: 6px 14px;
+            border-radius: 12px;
+        }
+
+        .question-box {
+            margin-bottom: 25px;
+        }
+
+        .q-type {
+            display: inline-block;
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            color: white;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+        .q-type.single { background-color: #3498db; }
+        .q-type.multi { background-color: #9b59b6; }
+
+        .question-text {
+            font-size: 20px;
+            color: #2c3e50;
+            font-weight: bold;
+            line-height: 1.6;
+        }
+
+        .options-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+            z-index: 5;
+        }
+
+        .option-item {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-bottom: 5px solid #cbd5e1;
+            border-radius: 14px;
+            padding: 14px 20px;
+            font-size: 17px;
+            font-weight: bold;
+            color: #4a5568;
+            cursor: pointer;
+            transition: transform 0.1s ease, background-color 0.2s ease;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .option-item:hover {
+            border-color: var(--primary-color);
+            background: #f7fafc;
+        }
+
+        .option-item.selected {
+            background: #fff3e0;
+            border-color: var(--secondary-color);
+            color: #d35400;
+        }
+
+        .option-item.correct-ans {
+            background: #e6fffa !important;
+            border-color: var(--success-color) !important;
+            border-bottom-color: #17a2b8 !important;
+            color: #234e52 !important;
+        }
+
+        .option-item.wrong-ans {
+            background: #fff5f5 !important;
+            border-color: var(--danger-color) !important;
+            border-bottom-color: #c0392b !important;
+            color: #742a2a !important;
+        }
+
+        .feedback-panel {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 14px;
+            display: none;
+            font-size: 16px;
+            font-weight: bold;
+            line-height: 1.6;
+            text-align: center;
+        }
+        .feedback-panel.correct {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 2px solid var(--success-color);
+        }
+        .feedback-panel.wrong {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 2px solid var(--danger-color);
+        }
+
+        .footer-action {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .btn-submit, .btn-next {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-bottom: 4px solid #1a2544;
+            padding: 12px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: all 0.1s;
+        }
+
+        .btn-submit:active, .btn-next:active {
+            transform: translateY(2px);
+            border-bottom-width: 1px;
+        }
+
+        .btn-submit:disabled {
+            background: #cbd5e1;
+            border-bottom-color: #94a3b8;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .avatar-deco {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            pointer-events: none;
+        }
+
+        .result-screen {
+            text-align: center;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .result-screen h2 {
+            font-size: 28px;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+        .result-score {
+            font-size: 44px;
+            color: var(--secondary-color);
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .result-img {
+            width: 140px;
+            height: 140px;
+            object-fit: contain;
+            margin-bottom: 20px;
+        }
+        .btn-restart {
+            background: var(--secondary-color);
+            border-bottom: 4px solid #d35400;
+            color: white;
+            border: none;
+            padding: 12px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 14px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container">
+        <div id="quiz-screen" style="width: 100%;">
+            <div class="quiz-header">
+                <div class="quiz-info" id="progress-text">Question 1 / --</div>
+                <div class="score-info" id="score-text">Zootopia Score: 0 / --</div>
+            </div>
+
+            <div class="question-box">
+                <div id="question-type" class="q-type single">Single Choice</div>
+                <div class="question-text" id="question-text">Loading question...</div>
+            </div>
+
+            <ul class="options-list" id="options-container"></ul>
+
+            <div class="feedback-panel" id="feedback-panel"></div>
+
+            <div class="footer-action">
+                <div>
+                    <button class="btn-submit" id="action-btn" onclick="handleSubmit()">Submit Answer</button>
+                </div>
+                <img src="zootopia/zootopia (1).png" class="avatar-deco" id="avatar-deco" alt="Zootopia" onerror="handleImgError(this)">
+            </div>
+        </div>
+
+        <div class="result-screen" id="result-screen">
+            <h2>🎉 Challenge Completed!</h2>
+            <img src="zootopia/zootopia (4).png" class="result-img" id="result-img" alt="Result" onerror="handleImgError(this)">
+            <div class="result-score" id="final-score">0 / 0 Points</div>
+            <p id="result-comment" style="font-size: 18px; margin-bottom: 25px; font-weight: bold; color: #4a5568;"></p>
+            <button class="btn-restart" onclick="restartQuiz()">Try Again ↺</button>
+        </div>
+    </div>
+
+    <script>
+        // Updated with your 23 questions about metals, heat/electricity conductors, physical/chemical changes
+        const allQuizData = [
+            { id: "SE4b_u7_01k_002_1", text: "Which of these is a property of most metals?", type: "single", options: ["A. fragile", "B. dull", "C. hard", "D. do not conduct heat"], answer: ["C"] },
+            { id: "SE4b_u7_01k_003_1", text: "Which of these are not the properties of most metals? (There can be more than one answer.)", type: "multi", options: ["A. fragile", "B. opaque", "C. black", "D. shiny and can reflect light"], answer: ["A", "C"] },
+            { id: "SE4b_u7_01k_004_1", text: "Which of these objects can conduct electricity?", type: "single", options: ["A. wooden stick", "B. plastic ruler", "C. copper wire", "D. paper"], answer: ["C"] },
+            { id: "SE4b_u7_01k_005_1", text: "Which of these objects are not electrical conductors? (There can be more than one answer.)", type: "multi", options: ["A. nail", "B. eraser", "C. staple", "D. plastic ruler"], answer: ["B", "D"] },
+            { id: "SE4b_u7_01k_006_2", text: "Which of these descriptions are not correct? (There can be more than one answer.)", type: "multi", options: ["A. Metals can conduct electricity.", "B. Most non-metals cannot conduct electricity.", "C. Most metals are insulators.", "D. Metals are not electrical conductors."], answer: ["C", "D"] },
+            { id: "SE4b_u7_01k_007_2", text: "Which of these descriptions is not correct?", type: "single", options: ["A. The outer jacket of a cable is made of plastic.", "B. Cables are made of different materials.", "C. The inner wires of a cable are made of metal.", "D. The outer jacket of cables is blue."], answer: ["D"] },
+            { id: "SE4b_u7_01k_008_1", text: "Which material is suitable for making the outer jacket of a cable?", type: "single", options: ["A. copper", "B. plastic", "C. iron", "D. aluminium"], answer: ["B"] },
+            { id: "SE4b_u7_01k_009_1", text: "Which of these products should be made of metal? (There can be more than one answer.)", type: "multi", options: ["A. the pins of a plug", "B. the case of a plug", "C. the inner wires of a cable", "D. the outer jacket of a cable"], answer: ["A", "C"] },
+            { id: "SE4b_u7_01k_010_2", text: "Why can the inner wires of cables not be made of plastic? (There can be more than one answer.)", type: "multi", options: ["A. Because plastic is a poor thermal conductor.", "B. Because plastic cannot conduct electricity.", "C. Because plastic is an insulator.", "D. Because plastic is not a good conductor of heat."], answer: ["B", "C"] },
+            { id: "SE4b_u7_01k_011_2", text: "Why are the outer jackets of cables and the cases of plugs made of plastic?", type: "single", options: ["A. Because they can prevent electric shock.", "B. Because plastic is a good insulator.", "C. Because plastic can conduct heat well.", "D. Because plastic is an electrical conductor."], answer: ["A"] },
+            { id: "SE4b_u7_01k_012_1", text: "Which of the following materials is a good thermal conductor?", type: "single", options: ["A. copper", "B. wood", "C. cloth", "D. plastic"], answer: ["A"] },
+            { id: "SE4b_u7_01k_013_1", text: "Which of these materials are poor thermal conductors? (There can be more than one answer.)", type: "multi", options: ["A. wood", "B. cloth", "C. copper", "D. plastic"], answer: ["A", "B", "D"] },
+            { id: "SE4b_u7_01k_014_1", text: "Which of these materials are suitable for making heat insulators? (There can be more than one answer.)", type: "multi", options: ["A. wood", "B. cloth", "C. plastic", "D. metal"], answer: ["A", "B", "C"] },
+            { id: "SE4b_u7_01k_015_1", text: "Why are cooking pots made of metal?", type: "single", options: ["A. Because metal is shiny.", "B. Because metal is a poor thermal conductor.", "C. Because metal is opaque.", "D. Because metal is a good thermal conductor."], answer: ["D"] },
+            { id: "SE4b_u7_01k_016_2", text: "Why do some water bottles have a plastic cup sleeve outside?", type: "single", options: ["A. Because plastic is a good thermal conductor.", "B. Because plastic is a poor thermal conductor.", "C. Because plastic can conduct heat effectively.", "D. Because plastic can conduct electricity."], answer: ["B"] },
+            { id: "SE4b_u7_01k_017_1", text: "Which of these objects are made of materials that insulate heat? (There can be more than one answer.)", type: "multi", options: ["A. wooden spatula", "B. plastic mat", "C. metal pot", "D. cloth gloves"], answer: ["A", "B", "D"] },
+            { id: "SE4b_u7_01k_018_1", text: "Which of these changes in the objects do not produce new matter? (There can be more than one answer.)", type: "multi", options: ["A. stretching a rubber band", "B. squeezing modelling clay", "C. paper burning", "D. iron nail rusting"], answer: ["A", "B"] },
+            { id: "SE4b_u7_01k_021_1", text: "Which of these changes produces new matter?", type: "single", options: ["A. modelling clay is squeezed", "B. paper burns", "C. glass is broken", "D. ice melts"], answer: ["B"] },
+            { id: "SE4b_u7_01k_022_1", text: "Which of these changes is a physical change?", type: "single", options: ["A. iron nail rusts", "B. paper burns", "C. ice cube melts", "D. dead leaves decay"], answer: ["C"] },
+            { id: "SE4b_u7_01k_024_1", text: "Which of these changes is a chemical change?", type: "single", options: ["A. candle melts", "B. candle burns", "C. paper is folded", "D. water freezes"], answer: ["B"] },
+            { id: "SE4b_u7_01k_025_1", text: "What happens to an iron nail when it rusts?", type: "single", options: ["A. It becomes more easily attracted to a magnet.", "B. The surface becomes smoother.", "C. A new brown matter forms around it.", "D. It becomes shinier."], answer: ["C"] },
+            { id: "SE4b_u7_01k_026_1", text: "When a candle is burning, what change happens at the bottom of the flame?", type: "single", options: ["A. physical change", "B. chemical change", "C. physical and chemical changes", "D. no change"], answer: ["C"] },
+            { id: "SE4b_u7_01k_027_1", text: "Which of these changes is a physical change?", type: "single", options: ["A. burning coal", "B. burning oil", "C. raining", "D. composting food waste"], answer: ["C"] }
+        ];
+
+        let quizData = []; 
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedAnswers = [];
+        let isSubmitted = false;
+
+        function handleImgError(img) {
+            if (img.src.endsWith(".png")) {
+                img.src = img.src.replace(".png", ".webp");
+            } else if (img.src.endsWith(".webp")) {
+                img.src = img.src.replace(".webp", ".jpg");
+            }
+        }
+
+        // Shuffles and takes ALL questions from the list instead of just slicing 10
+        function initRandomQuestions() {
+            let shuffled = [...allQuizData];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            quizData = shuffled; // Load all questions
+            quizData.forEach(q => {
+                q.options.sort();
+            });
+        }
+
+        function loadQuestion() {
+            isSubmitted = false;
+            selectedAnswers = [];
+            
+            const currentQuestion = quizData[currentQuestionIndex];
+            
+            document.getElementById("progress-text").innerText = `Question ${currentQuestionIndex + 1} / ${quizData.length}`;
+            document.getElementById("score-text").innerText = `Zootopia Points: ${score} / ${quizData.length}`;
+            
+            const randomAvatarNum = Math.floor(Math.random() * 10) + 1;
+            document.getElementById("avatar-deco").src = `zootopia/zootopia (${randomAvatarNum}).png`;
+
+            const typeLabel = document.getElementById("question-type");
+            if(currentQuestion.type === "multi") {
+                typeLabel.innerText = "Multiple Choice (More than one answer)";
+                typeLabel.className = "q-type multi";
+            } else {
+                typeLabel.innerText = "Single Choice";
+                typeLabel.className = "q-type single";
+            }
+
+            document.getElementById("question-text").innerText = currentQuestion.text;
+
+            const container = document.getElementById("options-container");
+            container.innerHTML = "";
+            
+            currentQuestion.options.forEach(option => {
+                const li = document.createElement("li");
+                li.className = "option-item";
+                li.innerText = option;
+                const optionLetter = option.charAt(0); 
+                li.onclick = () => selectOption(li, optionLetter);
+                container.appendChild(li);
+            });
+
+            const feedback = document.getElementById("feedback-panel");
+            feedback.style.display = "none";
+            
+            const actionBtn = document.getElementById("action-btn");
+            actionBtn.innerText = "Submit Answer";
+            actionBtn.onclick = handleSubmit;
+            actionBtn.disabled = true;
+        }
+
+        function selectOption(element, letter) {
+            if (isSubmitted) return;
+
+            const currentQuestion = quizData[currentQuestionIndex];
+
+            if (currentQuestion.type === "multi") {
+                if (selectedAnswers.includes(letter)) {
+                    selectedAnswers = selectedAnswers.filter(ans => ans !== letter);
+                    element.classList.remove("selected");
+                } else {
+                    selectedAnswers.push(letter);
+                    element.classList.add("selected");
+                }
+            } else {
+                selectedAnswers = [letter];
+                const items = document.querySelectorAll(".option-item");
+                items.forEach(item => item.classList.remove("selected"));
+                element.classList.add("selected");
+            }
+
+            document.getElementById("action-btn").disabled = selectedAnswers.length === 0;
+        }
+
+        function handleSubmit() {
+            if (isSubmitted) return;
+            isSubmitted = true;
+
+            const currentQuestion = quizData[currentQuestionIndex];
+            const items = document.querySelectorAll(".option-item");
+            
+            selectedAnswers.sort();
+            const correctAnswers = [...currentQuestion.answer].sort();
+            const isCorrect = JSON.stringify(selectedAnswers) === JSON.stringify(correctAnswers);
+
+            if (isCorrect) {
+                score++;
+                showFeedback(true, `🎯 Correct! Brilliant job! You gained 1 Zootopia point!`);
+            } else {
+                showFeedback(false, `❌ Oops! That's incorrect. The correct answer is: ${currentQuestion.answer.join(', ')}`);
+            }
+
+            items.forEach(item => {
+                const letter = item.innerText.charAt(0);
+                if (correctAnswers.includes(letter)) {
+                    item.classList.add("correct-ans");
+                } else if (selectedAnswers.includes(letter)) {
+                    item.classList.add("wrong-ans");
+                }
+                item.classList.remove("selected");
+            });
+
+            const actionBtn = document.getElementById("action-btn");
+            if (currentQuestionIndex < quizData.length - 1) {
+                actionBtn.innerText = "Next Question ➔";
+                actionBtn.onclick = nextQuestion;
+            } else {
+                actionBtn.innerText = "View Final Results ➔";
+                actionBtn.onclick = showResults;
+            }
+            actionBtn.disabled = false;
+        }
+
+        function showFeedback(isCorrect, text) {
+            const feedback = document.getElementById("feedback-panel");
+            feedback.innerText = text;
+            feedback.style.display = "block";
+            feedback.className = isCorrect ? "feedback-panel correct" : "feedback-panel wrong";
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        function showResults() {
+            document.getElementById("quiz-screen").style.display = "none";
+            document.getElementById("result-screen").style.display = "flex";
+            
+            document.getElementById("final-score").innerText = `${score} / ${quizData.length} Points`;
+            
+            const comment = document.getElementById("result-comment");
+            const resultImg = document.getElementById("result-img");
+            const percentage = (score / quizData.length) * 100;
+
+            if (percentage === 100) {
+                comment.innerText = "🎖️ Perfect Score! You are the most outstanding star officer in Zootopia, just like Judy Hopps!";
+                resultImg.src = "zootopia/zootopia (4).png"; 
+            } else if (percentage >= 80) {
+                comment.innerText = "🦊 Fantastic! You have a sharp and brilliant mind just like Nick Wilde!";
+                resultImg.src = "zootopia/zootopia (3).png";
+            } else if (percentage >= 50) {
+                comment.innerText = "🐢 Good job! Keep it up and you will soon match the speed of Flash!";
+                resultImg.src = "zootopia/zootopia (1).png";
+            } else {
+                comment.innerText = "🔍 Review the science principles a bit more, and you will solve all the mysteries next time!";
+                resultImg.src = "zootopia/zootopia (9).png";
+            }
+        }
+
+        function restartQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            document.getElementById("quiz-screen").style.display = "block";
+            document.getElementById("result-screen").style.display = "none";
+            initRandomQuestions();
+            loadQuestion();
+        }
+
+        window.onload = function() {
+            initRandomQuestions();
+            loadQuestion();
+        };
+    </script>
+</body>
+</html>
