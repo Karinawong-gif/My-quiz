@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inside Out 腦筋急轉彎急救與安全知識挑戰</title>
+    <style>
+        :root {
+            /* 背景圖片路徑 */
+            --bg-image: url('inside out/insideout wallpaper.jpg');
+            --container-bg: rgba(255, 255, 255, 0.55);
+            --primary-pink: #FFC0CB;
+            --primary-pink-hover: #FFD1DC;
+            --powder-blue: #B0E0E6;
+            --wrong-red: #FF8A8A;
+            --text-dark: #444444;
+            --btn-gray: #777777;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, "Microsoft JhengHei";
+        }
+
+        body {
+            background: var(--bg-image) no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: var(--container-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 25px;
+            width: 100%;
+            max-width: 680px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            color: var(--text-dark);
+            position: relative;
+            min-height: 520px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .score-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14pt;
+            font-weight: bold;
+            margin-bottom: 20px;
+            border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+            padding-bottom: 12px;
+        }
+
+        .score-points {
+            color: #E91E63; 
+        }
+
+        .question-text {
+            font-size: 16pt;
+            font-weight: bold;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+        }
+
+        .q-type-badge {
+            background-color: #90CAF9;
+            color: white;
+            font-size: 10pt;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+            z-index: 5;
+        }
+
+        .option-btn {
+            background-color: var(--primary-pink);
+            color: #444;
+            border: none;
+            border-bottom: 5px solid #FFB2C1;
+            border-radius: 12px;
+            padding: 14px 20px;
+            font-size: 13pt;
+            font-weight: bold;
+            text-align: left;
+            cursor: pointer;
+            transition: transform 0.1s ease, background-color 0.2s ease;
+            width: 100%;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: var(--primary-pink-hover);
+            transform: translateY(-2px);
+        }
+
+        .option-btn:active:not(:disabled) {
+            transform: translateY(2px);
+            border-bottom-width: 1px;
+            margin-bottom: 4px;
+        }
+
+        .option-btn.correct {
+            background-color: var(--powder-blue) !important;
+            border-bottom-color: #98D0D6 !important;
+        }
+
+        .option-btn.wrong {
+            background-color: var(--wrong-red) !important;
+            border-bottom-color: #E57373 !important;
+        }
+
+        .option-btn.selected {
+            background-color: #FFD180; 
+            border-bottom-color: #FFB74D;
+        }
+
+        /* 右下角 Inside Out 角色圖片樣式 */
+        .character-sprite {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            width: 130px;
+            height: 130px;
+            object-fit: contain;
+            pointer-events: none;
+            z-index: 2;
+            opacity: 0.98;
+        }
+
+        .feedback-container {
+            margin-top: 10px;
+            padding: 15px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.7);
+            font-size: 13pt;
+            font-weight: bold;
+            display: none;
+            z-index: 3;
+            line-height: 1.5;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .feedback-success { color: #00897B; }
+        .feedback-fail { color: #D32F2F; }
+
+        .control-panel {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 5px;
+            z-index: 10;
+            position: relative;
+            width: 100%;
+        }
+
+        .action-btn {
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 14px 50px;
+            font-size: 14pt;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .submit-btn {
+            background-color: #4DD0E1;
+            border-bottom: 4px solid #26C6DA;
+        }
+
+        .next-btn {
+            background-color: var(--btn-gray);
+            border-bottom: 4px solid #555;
+            display: none;
+        }
+
+        .result-screen {
+            text-align: center;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .result-title {
+            font-size: 26pt;
+            color: #E91E63;
+            margin-bottom: 25px;
+        }
+
+        .result-badge {
+            font-size: 22pt;
+            font-weight: bold;
+            color: #3F51B5;
+            margin-top: 15px;
+            margin-bottom: 35px;
+            background: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            border: 2px solid #FFC0CB;
+        }
+
+        .restart-btn {
+            background-color: #90CAF9;
+            border-bottom: 5px solid #64B5F6;
+            border-radius: 12px;
+            padding: 14px 40px;
+            font-size: 14pt;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <div id="quizSection" style="display: block; width: 100%;">
+            <div class="score-header">
+                <span id="progressText">第 1 / 10 題</span>
+                <span class="score-points" id="scoreText">目前積分：0 / 10</span>
+            </div>
+
+            <div class="question-text">
+                <span class="q-type-badge" id="typeBadge">單選題</span><span id="questionText">載入中...</span>
+            </div>
+
+            <div class="options-container" id="optionsContainer"></div>
+
+            <div class="feedback-container" id="feedbackContainer"></div>
+
+            <div class="control-panel">
+                <button class="action-btn submit-btn" id="submitBtn" onclick="submitMultipleChoice()" style="display: none;">確認提交 ✔</button>
+                <button class="action-btn next-btn" id="nextBtn" onclick="nextQuestion()">下一題 ➔</button>
+            </div>
+            
+            <!-- 右下角角色圖片 -->
+            <img src="" alt="Inside Out Character" class="character-sprite" id="charSprite" onerror="handleImageError(this)">
+        </div>
+
+        <div id="resultSection" class="result-screen">
+            <div class="result-title">🧠 Inside Out 挑戰結束 🧠</div>
+            <div style="font-size: 18pt; margin-bottom: 10px;">總得分：<span id="finalScoreText">0</span> / 10</div>
+            <div style="font-size: 13pt; color: #666;">獲得情緒稱號：</div>
+            <div class="result-badge" id="badgeText">情緒小助手</div>
+            <button class="restart-btn" onclick="restartGame()">重新挑戰 ↺</button>
+        </div>
+    </div>
+
+    <audio id="sndCorrect" preload="auto"><source src="https://actions.google.com/sounds/v1/cartoon/cartoon_wink.ogg" type="audio/ogg"></audio>
+    <audio id="sndWrong" preload="auto"><source src="https://actions.google.com/sounds/v1/cartoon/slide_whistle_down.ogg" type="audio/ogg"></audio>
+
+    <script>
+        const TOTAL_QUESTIONS_PER_GAME = 10; // 每次隨機 10 題
+
+        const fullQuestionPool = [
+            { question: "如果不慎輕微燙傷或燒傷，以下哪項是初步治理的第一步？", options: ["A. 用手大力按摩受傷部位。", "B. 冷敷受傷部位。", "C. 在受傷部位塗牙膏。", "D. 用清水沖洗受傷部位。"], answer: 3, isMultiple: false, charId: 1 },
+            { question: "輕微燙傷或燒傷後，首先應該怎樣處理受傷部位？", options: ["A. 用清水沖洗受傷部位10分鐘以上，或直至減輕痛楚。", "B. 用手大力按摩受傷部位。", "C. 馬上用熱毛巾敷在受傷部位。", "D. 立即吃止痛藥。"], answer: 0, isMultiple: false, charId: 2 },
+            { question: "以下哪項不是處理輕微燙傷或燒傷的正確方法？", options: ["A. 用清水沖洗受傷部位。", "B. 用消毒敷料遮蓋受傷部位。", "C. 用手大力按摩受傷部位。", "D. 每天檢查傷口有沒有惡化。"], answer: 2, isMultiple: false, charId: 3 },
+            { question: "如果輕微燙傷或燒傷，應該怎樣初步處理受傷部位，接着才用消毒敷料遮蓋受傷部位？", options: ["A. 熱敷。", "B. 塗牙膏。", "C. 貼上消毒膠布。", "D. 用清水沖洗。"], answer: 3, isMultiple: false, charId: 4 },
+            { question: "如果流鼻血，首先應該怎樣做？", options: ["A. 保持站立，頭部向後傾。", "B. 坐下，身體微向前傾。", "C. 躺下，身體微向後傾。", "D. 坐下，身體微向後傾。"], answer: 1, isMultiple: false, charId: 5 },
+            { question: "處理流鼻血時，以下哪項做法不正確？", options: ["A. 頭微俯，身體微向前傾。", "B. 頭微仰，身體微向後傾。", "C. 保持冷靜，坐下。", "D. 用手指輕輕捏住鼻骨下柔軟的部分。"], answer: 1, isMultiple: false, charId: 6 },
+            { question: "流鼻血時，應該怎樣做？（答案可多於一個。）", options: ["A. 用口呼吸。", "B. 捏住鼻骨下柔軟的部分。", "C. 躺下，抬高腿部。", "D. 頭微俯，身體微向後傾。"], answer: [0, 1], isMultiple: true, charId: 7 },
+            { question: "流鼻血時，用手捏住鼻骨下柔軟的部分後，另一隻手應該怎樣做？", options: ["A. 打開窗户。", "B. 解鬆緊束衣物。", "C. 報警求助。", "D. 貼上消毒膠布。"], answer: 1, isMultiple: false, charId: 8 },
+            { question: "如果割傷了手指，傷勢輕微，應該怎樣處理傷口？（答案可多於一個。）", options: ["A. 用熱水洗傷口後，貼上消毒膠布。", "B. 用清水洗傷口後，貼上消毒膠布。", "C. 用消毒藥水清洗傷口後，貼上消毒膠布。", "D. 用消毒藥水清洗傷口後，讓傷口暴露在空氣中。"], answer: [1, 2], isMultiple: true, charId: 9 },
+            { question: "如果扭傷，我們應該先把受傷部位托起來，然後怎樣做？", options: ["A. 在受傷部位塗醬油。", "B. 用消毒藥水清洗受傷部位。", "C. 冷敷受傷部位。", "D. 熱敷受傷部位。"], answer: 2, isMultiple: false, charId: 10 },
+            { question: "以下哪些受傷情況要立即進行冷敷？（答案可多於一個。）", options: ["A. 擦傷。", "B. 扭傷。", "C. 流鼻血。", "D. 撞傷後，受傷部位有紅、腫、痛、熱的徵狀。"], answer: [1, 3], isMultiple: true, charId: 1 },
+            { question: "運動時意外扭傷，以下哪項做法不正確？", options: ["A. 冷敷受傷部位。", "B. 用力按摩受傷部位。", "C. 把受傷部位托起來。", "D. 停止運動，坐下休息。"], answer: 1, isMultiple: false, charId: 2 },
+            { question: "擦傷後，應該怎樣進行急救？（答案可多於一個。）", options: ["A. 用消毒藥水清洗傷口。", "B. 貼上消毒膠布。", "C. 用手直接觸摸傷口檢查有沒有流血。", "D. 用清水洗傷口。"], answer: [0, 1, 3], isMultiple: true, charId: 3 },
+            { question: "如果膝蓋擦傷，我們應該怎樣做？", options: ["A. 用清水或消毒藥水清洗傷口。", "B. 把受傷部位托起來，然後冰敷。", "C. 用手觸摸傷口，檢查有沒有流血。", "D. 用手大力按摩受傷部位。"], answer: 0, isMultiple: false, charId: 4 },
+            { question: "以下哪些提起重物的方法是正確的？（答案可多於一個。）", options: ["A. 彎腰拱背，用手伸向重物。", "B. 蹲下，腰背挺直，保持身體平衡。", "C. 雙手提起重物。", "D. 用腿力提起重物，重物儘量貼近身體，慢慢站起。"], answer: [1, 3], isMultiple: true, charId: 5 },
+            { question: "以下哪項是正確使用扶手電梯的方法？", options: ["A. 在扶手電梯上嬉戲。", "B. 把身體伸出扶手外。", "C. 使用扶手電梯時緊握扶手。", "D. 在扶手電梯使用手推車或嬰兒車。"], answer: 2, isMultiple: false, charId: 6 },
+            { question: "以下哪項是正確使用扶手電梯的行為？", options: ["A. 緊握扶手，在梯級的黃線內站好。", "B. 在扶手電梯上追逐打鬧。", "C. 只顧玩手機，不握扶手。", "D. 把頭和手伸出扶手電梯外。"], answer: 0, isMultiple: false, charId: 7 },
+            { question: "使用升降機時，以下哪些行為可能導致意外發生？（答案可多於一個。）", options: ["A. 不阻礙升降機門關閉。", "B. 在升降機內站好，不打鬧。", "C. 強行打開升降機門。", "D. 在升降機內玩耍或跳躍。"], answer: [2, 3], isMultiple: true, charId: 8 },
+            { question: "以下哪項是正確使用升降機的方法？", options: ["A. 使升降機超重。", "B. 胡亂按按鈕。", "C. 升降機門快將關閉時用手阻止。", "D. 只在緊急情況下才使用緊急按鈕。"], answer: 3, isMultiple: false, charId: 9 }
+        ];
+
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedAnswers = [];
+
+        function initGame() {
+            // 洗牌並隨機抽取 10 題
+            const shuffled = [...fullQuestionPool].sort(() => 0.5 - Math.random());
+            currentQuestions = shuffled.slice(0, TOTAL_QUESTIONS_PER_GAME);
+            currentQuestionIndex = 0;
+            score = 0;
+            
+            document.getElementById("quizSection").style.display = "block";
+            document.getElementById("resultSection").style.display = "none";
+            showQuestion();
+        }
+
+        function showQuestion() {
+            selectedAnswers = [];
+            document.getElementById("feedbackContainer").style.display = "none";
+            document.getElementById("nextBtn").style.display = "none";
+            document.getElementById("submitBtn").style.display = "none";
+
+            const qData = currentQuestions[currentQuestionIndex];
+            
+            document.getElementById("progressText").innerText = `第 ${currentQuestionIndex + 1} / ${TOTAL_QUESTIONS_PER_GAME} 題`;
+            document.getElementById("scoreText").innerText = `目前積分：${score} / ${TOTAL_QUESTIONS_PER_GAME}`;
+            document.getElementById("questionText").innerText = qData.question;
+            
+            const typeBadge = document.getElementById("typeBadge");
+            if(qData.isMultiple) {
+                typeBadge.innerText = "複選題";
+                typeBadge.style.backgroundColor = "#F06292";
+                document.getElementById("submitBtn").style.display = "block";
+            } else {
+                typeBadge.innerText = "單選題";
+                typeBadge.style.backgroundColor = "#90CAF9";
+            }
+
+            // 指定為 .png 檔
+            const imgIndex = qData.charId || 1;
+            const charSprite = document.getElementById("charSprite");
+            charSprite.src = `inside out/insideout (${imgIndex}).png`;
+
+            const container = document.getElementById("optionsContainer");
+            container.innerHTML = "";
+
+            qData.options.forEach((option, index) => {
+                const btn = document.createElement("button");
+                btn.className = "option-btn";
+                btn.innerText = option;
+                btn.onclick = () => selectOption(index, btn);
+                container.appendChild(btn);
+            });
+        }
+
+        // 圖片自動備用防錯機制
+        function handleImageError(img) {
+            if (img.src.endsWith('.png')) {
+                img.src = img.src.replace('.png', '.jpg');
+            }
+        }
+
+        function selectOption(index, btnElement) {
+            const qData = currentQuestions[currentQuestionIndex];
+            
+            if (!qData.isMultiple) {
+                checkSingleAnswer(index);
+            } else {
+                if (selectedAnswers.includes(index)) {
+                    selectedAnswers = selectedAnswers.filter(i => i !== index);
+                    btnElement.classList.remove("selected");
+                } else {
+                    selectedAnswers.push(index);
+                    btnElement.classList.add("selected");
+                }
+            }
+        }
+
+        function checkSingleAnswer(selectedIndex) {
+            const qData = currentQuestions[currentQuestionIndex];
+            const buttons = document.querySelectorAll(".options-container .option-btn");
+            buttons.forEach(btn => btn.disabled = true);
+
+            const feedback = document.getElementById("feedbackContainer");
+            feedback.style.display = "block";
+
+            if (selectedIndex === qData.answer) {
+                score++;
+                buttons[selectedIndex].classList.add("correct");
+                feedback.className = "feedback-container feedback-success";
+                feedback.innerHTML = "太棒了！答對了！✨";
+                playAudio("sndCorrect");
+            } else {
+                buttons[selectedIndex].classList.add("wrong");
+                buttons[qData.answer].classList.add("correct");
+                feedback.className = "feedback-container feedback-fail";
+                feedback.innerHTML = `喔不！答錯了，正確答案是：<br><span style="color:#E91E63;">${qData.options[qData.answer]}</span>`;
+                playAudio("sndWrong");
+            }
+            document.getElementById("scoreText").innerText = `目前積分：${score} / ${TOTAL_QUESTIONS_PER_GAME}`;
+            document.getElementById("nextBtn").style.display = "block";
+        }
+
+        function submitMultipleChoice() {
+            const qData = currentQuestions[currentQuestionIndex];
+            const buttons = document.querySelectorAll(".options-container .option-btn");
+            
+            if(selectedAnswers.length === 0) {
+                alert("請至少選擇一個選項再提交！");
+                return;
+            }
+
+            document.getElementById("submitBtn").style.display = "none";
+            buttons.forEach(btn => btn.disabled = true);
+
+            selectedAnswers.sort((a, b) => a - b);
+            const correctAnswers = [...qData.answer].sort((a, b) => a - b);
+            const isCorrect = JSON.stringify(selectedAnswers) === JSON.stringify(correctAnswers);
+
+            buttons.forEach((btn, idx) => {
+                btn.classList.remove("selected");
+                if (correctAnswers.includes(idx)) {
+                    btn.classList.add("correct");
+                } else if (selectedAnswers.includes(idx)) {
+                    btn.classList.add("wrong");
+                }
+            });
+
+            const feedback = document.getElementById("feedbackContainer");
+            feedback.style.display = "block";
+
+            const correctTexts = correctAnswers.map(idx => qData.options[idx]).join("<br>");
+
+            if (isCorrect) {
+                score++;
+                feedback.className = "feedback-container feedback-success";
+                feedback.innerHTML = "太棒了！答對了！✨";
+                playAudio("sndCorrect");
+            } else {
+                feedback.className = "feedback-container feedback-fail";
+                feedback.innerHTML = `喔不！答錯了，正確答案是：<br><span style="color:#E91E63; font-size:12pt;">${correctTexts}</span>`;
+                playAudio("sndWrong");
+            }
+
+            document.getElementById("scoreText").innerText = `目前積分：${score} / ${TOTAL_QUESTIONS_PER_GAME}`;
+            document.getElementById("nextBtn").style.display = "block";
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < TOTAL_QUESTIONS_PER_GAME) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById("quizSection").style.display = "none";
+            document.getElementById("resultSection").style.display = "flex";
+            document.getElementById("finalScoreText").innerText = score;
+
+            let badge = "";
+            if (score === 10) {
+                badge = "急救安全大師 (Joy)";
+            } else if (score >= 7) {
+                badge = "資深核心記憶專家";
+            } else {
+                badge = "情緒控制台實習生";
+            }
+            
+            document.getElementById("badgeText").innerText = badge;
+        }
+
+        function restartGame() { initGame(); }
+
+        function playAudio(id) {
+            const audio = document.getElementById(id);
+            if (audio) {
+                audio.currentTime = 0;
+                audio.play().catch(e => console.log("音效播不出:", e));
+            }
+        }
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>

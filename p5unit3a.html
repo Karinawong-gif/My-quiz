@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mario 人際與生活素養大挑戰</title>
+    <style>
+        :root {
+            /* 背景圖片預設路徑 */
+            --bg-image: url('wallpaper.jpg');
+            --container-bg: rgba(255, 255, 255, 0.82);
+            --primary-yellow: #FFD54F;
+            --primary-yellow-hover: #FFE082;
+            --powder-blue: #81D4FA;
+            --wrong-red: #FF8A8A;
+            --text-dark: #222222;
+            --btn-gray: #777777;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, "Microsoft JhengHei";
+        }
+
+        body {
+            background: var(--bg-image) no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: var(--container-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 3px solid #E52521; /* Mario Red Border */
+            border-radius: 25px;
+            width: 100%;
+            max-width: 680px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            color: var(--text-dark);
+            position: relative;
+            min-height: 520px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .score-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14pt;
+            font-weight: bold;
+            margin-bottom: 20px;
+            border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+            padding-bottom: 12px;
+        }
+
+        .score-points {
+            color: #E52521; 
+        }
+
+        .question-text {
+            font-size: 16pt;
+            font-weight: bold;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+        }
+
+        .q-type-badge {
+            background-color: #009922; /* Mario Green */
+            color: white;
+            font-size: 10pt;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+            z-index: 5;
+        }
+
+        .option-btn {
+            background-color: var(--primary-yellow);
+            color: #333;
+            border: none;
+            border-bottom: 5px solid #F39C12;
+            border-radius: 12px;
+            padding: 14px 20px;
+            font-size: 13pt;
+            font-weight: bold;
+            text-align: left;
+            cursor: pointer;
+            transition: transform 0.1s ease, background-color 0.2s ease;
+            width: 100%;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: var(--primary-yellow-hover);
+            transform: translateY(-2px);
+        }
+
+        .option-btn:active:not(:disabled) {
+            transform: translateY(2px);
+            border-bottom-width: 1px;
+            margin-bottom: 4px;
+        }
+
+        .option-btn.correct {
+            background-color: var(--powder-blue) !important;
+            border-bottom-color: #29B6F6 !important;
+        }
+
+        .option-btn.wrong {
+            background-color: var(--wrong-red) !important;
+            border-bottom-color: #E57373 !important;
+        }
+
+        .option-btn.selected {
+            background-color: #FFB74D; 
+            border-bottom-color: #FFA726;
+        }
+
+        /* 右下角 MARIO 角色圖片樣式 */
+        .character-sprite {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            width: 130px;
+            height: 130px;
+            object-fit: contain;
+            pointer-events: none;
+            z-index: 2;
+            opacity: 0.98;
+        }
+
+        .feedback-container {
+            margin-top: 10px;
+            padding: 15px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.95);
+            font-size: 13pt;
+            font-weight: bold;
+            display: none;
+            z-index: 3;
+            line-height: 1.5;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .feedback-success { color: #2E7D32; }
+        .feedback-fail { color: #C62828; }
+
+        .control-panel {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 5px;
+            z-index: 10;
+            position: relative;
+            width: 100%;
+        }
+
+        .action-btn {
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 14px 50px;
+            font-size: 14pt;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+        .submit-btn {
+            background-color: #E52521;
+            border-bottom: 4px solid #B71C1C;
+        }
+
+        .next-btn {
+            background-color: var(--btn-gray);
+            border-bottom: 4px solid #555;
+            display: none;
+        }
+
+        .result-screen {
+            text-align: center;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .result-title {
+            font-size: 24pt;
+            color: #E52521;
+            margin-bottom: 25px;
+            font-weight: bold;
+        }
+
+        .result-badge {
+            font-size: 20pt;
+            font-weight: bold;
+            color: #009922;
+            margin-top: 15px;
+            margin-bottom: 35px;
+            background: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            border: 3px solid #FFD54F;
+        }
+
+        .restart-btn {
+            background-color: #049CD8;
+            border-bottom: 5px solid #0277BD;
+            border-radius: 12px;
+            padding: 14px 40px;
+            font-size: 14pt;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <div id="quizSection" style="display: block; width: 100%;">
+            <div class="score-header">
+                <span id="progressText">第 1 / 18 題</span>
+                <span class="score-points" id="scoreText">目前積分：0 / 18</span>
+            </div>
+
+            <div class="question-text">
+                <span class="q-type-badge" id="typeBadge">單選題</span><span id="questionText">載入中...</span>
+            </div>
+
+            <div class="options-container" id="optionsContainer"></div>
+
+            <div class="feedback-container" id="feedbackContainer"></div>
+
+            <div class="control-panel">
+                <button class="action-btn submit-btn" id="submitBtn" onclick="submitMultipleChoice()" style="display: none;">確認提交 ✔</button>
+                <button class="action-btn next-btn" id="nextBtn" onclick="nextQuestion()">下一題 ➔</button>
+            </div>
+            
+            <!-- 右下角 MARIO 角色圖片 -->
+            <img src="" alt="Mario Character" class="character-sprite" id="charSprite">
+        </div>
+
+        <div id="resultSection" class="result-screen">
+            <div class="result-title">🍄 MARIO 人際與生活挑戰通關！ 🍄</div>
+            <div style="font-size: 18pt; margin-bottom: 10px;">總得分：<span id="finalScoreText">0</span> / <span id="totalPossibleText">18</span></div>
+            <div style="font-size: 13pt; color: #666;">獲得榮譽稱號：</div>
+            <div class="result-badge" id="badgeText">瑪利歐冒險家</div>
+            <button class="restart-btn" onclick="restartGame()">重新挑戰 ↺</button>
+        </div>
+    </div>
+
+    <audio id="sndCorrect" preload="auto"><source src="https://actions.google.com/sounds/v1/cartoon/cartoon_wink.ogg" type="audio/ogg"></audio>
+    <audio id="sndWrong" preload="auto"><source src="https://actions.google.com/sounds/v1/cartoon/slide_whistle_down.ogg" type="audio/ogg"></audio>
+
+    <script>
+        const TARGET_QUESTIONS_PER_GAME = 18; // 修改為每局隨機 18 題
+        let actualQuestionsPerGame = 18;
+        
+        // 可用的角色圖片索引列表（對應 Mario (1) 至 Mario (13)）
+        const AVAILABLE_CHAR_IDS = [1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13];
+
+        const fullQuestionPool = [
+            { question: "以下哪項是正面情緒？", options: ["A. 舒懷。", "B. 失落。", "C. 憤怒。", "D. 害怕。"], answer: 0, isMultiple: false, charId: 1 },
+            { question: "以下哪些事情會令人產生正面情緒？（答案可多於一個。）", options: ["A. 考到好成績。", "B. 被人捉弄。", "C. 得到朋友的關心。", "D. 得到老師的讚賞。"], answer: [0, 2, 3], isMultiple: true, charId: 2 },
+            { question: "以下哪件事情會令人產生正面情緒？", options: ["A. 被父母責罵。", "B. 考試成績不理想。", "C. 在比賽中取得好成績。", "D. 被同學排擠。"], answer: 2, isMultiple: false, charId: 3 },
+            { question: "以下哪項是負面情緒？", options: ["A. 興奮。", "B. 愉快。", "C. 舒懷。", "D. 憤怒。"], answer: 3, isMultiple: false, charId: 4 },
+            { question: "以下哪件事情會令人產生負面情緒？", options: ["A. 收到喜歡的禮物。", "B. 在比賽中落敗。", "C. 遇到困難時得到了他人的幫助。", "D. 視藝作品受到讚賞。"], answer: 1, isMultiple: false, charId: 5 },
+            { question: "以下哪件事情會令人產生負面情緒？", options: ["A. 考到好成績。", "B. 被人捉弄。", "C. 得到朋友的關心。", "D. 得到老師的讚賞。"], answer: 1, isMultiple: false, charId: 6 },
+            { question: "以下哪項對壓力的描述是不正確的？", options: ["A. 對自己的期望過高時，容易產生壓力。", "B. 面對轉變、困難或挑戰時，容易產生壓力。", "C. 壓力不會引起身體反應。", "D. 壓力會受內在想法所影響。"], answer: 2, isMultiple: false, charId: 7 },
+            { question: "以下哪項有關壓力的描述是正確的？", options: ["A. 面對壓力時，身體不會出現警號。", "B. 壓力不能激發動力，推動進步。", "C. 學業是青少年主要的壓力來源之一。", "D. 壓力只會受內在想法所影響。"], answer: 2, isMultiple: false, charId: 8 },
+            { question: "以下哪項有關壓力的描述是不正確的？", options: ["A. 壓力過大，才會激發動力，推動進步。", "B. 壓力在我們面對困難、轉變或挑戰時出現。", "C. 對自己的期望過高，會影響狀態。", "D. 壓力會引起身體和心理反應。"], answer: 0, isMultiple: false, charId: 10 },
+            { question: "以下哪些是壓力過大時會出現的身體和心理反應？（答案可多於一個。）", options: ["A. 開懷大笑。", "B. 食慾不振。", "C. 心跳加速。", "D. 容易發脾氣。"], answer: [1, 2, 3], isMultiple: true, charId: 11 },
+            { question: "以下哪些是壓力過大時會出現的身體和心理反應？（答案可多於一個。）", options: ["A. 失眠。", "B. 不想和別人説話。", "C. 感到舒懷。", "D. 容易哭泣。"], answer: [0, 1, 3], isMultiple: true, charId: 12 },
+            { question: "以下哪項不是壓力過大時會出現的身體和心理反應？", options: ["A. 容易發脾氣。", "B. 心跳減慢。", "C. 胃痛。", "D. 頭痛。"], answer: 1, isMultiple: false, charId: 13 },
+            { question: "長期處於壓力過大的情況可能對我們造成甚麼影響？", options: ["A. 危害身心健康。", "B. 推動我們進步。", "C. 讓我們變得更聰明。", "D. 激發我們的動力。"], answer: 0, isMultiple: false, charId: 1 },
+            { question: "以下哪些是壓力過大時可能出現的精神健康警號？（答案可多於一個。）", options: ["A. 食慾不振。", "B. 心跳加速。", "C. 失眠。", "D. 心情愉快。"], answer: [0, 1, 2], isMultiple: true, charId: 2 },
+            { question: "以下哪項對情緒和壓力的描述是不正確的？", options: ["A. 情緒和壓力會受內在想法所影響。", "B. 情緒和壓力會受外界事物所影響。", "C. 我們要認清自己的情緒和壓力來源。", "D. 我們要壓抑自己的情緒。"], answer: 3, isMultiple: false, charId: 3 },
+            { question: "以下哪些是紓緩負面情緒和壓力的正確方法？（答案可多於一個。）", options: ["A. 放鬆自己，轉移注意力。", "B. 長時間不和別人説話。", "C. 向他人胡亂發脾氣。", "D. 認清自己的情緒和壓力來源。"], answer: [0, 3], isMultiple: true, charId: 4 },
+            { question: "以下哪項不是紓緩負面情緒和壓力的正確方法？", options: ["A. 做運動。", "B. 深呼吸。", "C. 吃大量零食。", "D. 向朋友傾訴。"], answer: 2, isMultiple: false, charId: 5 },
+            { question: "以下哪些是紓緩負面情緒和壓力的方法？（答案可多於一個。）", options: ["A. 從正面的角度思考。", "B. 長時間躲在家裏。", "C. 向家人或朋友傾訴。", "D. 責怪自己。"], answer: [0, 2], isMultiple: true, charId: 6 },
+            { question: "心盈在考試前感到壓力過大，她可以怎樣做來調節情緒？（答案可多於一個。）", options: ["A. 向父母或朋友傾訴。", "B. 默默忍受，壓抑情緒直至考試結束。", "C. 以正面的態度面對考試。", "D. 以深呼吸來放鬆自己。"], answer: [0, 2, 3], isMultiple: true, charId: 7 },
+            { question: "以下哪項不是情緒管理五部曲的步驟之一？", options: ["A. 察覺情緒。", "B. 無視情緒。", "C. 接納情緒。", "D. 表達情緒。"], answer: 1, isMultiple: false, charId: 8 },
+            { question: "以下哪些是管理情緒的正確方法？（答案可多於一個。）", options: ["A. 壓抑自己的情緒。", "B. 思考情緒產生的原因。", "C. 嘗試改變情緒狀態。", "D. 絕不向別人傾訴。"], answer: [1, 2], isMultiple: true, charId: 10 },
+            { question: "以下哪項不是管理情緒的方法？", options: ["A. 找家人傾訴。", "B. 轉移自己的注意力。", "C. 罵人。", "D. 深呼吸。"], answer: 2, isMultiple: false, charId: 11 },
+            { question: "面對學業壓力時，我們應該怎樣紓緩壓力？（答案可多於一個。）", options: ["A. 減少休息時間，熬夜學習。", "B. 向父母或師長傾訴。", "C. 調整對自己的期望。", "D. 放鬆自己，轉移注意力。"], answer: [1, 2, 3], isMultiple: true, charId: 12 },
+            { question: "以下哪些是欺凌行為？（答案可多於一個。）", options: ["A. 排擠同學。", "B. 一起取笑同學的體型。", "C. 轉發嘲笑同學的言論。", "D. 不小心撞倒了同學。"], answer: [0, 1, 2], isMultiple: true, charId: 13 },
+            { question: "以下哪項不是欺凌行為？", options: ["A. 約定不和某個同學玩耍。", "B. 和同學一起温習。", "C. 和同學一起取笑他人的樣貌。", "D. 蓄意把飲料潑在同學身上。"], answer: 1, isMultiple: false, charId: 1 },
+            { question: "一起取笑同學的樣貌是哪種形式的欺凌行為？", options: ["A. 排擠。", "B. 網絡欺凌。", "C. 言語攻擊。", "D. 身體或行為暴力。"], answer: 2, isMultiple: false, charId: 2 },
+            { question: "以下哪項欺凌行為是言語攻擊？", options: ["A. 約定不和某個同學談話。", "B. 蓄意用飲料淋同學的頭。", "C. 一起取笑同學的體型或樣貌。", "D. 故意推到同學，使同學受傷。"], answer: 2, isMultiple: false, charId: 3 },
+            { question: "以下哪項有關欺凌的説法是正確的？", options: ["A. 我們不可以默許欺凌行為。", "B. 我們應該加入欺凌者行列。", "C. 受害者應該順從不合理的要求。", "D. 欺凌只是開玩笑，不會帶來傷害。"], answer: 0, isMultiple: false, charId: 4 },
+            { question: "在欺凌事件中，旁觀者應該怎樣應對？", options: ["A. 假裝看不到。", "B. 拍攝影片放到網絡上。", "C. 關心和慰問受害者。", "D. 取笑受害者。"], answer: 2, isMultiple: false, charId: 5 },
+            { question: "在欺凌事件中，旁觀者應該怎樣應對？（答案可多於一個。）", options: ["A. 袖手旁觀。", "B. 向父母、師長或社工求助。", "C. 加入欺凌者行列。", "D. 帶受害者離開。"], answer: [1, 3], isMultiple: true, charId: 6 },
+            { question: "在欺凌事件中，受害者應該怎樣應對？（答案可多於一個。）", options: ["A. 離開現場。", "B. 默默忍受。", "C. 勇敢説「不」。", "D. 順從不合理的要求。"], answer: [0, 2], isMultiple: true, charId: 7 },
+            { question: "在欺凌事件中，以下哪些是欺凌者應該做的？（答案可多於一個。）", options: ["A. 視欺凌為開玩笑。", "B. 承諾不會再犯。", "C. 反省自己的行為。", "D. 無視欺凌帶來的傷害。"], answer: [1, 2], isMultiple: true, charId: 8 },
+            { question: "欺凌行為會對受害者帶來甚麼傷害？（答案可多於一個。）", options: ["A. 失去自信。", "B. 感到不安。", "C. 增加信心。", "D. 造成心靈創傷。"], answer: [0, 1, 3], isMultiple: true, charId: 10 },
+            { question: "以下哪項對欺凌行為的描述是正確的？", options: ["A. 欺凌是指蓄意傷害或欺壓別人的行為。", "B. 欺凌者不需要承擔責任和代價。", "C. 欺凌行為只會對受害者的身體造成傷害。", "D. 順從不合理的要求不會助長欺凌行為。"], answer: 0, isMultiple: false, charId: 11 },
+            { question: "以下哪項關於個人特質的描述是正確的？", options: ["A. 個人特質沒有好壞之分。", "B. 每個人都擁有相同的個人特質。", "C. 我們要努力改善個人特質。", "D. 個人特質就是一個人的優點。"], answer: 0, isMultiple: false, charId: 12 },
+            { question: "以下哪項描述是不正確的？", options: ["A. 瞭解自己有助我們探索未來的路向。", "B. 瞭解自己是成長重要的一環。", "C. 我們可以藉着別人的意見來瞭解自己。", "D. 我們眼中的自己要跟別人眼中的自己相同。"], answer: 3, isMultiple: false, charId: 13 },
+            { question: "為甚麼我們要瞭解自己的長處和弱點？（答案可多於一個。）", options: ["A. 為了向他人炫耀。", "B. 有助我們發揮長處。", "C. 有助我們改善缺點。", "D. 為了批評自己。"], answer: [1, 2], isMultiple: true, charId: 1 },
+            { question: "以下哪些是瞭解自己的方法？（答案可多於一個。）", options: ["A. 自我審視。", "B. 批評別人。", "C. 對他人提出意見。", "D. 聆聽別人的批評和意見。"], answer: [0, 3], isMultiple: true, charId: 2 },
+            { question: "發現自己的弱點時，我們應該怎樣做？", options: ["A. 發脾氣。", "B. 拒絕承認。", "C. 努力改善弱點。", "D. 接受自己，放棄改善。"], answer: 2, isMultiple: false, charId: 3 },
+            { question: "以下哪些是內在的良好品德和修養？（答案可多於一個。）", options: ["A. 樂於助人。", "B. 頭髮柔順。", "C. 誠實守信。", "D. 儀容整齊。"], answer: [0, 2], isMultiple: true, charId: 4 },
+            { question: "以下哪項是人的內在美？", options: ["A. 名牌衣服。", "B. 高大的外表。", "C. 樂於助人的品德。", "D. 漂亮的髮型。"], answer: 2, isMultiple: false, charId: 5 },
+            { question: "以下哪些行為能展現內在美？（答案可多於一個。）", options: ["A. 待人有禮。", "B. 誠實守信。", "C. 追上潮流。", "D. 購買昂貴的物品。"], answer: [0, 1], isMultiple: true, charId: 6 },
+            { question: "以下哪些是人的外在美？（答案可多於一個。）", options: ["A. 樂觀積極。", "B. 穿着稱身自然。", "C. 助人為樂。", "D. 儀容整齊。"], answer: [1, 3], isMultiple: true, charId: 7 },
+            { question: "以下哪些是對外在美的合理追求？（答案可多於一個。）", options: ["A. 確保儀容整齊。", "B. 穿着稱身自然。", "C. 購買昂貴的潮流服飾。", "D. 積極追求「瘦就是美」。"], answer: [0, 1], isMultiple: true, charId: 8 },
+            { question: "以下哪些做法有助我們瞭解自己？（答案可多於一個。）", options: ["A. 發掘自己的長處。", "B. 不接受批評。", "C. 拒絕承認自己的弱點。", "D. 虛心聆聽師長的批評和意見。"], answer: [0, 3], isMultiple: true, charId: 10 },
+            { question: "以下哪些人過分追求外在美？（答案可多於一個。）", options: ["A. 購買昂貴的服裝，以追上潮流。", "B. 不斷努力減肥，以追求纖瘦的身型。", "C. 出門前照鏡子，確保儀容整齊。", "D. 每天反省自己的行為。"], answer: [0, 1], isMultiple: true, charId: 11 },
+            { question: "面對人生中的困難和挑戰時，我們應該怎樣做？（答案可多於一個。）", options: ["A. 提升面對困難的能力。", "B. 尋找避風港。", "C. 培養積極樂觀的態度。", "D. 依賴他人。"], answer: [0, 1, 2], isMultiple: true, charId: 12 },
+            { question: "我們可以怎樣提升面對困難的能力？（答案可多於一個。）", options: ["A. 認真學習。", "B. 逃避責任。", "C. 培養專長。", "D. 強健體魄。"], answer: [0, 2, 3], isMultiple: true, charId: 13 },
+            { question: "以下哪些做法有助提升面對困難的能力？（答案可多於一個。）", options: ["A. 虛度時光。", "B. 培養專長。", "C. 學會獨立處事。", "D. 認真學習。"], answer: [1, 2, 3], isMultiple: true, charId: 1 },
+            { question: "以下哪些是面對困難和挑戰時的正確做法？（答案可多於一個。）", options: ["A. 肯定自我價值。", "B. 怨天尤人。", "C. 否定自己。", "D. 勇敢面對。"], answer: [0, 3], isMultiple: true, charId: 2 },
+            { question: "以下哪些是珍惜生命的行為？（答案可多於一個。）", options: ["A. 珍惜自己擁有的一切。", "B. 肯定自己的價值。", "C. 追求物質享受。", "D. 不虛度時光，過充實的生活。"], answer: [0, 1, 3], isMultiple: true, charId: 3 },
+            { question: "面對困難和挑戰，我們應該怎樣做？", options: ["A. 馬上放棄。", "B. 責怪他人。", "C. 大哭大鬧。", "D. 積極樂觀地面對。"], answer: 3, isMultiple: false, charId: 4 },
+            { question: "以下哪些是積極面對人生的方法？（答案可多於一個。）", options: ["A. 過有意義的人生。", "B. 關愛身邊的人。", "C. 不虛度時光，過充實的生活。", "D. 因為學業問題感到氣餒，不再努力學習。"], answer: [0, 1, 2], isMultiple: true, charId: 5 },
+            { question: "以下哪些分配金錢的方法是正確的？（答案可多於一個。）", options: ["A. 把金錢分為三份，包括儲蓄、消費和捐款。", "B. 把部分金錢用於賭博。", "C. 把所有金錢用於消費。", "D. 做到量入為出。"], answer: [0, 3], isMultiple: true, charId: 6 },
+            { question: "拿到父母給我們的零用錢後，以下哪些是妥善地管理金錢的做法？（答案可多於一個。）", options: ["A. 全部用來購物。", "B. 全部捐出去。", "C. 把金錢分為三份：儲蓄、消費和捐款。", "D. 記錄收支並訂立理財預算表。"], answer: [2, 3], isMultiple: true, charId: 7 },
+            { question: "關於個人理財，以下哪些描述是正確的？（答案可多於一個。）", options: ["A. 個人理財是指妥善地管理自己的金錢。", "B. 個人理財是指隨便使用自己的金錢。", "C. 我們不需要理財，想買甚麼就可以直接購買。", "D. 訂立理財目標有助於個人理財。"], answer: [0, 3], isMultiple: true, charId: 8 },
+            { question: "以下哪些是儲蓄的用途？（答案可多於一個。）", options: ["A. 幫助我們達成理財目標。", "B. 避免遇到電子消費陷阱。", "C. 讓我們有能力購買自己喜歡或需要的東西。", "D. 捐給有需要的人。"], answer: [0, 2, 3], isMultiple: true, charId: 10 },
+            { question: "儲蓄有甚麼用途？（答案可多於一個。）", options: ["A. 應付突發的需要。", "B. 達成理財目標。", "C. 幫助有需要的人。", "D. 讓我們可以隨便花費。"], answer: [0, 1, 2], isMultiple: true, charId: 11 },
+            { question: "我們應該怎樣管理自己的金錢？（答案可多於一個。）", options: ["A. 量入為出。", "B. 記錄收入和支出。", "C. 隨便花費。", "D. 制訂個人的理財預算表。"], answer: [0, 1, 3], isMultiple: true, charId: 12 },
+            { question: "以下哪項是量入為出的理財方法？", options: ["A. 記錄所有收入和支出。", "B. 按照自己的收入控制支出。", "C. 向別人借錢來消費。", "D. 隨意花費金錢。"], answer: 1, isMultiple: false, charId: 13 },
+            { question: "當我們每月的儲蓄達不到自己的長期理財目標時，可以怎樣做？（答案可多於一個。）", options: ["A. 增加每月的儲蓄。", "B. 增加每月的支出。", "C. 改變達到目標的時間。", "D. 不再制訂理財預算表。"], answer: [0, 2], isMultiple: true, charId: 1 },
+            { question: "以下哪些做法有助我們更快地達到理財目標？（答案可多於一個。）", options: ["A. 增加每月儲蓄。", "B. 減少每月儲蓄。", "C. 增加每月支出。", "D. 減少每月支出。"], answer: [0, 3], isMultiple: true, charId: 2 },
+            { question: "以下哪些是善用金錢的好習慣？（答案可多於一個。）", options: ["A. 只要喜歡便隨意購買。", "B. 在日常生活中物盡其用。", "C. 購物前訂立購物清單和預算金額。", "D. 不制訂理財預算表，常常入不敷出。"], answer: [1, 2], isMultiple: true, charId: 3 },
+            { question: "以下哪項不是訂立購物清單的好處？", options: ["A. 能夠避免一時衝動，購買不必要的東西。", "B. 有助做到量入為出。", "C. 一定能夠以最低的價錢購買貨品。", "D. 避免超支。"], answer: 2, isMultiple: false, charId: 4 },
+            { question: "以下哪些是電子消費的例子？（答案可多於一個。）", options: ["A. 用八達通支付交通費。", "B. 用手機在便利店付款。", "C. 用信用卡在網上購物。", "D. 用現金購買文具。"], answer: [0, 1, 2], isMultiple: true, charId: 5 },
+            { question: "以下哪項不是電子消費的例子？", options: ["A. 用八達通支付車費。", "B. 用手機支付賬單。", "C. 用現金購買報刊。", "D. 用信用卡在網上購買景點門票。"], answer: 2, isMultiple: false, charId: 6 },
+            { question: "電子消費有甚麼好處？（答案可多於一個。）", options: ["A. 不用帶備現金出門，十分方便。", "B. 容易讓人衝動消費，浪費金錢。", "C. 容易泄漏私隱，遭遇網絡詐騙。", "D. 足不出户也可以買到世界各地的物品。"], answer: [0, 3], isMultiple: true, charId: 7 },
+            { question: "網上購物時可能遇到甚麼電子消費陷阱？（答案可多於一個。）", options: ["A. 方便比較貨品價錢。", "B. 個人資料外泄。", "C. 收到的貨品與商品描述不符。", "D. 可以買到世界各地的物品。"], answer: [1, 2], isMultiple: true, charId: 8 },
+            { question: "電子消費可能存在甚麼陷阱？（答案可多於一個。）", options: ["A. 遭遇網絡詐騙。", "B. 買到物美價廉的物品。", "C. 減少使用現金。", "D. 泄漏私隱。"], answer: [0, 3], isMultiple: true, charId: 10 },
+            { question: "電子消費時，我們要保持警覺，保護自己和別人的哪些資訊？（答案可多於一個。）", options: ["A. 支付密碼。", "B. 優惠活動資訊。", "C. 對商品的評價。", "D. 手機號碼。"], answer: [0, 3], isMultiple: true, charId: 11 },
+            { question: "綠色消費是指甚麼？", options: ["A. 只用電子方式付款的消費模式。", "B. 隨便購買即棄產品的消費模式。", "C. 只追求便利性的消費模式。", "D. 重視環保和節約資源的消費模式。"], answer: 3, isMultiple: false, charId: 12 },
+            { question: "我們要怎樣實踐綠色消費？（答案可多於一個。）", options: ["A. 購買可重用產品。", "B. 購買外地生產的產品。", "C. 避免購買過度包裝的產品。", "D. 購買即棄產品。"], answer: [0, 2], isMultiple: true, charId: 13 },
+            { question: "以下哪些是實踐綠色消費的做法？（答案可多於一個。）", options: ["A. 購買過度包裝的產品。", "B. 選擇簡約包裝的產品。", "C. 少選擇可重用的物品。", "D. 到二手商店購買所需物品。"], answer: [1, 3], isMultiple: true, charId: 1 },
+            { question: "購物時，我們應該選購甚麼產品，以實踐綠色消費？", options: ["A. 即棄產品。", "B. 外地生產的產品。", "C. 過度包裝的產品。", "D. 可重用的產品。"], answer: 3, isMultiple: false, charId: 2 },
+            { question: "以下哪項行為屬於綠色消費？", options: ["A. 經常購買即棄產品。", "B. 物品沒有損壞便購買新的代替。", "C. 只購買外地生產的產品。", "D. 選擇簡約包裝的產品。"], answer: 3, isMultiple: false, charId: 3 },
+            { question: "金錢可以買到甚麼？", options: ["A. 日常生活需要的物品。", "B. 所有無價的東西。", "C. 親情。", "D. 快樂。"], answer: 0, isMultiple: false, charId: 4 },
+            { question: "以下哪些是金錢不能換取的東西？（答案可多於一個。）", options: ["A. 時間。", "B. 親情。", "C. 友誼。", "D. 玩具。"], answer: [0, 1, 2], isMultiple: true, charId: 5 },
+            { question: "以下哪些是金錢能買到的東西？（答案可多於一個。）", options: ["A. 衣服。", "B. 健康。", "C. 親情。", "D. 書本。"], answer: [0, 3], isMultiple: true, charId: 6 },
+            { question: "以下哪項是金錢不能買到的東西？", options: ["A. 玩具。", "B. 友誼。", "C. 食物。", "D. 文具。"], answer: 1, isMultiple: false, charId: 7 },
+            { question: "以下哪項是正確的金錢觀念？", options: ["A. 為了輕鬆賺取金錢，可以做不恰當的事情。", "B. 金錢可以換取所有無價的東西。", "C. 不應該為金錢而做違法的事情。", "D. 只要能得到金錢，便可以不計後果。"], answer: 2, isMultiple: false, charId: 8 },
+            { question: "以下哪些是善用金錢的好習慣？（答案可多於一個。）", options: ["A. 物盡其用。", "B. 購物前訂立購物清單。", "C. 訂立預算金額。", "D. 購買過度包裝的產品。"], answer: [0, 1, 2], isMultiple: true, charId: 10 },
+            { question: "遇到負面情緒和壓力時，我們應該怎樣做？（答案可多於一個。）", options: ["A. 接納情緒。", "B. 抗拒和壓抑情緒。", "C. 嘗試轉移注意力。", "D. 向父母或朋友傾訴。"], answer: [0, 2, 3], isMultiple: true, charId: 11 },
+            { question: "我們應該怎樣看待自己的長處和特質？", options: ["A. 不理會。", "B. 欣賞。", "C. 批評。", "D. 拒絕承認。"], answer: 1, isMultiple: false, charId: 12 },
+            { question: "我們應該以怎樣的態度瞭解自己？（答案可多於一個。）", options: ["A. 努力發揮自己的長處。", "B. 接受自己的長處和弱點。", "C. 認識自己的弱點並積極改善。", "D. 不理會別人的批評和意見。"], answer: [0, 1, 2], isMultiple: true, charId: 13 },
+            { question: "以下哪項是瞭解自己的正確態度？", options: ["A. 只關注自己的長處，忽視自己的弱點。", "B. 完全否定自己的價值。", "C. 只重視容貌和打扮。", "D. 虛心地聆聽別人的批評和意見。"], answer: 3, isMultiple: false, charId: 1 },
+            { question: "我們應該對自己的弱點抱持甚麼態度？（答案可多於一個。）", options: ["A. 虛心地接受他人的批評和意見。", "B. 拒絕承認。", "C. 努力改善。", "D. 不理會別人的批評。"], answer: [0, 2], isMultiple: true, charId: 2 },
+            { question: "我們應該對內在美抱持甚麼態度？（答案可多於一個。）", options: ["A. 欣賞別人和自己的內在美。", "B. 在言行中展現自己的內在美。", "C. 只欣賞外在美，不重視內在美。", "D. 忽略良好品德和修養。"], answer: [0, 1], isMultiple: true, charId: 3 },
+            { question: "遇到困難和挑戰時，我們應該抱持甚麼態度？", options: ["A. 積極樂觀。", "B. 消沉被動。", "C. 悲觀消極。", "D. 灰心絕望。"], answer: 0, isMultiple: false, charId: 4 },
+            { question: "我們應該以甚麼態度面對困難和挑戰？", options: ["A. 消極。", "B. 積極。", "C. 逃避。", "D. 無視。"], answer: 1, isMultiple: false, charId: 5 },
+            { question: "以下哪些是面對困難和挑戰的正確想法？（答案可多於一個。）", options: ["A. 人生不會事事順利，困難並不可怕。", "B. 認為自己運氣不好，怨天尤人。", "C. 困難只是暫時的，要勇敢面對。", "D. 認為自己無法克服困難，自暴自棄。"], answer: [0, 2], isMultiple: true, charId: 6 },
+            { question: "生命可貴，我們應該怎樣面對人生？（答案可多於一個。）", options: ["A. 虛度時光。", "B. 被動消極。", "C. 關愛身邊的人。", "D. 肯定自己的價值。"], answer: [2, 3], isMultiple: true, charId: 7 },
+            { question: "我們應該對金錢抱持甚麼態度？（答案可多於一個。）", options: ["A. 隨意花費。", "B. 勤儉節約。", "C. 金錢可以買到一切。", "D. 合理消費。"], answer: [1, 3], isMultiple: true, charId: 8 },
+            { question: "以下哪項對金錢的態度是不正確的？", options: ["A. 明白金錢得來不易，學會善用金錢。", "B. 恰當地運用金錢，不隨意花費。", "C. 勤儉節約，善用一分一毫。", "D. 得到零用錢後不用珍惜，全部即時花光。"], answer: 3, isMultiple: false, charId: 10 },
+            { question: "我們為甚麼要實踐綠色消費？（答案可多於一個。）", options: ["A. 節約資源。", "B. 減少浪費。", "C. 方便快捷。", "D. 符合潮流。"], answer: [0, 1], isMultiple: true, charId: 11 },
+            { question: "以下哪項消費態度不正確？", options: ["A. 使用電子消費時保持警覺，提防受騙。", "B. 購買產品時只考慮產品使用時的便利性。", "C. 消費時儘量減少對環境的影響。", "D. 理性消費。"], answer: 1, isMultiple: false, charId: 12 },
+            { question: "以下哪項金錢觀念不正確？", options: ["A. 勤儉節約，理性消費。", "B. 透過不法途徑賺取金錢。", "C. 訂立理財目標。", "D. 消費時儘量減少對環境的影響。"], answer: 1, isMultiple: false, charId: 13 }
+        ];
+
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedAnswers = [];
+
+        // 初始化背景圖片相容性機制 (針對 Mario 資料夾)
+        function initBackground() {
+            const bgCandidates = [
+                'wallpaper.jpg',
+                'wallpaper.png',
+                'Mario/wallpaper.jpg',
+                'Mario/wallpaper.png',
+                'file:///C:/Users/annsk/OneDrive/桌面/MC%20games/Mario/wallpaper.jpg',
+                'file:///C:/Users/annsk/OneDrive/桌面/MC%20games/Mario/wallpaper.png'
+            ];
+            
+            let bgImg = new Image();
+            let candidateIdx = 0;
+
+            function tryNextBg() {
+                if (candidateIdx >= bgCandidates.length) return;
+                let src = bgCandidates[candidateIdx];
+                bgImg.onload = function() {
+                    document.body.style.backgroundImage = `url('${src}')`;
+                };
+                bgImg.onerror = function() {
+                    candidateIdx++;
+                    tryNextBg();
+                };
+                bgImg.src = src;
+            }
+            tryNextBg();
+        }
+
+        function initGame() {
+            initBackground();
+            const shuffled = [...fullQuestionPool].sort(() => 0.5 - Math.random());
+            actualQuestionsPerGame = Math.min(TARGET_QUESTIONS_PER_GAME, fullQuestionPool.length);
+            currentQuestions = shuffled.slice(0, actualQuestionsPerGame);
+            currentQuestionIndex = 0;
+            score = 0;
+            
+            document.getElementById("quizSection").style.display = "block";
+            document.getElementById("resultSection").style.display = "none";
+            showQuestion();
+        }
+
+        function showQuestion() {
+            selectedAnswers = [];
+            document.getElementById("feedbackContainer").style.display = "none";
+            document.getElementById("nextBtn").style.display = "none";
+            document.getElementById("submitBtn").style.display = "none";
+
+            const qData = currentQuestions[currentQuestionIndex];
+            
+            document.getElementById("progressText").innerText = `第 ${currentQuestionIndex + 1} / ${actualQuestionsPerGame} 題`;
+            document.getElementById("scoreText").innerText = `目前積分：${score} / ${actualQuestionsPerGame}`;
+            document.getElementById("questionText").innerText = qData.question;
+            
+            const typeBadge = document.getElementById("typeBadge");
+            if(qData.isMultiple) {
+                typeBadge.innerText = "複選題";
+                typeBadge.style.backgroundColor = "#E65100";
+                document.getElementById("submitBtn").style.display = "block";
+            } else {
+                typeBadge.innerText = "單選題";
+                typeBadge.style.backgroundColor = "#009922";
+            }
+
+            // 加載 MARIO 角色圖片
+            loadCharacterImage(qData.charId || 1);
+
+            const container = document.getElementById("optionsContainer");
+            container.innerHTML = "";
+
+            qData.options.forEach((option, index) => {
+                const btn = document.createElement("button");
+                btn.className = "option-btn";
+                btn.innerText = option;
+                btn.onclick = () => selectOption(index, btn);
+                container.appendChild(btn);
+            });
+        }
+
+        // 載入 Mario 角色圖片的多級降級相容機制
+        function loadCharacterImage(charId) {
+            const charSprite = document.getElementById("charSprite");
+            
+            const sources = [
+                `Mario (${charId}).png`,
+                `Mario/Mario (${charId}).png`,
+                `file:///C:/Users/annsk/OneDrive/桌面/MC%20games/Mario/Mario%20(${charId}).png`,
+                `Mario (${charId}).jpg`,
+                `Mario/Mario (${charId}).jpg`
+            ];
+
+            let sourceIdx = 0;
+
+            function tryLoadNext() {
+                if (sourceIdx >= sources.length) {
+                    charSprite.style.display = 'none';
+                    return;
+                }
+                charSprite.style.display = 'block';
+                charSprite.onerror = function() {
+                    sourceIdx++;
+                    tryLoadNext();
+                };
+                charSprite.src = sources[sourceIdx];
+            }
+
+            tryLoadNext();
+        }
+
+        function selectOption(index, btnElement) {
+            const qData = currentQuestions[currentQuestionIndex];
+            
+            if (!qData.isMultiple) {
+                checkSingleAnswer(index);
+            } else {
+                if (selectedAnswers.includes(index)) {
+                    selectedAnswers = selectedAnswers.filter(i => i !== index);
+                    btnElement.classList.remove("selected");
+                } else {
+                    selectedAnswers.push(index);
+                    btnElement.classList.add("selected");
+                }
+            }
+        }
+
+        function checkSingleAnswer(selectedIndex) {
+            const qData = currentQuestions[currentQuestionIndex];
+            const buttons = document.querySelectorAll(".options-container .option-btn");
+            buttons.forEach(btn => btn.disabled = true);
+
+            const feedback = document.getElementById("feedbackContainer");
+            feedback.style.display = "block";
+
+            if (selectedIndex === qData.answer) {
+                score++;
+                buttons[selectedIndex].classList.add("correct");
+                feedback.className = "feedback-container feedback-success";
+                feedback.innerHTML = "Here we go! 答對了！🍄⭐";
+                playAudio("sndCorrect");
+            } else {
+                buttons[selectedIndex].classList.add("wrong");
+                buttons[qData.answer].classList.add("correct");
+                feedback.className = "feedback-container feedback-fail";
+                feedback.innerHTML = `Mamma mia! 答錯了，正確答案是：<br><span style="color:#D32F2F;">${qData.options[qData.answer]}</span>`;
+                playAudio("sndWrong");
+            }
+            document.getElementById("scoreText").innerText = `目前積分：${score} / ${actualQuestionsPerGame}`;
+            document.getElementById("nextBtn").style.display = "block";
+        }
+
+        function submitMultipleChoice() {
+            const qData = currentQuestions[currentQuestionIndex];
+            const buttons = document.querySelectorAll(".options-container .option-btn");
+            
+            if(selectedAnswers.length === 0) {
+                alert("請至少選擇一個選項再提交！");
+                return;
+            }
+
+            document.getElementById("submitBtn").style.display = "none";
+            buttons.forEach(btn => btn.disabled = true);
+
+            selectedAnswers.sort((a, b) => a - b);
+            const correctAnswers = [...qData.answer].sort((a, b) => a - b);
+            const isCorrect = JSON.stringify(selectedAnswers) === JSON.stringify(correctAnswers);
+
+            buttons.forEach((btn, idx) => {
+                btn.classList.remove("selected");
+                if (correctAnswers.includes(idx)) {
+                    btn.classList.add("correct");
+                } else if (selectedAnswers.includes(idx)) {
+                    btn.classList.add("wrong");
+                }
+            });
+
+            const feedback = document.getElementById("feedbackContainer");
+            feedback.style.display = "block";
+
+            const correctTexts = correctAnswers.map(idx => qData.options[idx]).join("<br>");
+
+            if (isCorrect) {
+                score++;
+                feedback.className = "feedback-container feedback-success";
+                feedback.innerHTML = "Here we go! 答對了！🍄⭐";
+                playAudio("sndCorrect");
+            } else {
+                feedback.className = "feedback-container feedback-fail";
+                feedback.innerHTML = `Mamma mia! 答錯了，正確答案是：<br><span style="color:#D32F2F; font-size:12pt;">${correctTexts}</span>`;
+                playAudio("sndWrong");
+            }
+
+            document.getElementById("scoreText").innerText = `目前積分：${score} / ${actualQuestionsPerGame}`;
+            document.getElementById("nextBtn").style.display = "block";
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < actualQuestionsPerGame) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById("quizSection").style.display = "none";
+            document.getElementById("resultSection").style.display = "flex";
+            document.getElementById("finalScoreText").innerText = score;
+            document.getElementById("totalPossibleText").innerText = actualQuestionsPerGame;
+
+            let badge = "";
+            let passRatio = score / actualQuestionsPerGame;
+            if (passRatio === 1) {
+                badge = "瑪利歐級冒險大師 (Mario Master)";
+            } else if (passRatio >= 0.7) {
+                badge = "路易吉超級夥伴 (Luigi Ally)";
+            } else {
+                badge = "蘑菇王國新星冒險家";
+            }
+            
+            document.getElementById("badgeText").innerText = badge;
+        }
+
+        function restartGame() { initGame(); }
+
+        function playAudio(id) {
+            const audio = document.getElementById(id);
+            if (audio) {
+                audio.currentTime = 0;
+                audio.play().catch(e => console.log("音效播不出:", e));
+            }
+        }
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>

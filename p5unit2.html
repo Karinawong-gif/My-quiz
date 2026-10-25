@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toy Story 5 青春期成長與健康素養挑戰</title>
+    <style>
+        :root {
+            /* 背景圖片預設路徑 */
+            --bg-image: url('wallapaper.jpg');
+            --container-bg: rgba(255, 255, 255, 0.75);
+            --primary-yellow: #FFD54F;
+            --primary-yellow-hover: #FFE082;
+            --powder-blue: #81D4FA;
+            --wrong-red: #FF8A8A;
+            --text-dark: #333333;
+            --btn-gray: #777777;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, "Microsoft JhengHei";
+        }
+
+        body {
+            background: var(--bg-image) no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: var(--container-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            border-radius: 25px;
+            width: 100%;
+            max-width: 680px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+            color: var(--text-dark);
+            position: relative;
+            min-height: 520px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .score-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14pt;
+            font-weight: bold;
+            margin-bottom: 20px;
+            border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+            padding-bottom: 12px;
+        }
+
+        .score-points {
+            color: #D32F2F; 
+        }
+
+        .question-text {
+            font-size: 16pt;
+            font-weight: bold;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+        }
+
+        .q-type-badge {
+            background-color: #0288D1;
+            color: white;
+            font-size: 10pt;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+            z-index: 5;
+        }
+
+        .option-btn {
+            background-color: var(--primary-yellow);
+            color: #333;
+            border: none;
+            border-bottom: 5px solid #FFC107;
+            border-radius: 12px;
+            padding: 14px 20px;
+            font-size: 13pt;
+            font-weight: bold;
+            text-align: left;
+            cursor: pointer;
+            transition: transform 0.1s ease, background-color 0.2s ease;
+            width: 100%;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: var(--primary-yellow-hover);
+            transform: translateY(-2px);
+        }
+
+        .option-btn:active:not(:disabled) {
+            transform: translateY(2px);
+            border-bottom-width: 1px;
+            margin-bottom: 4px;
+        }
+
+        .option-btn.correct {
+            background-color: var(--powder-blue) !important;
+            border-bottom-color: #29B6F6 !important;
+        }
+
+        .option-btn.wrong {
+            background-color: var(--wrong-red) !important;
+            border-bottom-color: #E57373 !important;
+        }
+
+        .option-btn.selected {
+            background-color: #FFB74D; 
+            border-bottom-color: #FFA726;
+        }
+
+        /* 右下角 Toy Story 角色圖片樣式 */
+        .character-sprite {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            width: 130px;
+            height: 130px;
+            object-fit: contain;
+            pointer-events: none;
+            z-index: 2;
+            opacity: 0.98;
+        }
+
+        .feedback-container {
+            margin-top: 10px;
+            padding: 15px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.9);
+            font-size: 13pt;
+            font-weight: bold;
+            display: none;
+            z-index: 3;
+            line-height: 1.5;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .feedback-success { color: #2E7D32; }
+        .feedback-fail { color: #C62828; }
+
+        .control-panel {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 5px;
+            z-index: 10;
+            position: relative;
+            width: 100%;
+        }
+
+        .action-btn {
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 14px 50px;
+            font-size: 14pt;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+        .submit-btn {
+            background-color: #0288D1;
+            border-bottom: 4px solid #0277BD;
+        }
+
+        .next-btn {
+            background-color: var(--btn-gray);
+            border-bottom: 4px solid #555;
+            display: none;
+        }
+
+        .result-screen {
+            text-align: center;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .result-title {
+            font-size: 24pt;
+            color: #D32F2F;
+            margin-bottom: 25px;
+            font-weight: bold;
+        }
+
+        .result-badge {
+            font-size: 20pt;
+            font-weight: bold;
+            color: #1976D2;
+            margin-top: 15px;
+            margin-bottom: 35px;
+            background: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            border: 2px solid #FFD54F;
+        }
+
+        .restart-btn {
+            background-color: #4CAF50;
+            border-bottom: 5px solid #388E3C;
+            border-radius: 12px;
+            padding: 14px 40px;
+            font-size: 14pt;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <div id="quizSection" style="display: block; width: 100%;">
+            <div class="score-header">
+                <span id="progressText">第 1 / 15 題</span>
+                <span class="score-points" id="scoreText">目前積分：0 / 15</span>
+            </div>
+
+            <div class="question-text">
+                <span class="q-type-badge" id="typeBadge">單選題</span><span id="questionText">載入中...</span>
+            </div>
+
+            <div class="options-container" id="optionsContainer"></div>
+
+            <div class="feedback-container" id="feedbackContainer"></div>
+
+            <div class="control-panel">
+                <button class="action-btn submit-btn" id="submitBtn" onclick="submitMultipleChoice()" style="display: none;">確認提交 ✔</button>
+                <button class="action-btn next-btn" id="nextBtn" onclick="nextQuestion()">下一題 ➔</button>
+            </div>
+            
+            <!-- 右下角 Toy Story 角色圖片 -->
+            <img src="" alt="Toy Story Character" class="character-sprite" id="charSprite">
+        </div>
+
+        <div id="resultSection" class="result-screen">
+            <div class="result-title">🚀 Toy Story 5 青春期挑戰結束 🚀</div>
+            <div style="font-size: 18pt; margin-bottom: 10px;">總得分：<span id="finalScoreText">0</span> / 15</div>
+            <div style="font-size: 13pt; color: #666;">獲得榮譽稱號：</div>
+            <div class="result-badge" id="badgeText">宇宙特警</div>
+            <button class="restart-btn" onclick="restartGame()">重新挑戰 ↺</button>
+        </div>
+    </div>
+
+    <audio id="sndCorrect" preload="auto"><source src="https://actions.google.com/sounds/v1/cartoon/cartoon_wink.ogg" type="audio/ogg"></audio>
+    <audio id="sndWrong" preload="auto"><source src="https://actions.google.com/sounds/v1/cartoon/slide_whistle_down.ogg" type="audio/ogg"></audio>
+
+    <script>
+        const TOTAL_QUESTIONS_PER_GAME = 15; // 改為隨機 15 題
+        
+        // 可用的角色圖片索引列表（排除未包含的 9 號）
+        const AVAILABLE_CHAR_IDS = [1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13];
+
+        const fullQuestionPool = [
+            { question: "青春期通常指哪一段時期？", options: ["A. 每個人由18歲開始踏入的階段。", "B. 由兒童長大至成人的必經階段。", "C. 由嬰兒過渡到幼兒的成長階段。", "D. 由嬰兒長大至兒童的必經階段。"], answer: 1, isMultiple: false, charId: 1 },
+            { question: "關於進入青春期的年齡，以下哪項描述是正確的？", options: ["A. 每個人進入青春期的年齡因人而異。", "B. 女孩普遍比男孩較遲進入青春期。", "C. 每個人進入青春期的年齡都相同。", "D. 所有男孩進入青春期的年齡都相同。"], answer: 0, isMultiple: false, charId: 2 },
+            { question: "以下哪項關於青春期的描述是不正確的？", options: ["A. 每個人踏入青春期的年齡都相同。", "B. 男孩和女孩踏入青春期的年齡不完全相同。", "C. 青春期是由兒童長大至成人的必經階段。", "D. 男孩和女孩在青春期都會經歷生理變化。"], answer: 0, isMultiple: false, charId: 3 },
+            { question: "以下哪些是女性在青春期會出現的生理變化？（答案可多於一個。）", options: ["A. 胸部開始發育。", "B. 聲線變低沉。", "C. 出現夢遺。", "D. 來月經。"], answer: [0, 3], isMultiple: true, charId: 4 },
+            { question: "以下哪項是男孩和女孩進入青春期後都會出現的生理變化？", options: ["A. 臉上長出鬍鬚。", "B. 胸部開始發育。", "C. 身體快速長高。", "D. 聲線變低沉。"], answer: 2, isMultiple: false, charId: 5 },
+            { question: "以下哪些是青春期男孩和女孩都會出現的生理變化？（答案可多於一個。）", options: ["A. 容易長出暗瘡。", "B. 容易出現體臭。", "C. 出現月經。", "D. 出現夢遺。"], answer: [0, 1], isMultiple: true, charId: 6 },
+            { question: "以下哪項關於青春期生理變化的描述是不正確的？", options: ["A. 男孩踏入青春期後聲線變低沉。", "B. 女孩踏入青春期後會出現夢遺。", "C. 女孩踏入青春期後會出現月經。", "D. 每個人在青春期都會顯著地長高。"], answer: 1, isMultiple: false, charId: 7 },
+            { question: "以下哪些對暗瘡的描述是錯誤的？（答案可多於一個。）", options: ["A. 不注意個人衞生容易導致暗瘡形成。", "B. 暗瘡的形成與常吃油膩或刺激性的食物有關。", "C. 處理暗瘡最好的方法是用手擠壓暗瘡。", "D. 只有男孩會長出暗瘡。"], answer: [2, 3], isMultiple: true, charId: 8 },
+            { question: "以下哪些生活習慣容易使臉上長出暗瘡？（答案可多於一個。）", options: ["A. 注意個人衞生。", "B. 壓力大。", "C. 休息不足。", "D. 不吃油膩或刺激的食物。"], answer: [1, 2], isMultiple: true, charId: 10 },
+            { question: "以下哪些是導致暗瘡形成的原因？（答案可多於一個。）", options: ["A. 壓力大。", "B. 常吃蔬菜。", "C. 睡眠不足。", "D. 不注意衞生。"], answer: [0, 2, 3], isMultiple: true, charId: 11 },
+            { question: "以下哪項是處理暗瘡的正確方法？", options: ["A. 少洗臉。", "B. 按醫生指示塗藥膏。", "C. 用手擠壓暗瘡。", "D. 用頭髮遮掩暗瘡。"], answer: 1, isMultiple: false, charId: 12 },
+            { question: "臉上長出暗瘡時，以下哪項做法不正確？", options: ["A. 注意個人衞生。", "B. 以正面的態度面對。", "C. 按醫生指示塗藥膏。", "D. 用頭髮遮掩暗瘡。"], answer: 3, isMultiple: false, charId: 13 },
+            { question: "以下哪些是預防或改善暗瘡的正確方法？（答案可多於一個。）", options: ["A. 按醫生指示塗藥膏。", "B. 勤洗臉。", "C. 保持心情愉快。", "D. 多吃油膩或刺激的食物。"], answer: [0, 1, 2], isMultiple: true, charId: 1 },
+            { question: "以下哪些是導致體臭出現的原因？（答案可多於一個。）", options: ["A. 常吃蔬果。", "B. 汗液和油脂分泌增加。", "C. 不注意個人衞生。", "D. 不吃濃味或刺激性的食物。"], answer: [1, 2], isMultiple: true, charId: 2 },
+            { question: "以下哪項對體臭的描述是錯誤的？", options: ["A. 使人身上傳出臭味。", "B. 由汗液和油脂分泌引致的。", "C. 噴止汗劑可以改善體臭。", "D. 所有青少年都會出現體臭。"], answer: 3, isMultiple: false, charId: 3 },
+            { question: "以下哪項做法能夠改善體臭問題？", options: ["A. 噴止汗劑。", "B. 常到人多的地方。", "C. 不吃蔬果。", "D. 減少喝水。"], answer: 0, isMultiple: false, charId: 4 },
+            { question: "以下哪些是預防或改善體臭的方法？（答案可多於一個。）", options: ["A. 多吃濃味或刺激性的食物。", "B. 勤洗澡。", "C. 避免到人多的地方。", "D. 保持心情開朗。"], answer: [1, 3], isMultiple: true, charId: 5 },
+            { question: "以下哪些有關月經的描述是錯誤的？（答案可多於一個。）", options: ["A. 月經期間應該勤換衞生巾。", "B. 月經期間不可以做運動。", "C. 月經期間要特別注意個人衞生。", "D. 月經期間不可以洗頭。"], answer: [1, 3], isMultiple: true, charId: 6 },
+            { question: "以下哪項有關月經期間要注意的事項是錯誤的？", options: ["A. 月經期間可以洗頭。", "B. 月經期間可以做運動。", "C. 月經期間要特別注意個人衞生。", "D. 月經期間做運動會失血過多。"], answer: 3, isMultiple: false, charId: 7 },
+            { question: "使用衞生巾時要注意甚麼？（答案可多於一個。）", options: ["A. 使用前後要清潔雙手。", "B. 經血量少時，不用經常更換衞生巾。", "C. 使用後要包好，然後放進垃圾箱。", "D. 需要勤換衞生巾。"], answer: [0, 2, 3], isMultiple: true, charId: 8 },
+            { question: "以下哪些是月經期間應該注意的事情？（答案可多於一個。）", options: ["A. 不要洗頭。", "B. 不要做運動。", "C. 記錄來經日子。", "D. 勤換衞生巾。"], answer: [2, 3], isMultiple: true, charId: 10 },
+            { question: "以下哪些有關夢遺的描述是正確的？（答案可多於一個。）", options: ["A. 夢遺是睡覺時不由自主的射精。", "B. 夢遺是青春期的男性和女性都會出現的情況。", "C. 睡覺時如果陰莖受到壓迫，便可能出現夢遺。", "D. 出現夢遺代表身體患有嚴重疾病。"], answer: [0, 2], isMultiple: true, charId: 11 },
+            { question: "以下哪項有關夢遺的描述是錯誤的？", options: ["A. 它是青春期男性的自然生理現象。", "B. 穿較寬鬆舒適的內褲可以減少夢遺。", "C. 夢遺是男性生殖系統不成熟的特徵。", "D. 夢遺對身體沒有害處。"], answer: 2, isMultiple: false, charId: 12 },
+            { question: "出現夢遺後，以下哪些做法是正確的？（答案可多於一個。）", options: ["A. 儘快更換褲子。", "B. 保持身體清潔。", "C. 為了減少夢遺的情況，改穿緊身內褲睡覺。", "D. 把濕了的褲子偷偷藏起來。"], answer: [0, 1], isMultiple: true, charId: 13 },
+            { question: "以下哪項不是獲取性知識的正確途徑？", options: ["A. 閲讀色情書刊。", "B. 請教父母或老師。", "C. 查閱性教育的書籍和小冊子。", "D. 瀏覽香港家庭計劃指導會的性教育網頁。"], answer: 0, isMultiple: false, charId: 1 },
+            { question: "青少年對青春期生理變化產生疑問時，以下哪些做法是正確的？（答案可多於一個。）", options: ["A. 瀏覽色情網站。", "B. 向父母或師長請教。", "C. 瀏覽可靠的性教育網站。", "D. 感到焦慮和尷尬，不向任何人求助。"], answer: [1, 2], isMultiple: true, charId: 2 },
+            { question: "以下哪些關於青春期心理變化的描述是正確的？（答案可多於一個。）", options: ["A. 每個人的心理變化都完全相同。", "B. 青少年的思想、情緒和行為會轉變。", "C. 青春期的心理變化是因人而異的。", "D. 青少年不會對四周的事物有新的看法。"], answer: [1, 2], isMultiple: true, charId: 3 },
+            { question: "以下哪些不是青春期常見的心理變化？（答案可多於一個。）", options: ["A. 開始依賴父母。", "B. 情緒不穩定。", "C. 對性產生好奇。", "D. 完全不在乎自己的外表和形象。"], answer: [0, 3], isMultiple: true, charId: 4 },
+            { question: "以下哪項不是青春期可能會出現的心理變化？", options: ["A. 重視朋友的認同。", "B. 對異性產生興趣。", "C. 情緒不穩定。", "D. 渴望父母管束。"], answer: 3, isMultiple: false, charId: 5 },
+            { question: "以下哪些是青春期的心理變化？（答案可多於一個。）", options: ["A. 社會責任感增強。", "B. 渴望獨立自主。", "C. 對異性產生興趣。", "D. 注重自己的外表和形象。"], answer: [1, 2, 3], isMultiple: true, charId: 6 },
+            { question: "以下哪項不是青春期的心理變化？", options: ["A. 對性產生好奇。", "B. 追隨潮流。", "C. 開始依賴父母。", "D. 注重自己的外表和形象。"], answer: 2, isMultiple: false, charId: 7 },
+            { question: "與父母溝通時，應該怎樣做？", options: ["A. 無論對錯，都堅持自己的意見。", "B. 隨時打斷父母説話。", "C. 耐心聆聽父母的話。", "D. 只説自己的感受，拒絕瞭解父母的想法。"], answer: 2, isMultiple: false, charId: 8 },
+            { question: "以下哪些是「溝通三部曲」中提到的做法？（答案可多於一個。）", options: ["A. 隨時打斷對方。", "B. 瞭解父母的想法。", "C. 清楚表達自己的意見。", "D. 提出解決方法。"], answer: [1, 2, 3], isMultiple: true, charId: 10 },
+            { question: "以下哪項不是與父母良好溝通的方法？", options: ["A. 耐心聆聽父母的話。", "B. 瞭解父母的看法。", "C. 清楚表達自己的意見。", "D. 表達自己的意見後，便立刻離開。"], answer: 3, isMultiple: false, charId: 11 },
+            { question: "與父母溝通時，以下哪些行為是不正確的？（答案可多於一個。）", options: ["A. 瞭解父母的想法。", "B. 耐心聆聽父母的話。", "C. 堅持自己的所有想法。", "D. 不表達自己的意見，假裝聽從父母的意見。"], answer: [2, 3], isMultiple: true, charId: 12 },
+            { question: "以下哪些是與父母溝通的正確方法？（答案可多於一個。）", options: ["A. 清楚表達自己的意見。", "B. 接受父母的所有意見。", "C. 耐心聆聽父母説話。", "D. 拒絕任何討論。"], answer: [0, 2], isMultiple: true, charId: 13 },
+            { question: "以下哪些是與父母溝通時的正確做法？（答案可多於一個。）", options: ["A. 隨時打斷父母説話。", "B. 嘗試從父母的角度看事情。", "C. 平靜而真誠地表達想法。", "D. 堅持自己的意見。"], answer: [1, 2], isMultiple: true, charId: 1 },
+            { question: "當青少年希望父母相信自己已經成長，以下哪項做法是正確的？", options: ["A. 隱瞞自己的行蹤。", "B. 完全不與父母溝通。", "C. 故意與父母爭吵。", "D. 答應父母的事情都能做到。"], answer: 3, isMultiple: false, charId: 2 },
+            { question: "青少年可以怎樣做，讓父母相信自己已經成長？（答案可多於一個。）", options: ["A. 主動交代行蹤。", "B. 不關心父母的感受。", "C. 總是聽從父母的意見。", "D. 説到做到。"], answer: [0, 3], isMultiple: true, charId: 3 },
+            { question: "當與父母的衝突無法解決時，以下哪些是正確的方法？（答案可多於一個。）", options: ["A. 暫停爭論，冷靜後再討論。", "B. 持續爭論，直至其中一方放棄。", "C. 寫日記抒發感受，理清自己的想法。", "D. 繪畫來放鬆心情。"], answer: [0, 2, 3], isMultiple: true, charId: 4 },
+            { question: "當與父母的衝突暫時無法解決時，以下哪項做法不正確？", options: ["A. 向學校社工求助。", "B. 瞭解和體諒父母的感受和想法。", "C. 暫停爭論，讓大家有時間冷靜下來。", "D. 不再理會父母。"], answer: 3, isMultiple: false, charId: 5 },
+            { question: "以下哪些是與朋友相處的正確做法？（答案可多於一個。）", options: ["A. 互相尊重。", "B. 接受朋友真實的一面。", "C. 真誠地表達自己的想法。", "D. 答應朋友的任何要求。"], answer: [0, 1, 2], isMultiple: true, charId: 6 },
+            { question: "我們應該怎樣看待網上交友？（答案可多於一個。）", options: ["A. 網友未必可信。", "B. 輕信網友可能會帶來危險。", "C. 隨便答應網友的邀約。", "D. 信任網上認識的每個網友。"], answer: [0, 1], isMultiple: true, charId: 7 },
+            { question: "以下哪項關於網上交友的説法是正確的？", options: ["A. 我們可以答應網友的任何邀約。", "B. 輕信網友不會造成危險。", "C. 我們應該謹慎看待網上交友。", "D. 網上認識的所有網友都是可信的。"], answer: 2, isMultiple: false, charId: 8 },
+            { question: "收到涉及陌生人和陌生環境的邀約時，以下哪些做法是不正確的？（答案可多於一個。）", options: ["A. 赴約時提高警覺。", "B. 不告訴家人自己的行蹤。", "C. 隨便答應邀約。", "D. 告訴家人活動的地點和時間。"], answer: [1, 2], isMultiple: true, charId: 10 },
+            { question: "以下哪項關於與異性朋友相處的描述是正確的？", options: ["A. 異性朋友只會為我們帶來正面影響。", "B. 我們應該與異性朋友保持適當的距離。", "C. 我們應該避免結識異性朋友。", "D. 必須模仿異性朋友的言行才能被對方接納。"], answer: 1, isMultiple: false, charId: 11 },
+            { question: "以下哪些是與異性朋友相處時的正確做法？（答案可多於一個。）", options: ["A. 態度誠懇，舉止大方。", "B. 避免混淆友情和愛情。", "C. 做出性騷擾行為。", "D. 保持適當的距離。"], answer: [0, 1, 3], isMultiple: true, charId: 12 },
+            { question: "以下哪項關於與異性相處的描述是錯誤的？", options: ["A. 與異性相處不用保持距離。", "B. 要互相尊重，不應該取笑對方。", "C. 應該以大方的態度相處。", "D. 應該避免與異性單獨約會。"], answer: 0, isMultiple: false, charId: 13 },
+            { question: "與異性朋友相處時應該注意甚麼？（答案可多於一個。）", options: ["A. 舉止大方。", "B. 避免單獨約會。", "C. 不用保持距離。", "D. 態度誠懇。"], answer: [0, 1, 3], isMultiple: true, charId: 1 },
+            { question: "以下哪些關於性騷擾的描述是正確的？（答案可多於一個。）", options: ["A. 只有身體接觸才是性騷擾。", "B. 性騷擾只發生在異性之間。", "C. 性騷擾是一種不受歡迎而涉及性的言行。", "D. 性騷擾會使人感到受冒犯、侮辱或不安。"], answer: [2, 3], isMultiple: true, charId: 2 },
+            { question: "以下哪項行為不屬於性騷擾？", options: ["A. 不必要而故意談論有關性的話題。", "B. 伸手扶起跌倒的同學。", "C. 故意接觸他人的身體。", "D. 帶有性意味的盯視。"], answer: 1, isMultiple: false, charId: 3 },
+            { question: "以下哪些屬於非言語行為的性騷擾？（答案可多於一個。）", options: ["A. 帶性意味的盯視。", "B. 故意展示色情物品。", "C. 作有性暗示的動作。", "D. 故意談論有關性的話題。"], answer: [0, 1, 2], isMultiple: true, charId: 4 },
+            { question: "如果受到性騷擾，以下哪項做法不正確？", options: ["A. 堅決拒絕。", "B. 冷靜應對，保護自己。", "C. 默默忍受，不告訴任何人。", "D. 向可信任的成年人求助。"], answer: 2, isMultiple: false, charId: 5 },
+            { question: "如果看見別人被性騷擾，以下哪項做法是正確的？", options: ["A. 取笑被性騷擾的人。", "B. 告知可信任的成年人。", "C. 裝作沒有看到，保持沉默。", "D. 覺得只是開玩笑，不用幫忙。"], answer: 1, isMultiple: false, charId: 6 },
+            { question: "我們應該怎樣應對性騷擾？（答案可多於一個。）", options: ["A. 保持冷靜。", "B. 告知可信任的成年人。", "C. 默默忍受，不作任何反抗。", "D. 立即叫對方停止性騷擾行為。"], answer: [0, 1, 3], isMultiple: true, charId: 7 },
+            { question: "當我們不適應自己身高快速增長，應該以怎樣的態度面對？", options: ["A. 不用理會。", "B. 與家人和朋友分享自己的感受。", "C. 不照鏡子，避免看到自己。", "D. 感到焦慮。"], answer: 1, isMultiple: false, charId: 8 },
+            { question: "當發現自己身體的成長速度與同學不同時，應該怎樣面對？", options: ["A. 經常與同學比較成長和發育的速度。", "B. 要求自己必須和別人一樣。", "C. 接受每個人成長和發育的速度都不同。", "D. 感到不開心，並且過度擔心。"], answer: 2, isMultiple: false, charId: 10 },
+            { question: "青春期出現暗瘡時，以下哪種態度是正確的？", options: ["A. 變得自卑，減少與同學接觸。", "B. 不與任何人談論自己的困擾。", "C. 害怕被發現，用頭髮遮掩暗瘡。", "D. 注意個人衞生，保持心情開朗。"], answer: 3, isMultiple: false, charId: 11 },
+            { question: "在經歷月經初期時，應該怎樣面對？", options: ["A. 感到害怕，試圖隱藏這件事。", "B. 感到尷尬，避免與他人談論。", "C. 主動向家人詢問，瞭解更多。", "D. 不停告訴身邊的人，讓別人知道自己已經踏入青春期。"], answer: 2, isMultiple: false, charId: 12 },
+            { question: "對月經或夢遺有疑問時，應該以怎樣的態度面對？", options: ["A. 不知所措，為身體的變化感到焦慮。", "B. 主動向父母或師長請教，獲取正確的知識。", "C. 認為月經或夢遺是生病的表現。", "D. 覺得尷尬，避免向任何人請教。"], answer: 1, isMultiple: false, charId: 13 },
+            { question: "當父母不理解你的感受時，你應該怎樣做？", options: ["A. 全部聽從父母的決定。", "B. 感到失望，拒絕與父母繼續溝通。", "C. 平靜而真誠地向父母表達想法。", "D. 發脾氣，讓父母遷就自己。"], answer: 2, isMultiple: false, charId: 1 },
+            { question: "當父母沒有徵求你的意見便為你作出安排時，你應該以怎樣的態度面對？", options: ["A. 不理會父母，堅持自己的想法。", "B. 發脾氣表達不滿。", "C. 不敢表達意見，完全跟從父母的安排。", "D. 先瞭解父母的想法，再清楚表達自己的意見。"], answer: 3, isMultiple: false, charId: 2 },
+            { question: "與朋友溝通時，以下哪種態度是正確的？", options: ["A. 尊重朋友，聽從朋友的所有意見。", "B. 耐心聆聽，自己不分享。", "C. 堅持自己的意見。", "D. 誠實地對朋友表達自己的想法。"], answer: 3, isMultiple: false, charId: 3 },
+            { question: "與朋友相處時，以下哪種態度是正確的？", options: ["A. 互相尊重，態度誠懇。", "B. 為了得到朋友認同，答應朋友不當的要求。", "C. 當朋友與自己想法不同時，便取笑對方。", "D. 只在乎自己的感受，不理會朋友的想法。"], answer: 0, isMultiple: false, charId: 4 },
+            { question: "面對朋友不當的要求，我們應該怎樣做？", options: ["A. 為了維繫友誼而盲目迎合。", "B. 表面敷衍答應，背後向同學投訴。", "C. 禮貌而堅定地拒絕，並説明原因。", "D. 雖然感到有壓力，但仍然勉強順從。"], answer: 2, isMultiple: false, charId: 5 },
+            { question: "我們應該以怎樣的態度與異性朋友相處？", options: ["A. 不用保持適當的距離。", "B. 以大方的態度相處。", "C. 認為友情和愛情沒有區別。", "D. 拒絕結交任何異性朋友。"], answer: 1, isMultiple: false, charId: 6 },
+            { question: "受到性騷擾時，以下哪種態度是正確的？", options: ["A. 認為自己太敏感才會感到被冒犯。", "B. 覺得對方只是開玩笑。", "C. 保持冷靜，堅決拒絕。", "D. 認為忍一忍就沒事了。"], answer: 2, isMultiple: false, charId: 7 }
+        ];
+
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedAnswers = [];
+
+        // 初始化背景圖片相容性機制
+        function initBackground() {
+            const bgCandidates = [
+                'wallapaper.jpg',
+                'Toystory/wallapaper.jpg',
+                'file:///C:/Users/annsk/OneDrive/桌面/MC%20games/Toystory/wallapaper.jpg',
+                'wallapaper.png',
+                'Toystory/wallapaper.png'
+            ];
+            
+            let bgImg = new Image();
+            let candidateIdx = 0;
+
+            function tryNextBg() {
+                if (candidateIdx >= bgCandidates.length) return;
+                let src = bgCandidates[candidateIdx];
+                bgImg.onload = function() {
+                    document.body.style.backgroundImage = `url('${src}')`;
+                };
+                bgImg.onerror = function() {
+                    candidateIdx++;
+                    tryNextBg();
+                };
+                bgImg.src = src;
+            }
+            tryNextBg();
+        }
+
+        function initGame() {
+            initBackground();
+            const shuffled = [...fullQuestionPool].sort(() => 0.5 - Math.random());
+            currentQuestions = shuffled.slice(0, TOTAL_QUESTIONS_PER_GAME);
+            currentQuestionIndex = 0;
+            score = 0;
+            
+            document.getElementById("quizSection").style.display = "block";
+            document.getElementById("resultSection").style.display = "none";
+            showQuestion();
+        }
+
+        function showQuestion() {
+            selectedAnswers = [];
+            document.getElementById("feedbackContainer").style.display = "none";
+            document.getElementById("nextBtn").style.display = "none";
+            document.getElementById("submitBtn").style.display = "none";
+
+            const qData = currentQuestions[currentQuestionIndex];
+            
+            document.getElementById("progressText").innerText = `第 ${currentQuestionIndex + 1} / ${TOTAL_QUESTIONS_PER_GAME} 題`;
+            document.getElementById("scoreText").innerText = `目前積分：${score} / ${TOTAL_QUESTIONS_PER_GAME}`;
+            document.getElementById("questionText").innerText = qData.question;
+            
+            const typeBadge = document.getElementById("typeBadge");
+            if(qData.isMultiple) {
+                typeBadge.innerText = "複選題";
+                typeBadge.style.backgroundColor = "#E65100";
+                document.getElementById("submitBtn").style.display = "block";
+            } else {
+                typeBadge.innerText = "單選題";
+                typeBadge.style.backgroundColor = "#0288D1";
+            }
+
+            // 加載角色圖片，包含完整的降級相容機制
+            loadCharacterImage(qData.charId || 1);
+
+            const container = document.getElementById("optionsContainer");
+            container.innerHTML = "";
+
+            qData.options.forEach((option, index) => {
+                const btn = document.createElement("button");
+                btn.className = "option-btn";
+                btn.innerText = option;
+                btn.onclick = () => selectOption(index, btn);
+                container.appendChild(btn);
+            });
+        }
+
+        // 載入角色圖片的多級降級相容機制
+        function loadCharacterImage(charId) {
+            const charSprite = document.getElementById("charSprite");
+            
+            // 檔名候選列表 (完全匹配資料夾: Toy Story (N).png 及絕對路徑)
+            const sources = [
+                `Toy Story (${charId}).png`,
+                `Toystory/Toy Story (${charId}).png`,
+                `file:///C:/Users/annsk/OneDrive/桌面/MC%20games/Toystory/Toy%20Story%20(${charId}).png`,
+                `Toy Story (${charId}).jpg`,
+                `Toystory/Toy Story (${charId}).jpg`
+            ];
+
+            let sourceIdx = 0;
+
+            function tryLoadNext() {
+                if (sourceIdx >= sources.length) {
+                    charSprite.style.display = 'none';
+                    return;
+                }
+                charSprite.style.display = 'block';
+                charSprite.onerror = function() {
+                    sourceIdx++;
+                    tryLoadNext();
+                };
+                charSprite.src = sources[sourceIdx];
+            }
+
+            tryLoadNext();
+        }
+
+        function selectOption(index, btnElement) {
+            const qData = currentQuestions[currentQuestionIndex];
+            
+            if (!qData.isMultiple) {
+                checkSingleAnswer(index);
+            } else {
+                if (selectedAnswers.includes(index)) {
+                    selectedAnswers = selectedAnswers.filter(i => i !== index);
+                    btnElement.classList.remove("selected");
+                } else {
+                    selectedAnswers.push(index);
+                    btnElement.classList.add("selected");
+                }
+            }
+        }
+
+        function checkSingleAnswer(selectedIndex) {
+            const qData = currentQuestions[currentQuestionIndex];
+            const buttons = document.querySelectorAll(".options-container .option-btn");
+            buttons.forEach(btn => btn.disabled = true);
+
+            const feedback = document.getElementById("feedbackContainer");
+            feedback.style.display = "block";
+
+            if (selectedIndex === qData.answer) {
+                score++;
+                buttons[selectedIndex].classList.add("correct");
+                feedback.className = "feedback-container feedback-success";
+                feedback.innerHTML = "飛向宇宙，浩瀚無垠！答對了！✨";
+                playAudio("sndCorrect");
+            } else {
+                buttons[selectedIndex].classList.add("wrong");
+                buttons[qData.answer].classList.add("correct");
+                feedback.className = "feedback-container feedback-fail";
+                feedback.innerHTML = `喔不！答錯了，正確答案是：<br><span style="color:#D32F2F;">${qData.options[qData.answer]}</span>`;
+                playAudio("sndWrong");
+            }
+            document.getElementById("scoreText").innerText = `目前積分：${score} / ${TOTAL_QUESTIONS_PER_GAME}`;
+            document.getElementById("nextBtn").style.display = "block";
+        }
+
+        function submitMultipleChoice() {
+            const qData = currentQuestions[currentQuestionIndex];
+            const buttons = document.querySelectorAll(".options-container .option-btn");
+            
+            if(selectedAnswers.length === 0) {
+                alert("請至少選擇一個選項再提交！");
+                return;
+            }
+
+            document.getElementById("submitBtn").style.display = "none";
+            buttons.forEach(btn => btn.disabled = true);
+
+            selectedAnswers.sort((a, b) => a - b);
+            const correctAnswers = [...qData.answer].sort((a, b) => a - b);
+            const isCorrect = JSON.stringify(selectedAnswers) === JSON.stringify(correctAnswers);
+
+            buttons.forEach((btn, idx) => {
+                btn.classList.remove("selected");
+                if (correctAnswers.includes(idx)) {
+                    btn.classList.add("correct");
+                } else if (selectedAnswers.includes(idx)) {
+                    btn.classList.add("wrong");
+                }
+            });
+
+            const feedback = document.getElementById("feedbackContainer");
+            feedback.style.display = "block";
+
+            const correctTexts = correctAnswers.map(idx => qData.options[idx]).join("<br>");
+
+            if (isCorrect) {
+                score++;
+                feedback.className = "feedback-container feedback-success";
+                feedback.innerHTML = "飛向宇宙，浩瀚無垠！答對了！✨";
+                playAudio("sndCorrect");
+            } else {
+                feedback.className = "feedback-container feedback-fail";
+                feedback.innerHTML = `喔不！答錯了，正確答案是：<br><span style="color:#D32F2F; font-size:12pt;">${correctTexts}</span>`;
+                playAudio("sndWrong");
+            }
+
+            document.getElementById("scoreText").innerText = `目前積分：${score} / ${TOTAL_QUESTIONS_PER_GAME}`;
+            document.getElementById("nextBtn").style.display = "block";
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < TOTAL_QUESTIONS_PER_GAME) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById("quizSection").style.display = "none";
+            document.getElementById("resultSection").style.display = "flex";
+            document.getElementById("finalScoreText").innerText = score;
+
+            let badge = "";
+            if (score === 15) {
+                badge = "胡迪級健康榮譽警長 (Woody)";
+            } else if (score >= 11) {
+                badge = "巴斯光年星際特攻";
+            } else {
+                badge = "玩具總動員新成員";
+            }
+            
+            document.getElementById("badgeText").innerText = badge;
+        }
+
+        function restartGame() { initGame(); }
+
+        function playAudio(id) {
+            const audio = document.getElementById(id);
+            if (audio) {
+                audio.currentTime = 0;
+                audio.play().catch(e => console.log("音效播不出:", e));
+            }
+        }
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>
