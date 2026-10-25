@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mario 文化與生活素養大挑戰</title>
+    <style>
+        :root {
+            /* 背景圖片預設路徑 */
+            --bg-image: url('wallpaper.jpg');
+            --container-bg: rgba(255, 255, 255, 0.82);
+            --primary-yellow: #FFD54F;
+            --primary-yellow-hover: #FFE082;
+            --powder-blue: #81D4FA;
+            --wrong-red: #FF8A8A;
+            --text-dark: #222222;
+            --btn-gray: #777777;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, "Microsoft JhengHei";
+        }
+
+        body {
+            background: var(--bg-image) no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: var(--container-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 3px solid #E52521; /* Mario Red Border */
+            border-radius: 25px;
+            width: 100%;
+            max-width: 680px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            color: var(--text-dark);
+            position: relative;
+            min-height: 520px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .score-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14pt;
+            font-weight: bold;
+            margin-bottom: 20px;
+            border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+            padding-bottom: 12px;
+        }
+
+        .score-points {
+            color: #E52521; 
+        }
+
+        .question-text {
+            font-size: 16pt;
+            font-weight: bold;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+        }
+
+        .q-type-badge {
+            background-color: #009922; /* Mario Green */
+            color: white;
+            font-size: 10pt;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+            z-index: 5;
+        }
+
+        .option-btn {
+            background-color: var(--primary-yellow);
+            color: #333;
+            border: none;
+            border-bottom: 5px solid #F39C12;
+            border-radius: 12px;
+            padding: 14px 20px;
+            font-size: 13pt;
+            font-weight: bold;
+            text-align: left;
+            cursor: pointer;
+            transition: transform 0.1s ease, background-color 0.2s ease;
+            width: 100%;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: var(--primary-yellow-hover);
+            transform: translateY(-2px);
+        }
+
+        .option-btn:active:not(:disabled) {
+            transform: translateY(2px);
+            border-bottom-width: 1px;
+            margin-bottom: 4px;
+        }
+
+        .option-btn.correct {
+            background-color: var(--powder-blue) !important;
+            border-bottom-color: #29B6F6 !important;
+        }
+
+        .option-btn.wrong {
+            background-color: var(--wrong-red) !important;
+            border-bottom-color: #E57373 !important;
+        }
+
+        .option-btn.selected {
+            background-color: #FFB74D; 
+            border-bottom-color: #FFA726;
+        }
+
+        /* 右下角 MARIO 角色圖片樣式 */
+        .character-sprite {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            width: 130px;
+            height: 130px;
+            object-fit: contain;
+            pointer-events: none;
+            z-index: 2;
+            opacity: 0.98;
+        }
+
+        .feedback-container {
+            margin-top: 10px;
+            padding: 15px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.95);
+            font-size: 13pt;
+            font-weight: bold;
+            display: none;
+            z-index: 3;
+            line-height: 1.5;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .feedback-success { color: #2E7D32; }
+        .feedback-fail { color: #C62828; }
+
+        .control-panel {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 5px;
+            z-index: 10;
+            position: relative;
+            width: 100%;
+        }
+
+        .action-btn {
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 14px 50px;
+            font-size: 14pt;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+        .submit-btn {
+            background-color: #E52521;
+            border-bottom: 4px solid #B71C1C;
+        }
+
+        .next-btn {
+            background-color: var(--btn-gray);
+            border-bottom: 4px solid #555;
+            display: none;
+        }
+
+        .result-screen {
+            text-align: center;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .result-title {
+            font-size: 24pt;
+            color: #E52521;
+            margin-bottom: 25px;
+            font-weight: bold;
+        }
+
+        .result-badge {
+            font-size: 20pt;
+            font-weight: bold;
+            color: #009922;
+            margin-top: 15px;
+            margin-bottom: 35px;
+            background: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            border: 3px solid #FFD54F;
+        }
+
+        .restart-btn {
+            background-color: #049CD8;
+            border-bottom: 5px solid #0277BD;
+            border-radius: 12px;
+            padding: 14px 40px;
+            font-size: 14pt;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <div id="quizSection" style="display: block; width: 100%;">
+            <div class="score-header">
+                <span id="progressText">第 1 / 10 題</span>
+                <span class="score-points" id="scoreText">目前積分：0 / 10</span>
+            </div>
+
+            <div class="question-text">
+                <span class="q-type-badge" id="typeBadge">單選題</span><span id="questionText">載入中...</span>
+            </div>
+
+            <div class="options-container" id="optionsContainer"></div>
+
+            <div class="feedback-container" id="feedbackContainer"></div>
+
+            <div class="control-panel">
+                <button class="action-btn submit-btn" id="submitBtn" onclick="submitMultipleChoice()" style="display: none;">確認提交 ✔</button>
+                <button class="action-btn next-btn" id="nextBtn" onclick="nextQuestion()">下一題 ➔</button>
+            </div>
+            
+            <!-- 右下角 MARIO 角色圖片 -->
+            <img src="" alt="Mario Character" class="character-sprite" id="charSprite">
+        </div>
+
+        <div id="resultSection" class="result-screen">
+            <div class="result-title">🍄 MARIO 文化與生活挑戰通關！ 🍄</div>
+            <div style="font-size: 18pt; margin-bottom: 10px;">總得分：<span id="finalScoreText">0</span> / <span id="totalPossibleText">10</span></div>
+            <div style="font-size: 13pt; color: #666;">獲得榮譽稱號：</div>
+            <div class="result-badge" id="badgeText">瑪利歐冒險家</div>
+            <button class="restart-btn" onclick="restartGame()">重新挑戰 ↺</button>
+        </div>
+    </div>
+
+    <audio id="sndCorrect" preload="auto"><source src="https://actions.google.com/sounds/v1/cartoon/cartoon_wink.ogg" type="audio/ogg"></audio>
+    <audio id="sndWrong" preload="auto"><source src="https://actions.google.com/sounds/v1/cartoon/slide_whistle_down.ogg" type="audio/ogg"></audio>
+
+    <script>
+        const TARGET_QUESTIONS_PER_GAME = 10; // 修改為每局隨機 10 題
+        let actualQuestionsPerGame = 10;
+        
+        // 可用的角色圖片索引列表（對應 Mario (1) 至 Mario (13)）
+        const AVAILABLE_CHAR_IDS = [1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13];
+
+        const fullQuestionPool = [
+            { question: "以下哪些是春天的節氣？（答案可多於一個。）", options: ["A. 立春。", "B. 雨水。", "C. 清明。", "D. 小暑。"], answer: [0, 1, 2], isMultiple: true, charId: 1 },
+            { question: "以下哪項不是二十四節氣？", options: ["A. 清明。", "B. 夏至。", "C. 重陽。", "D. 大雪。"], answer: 2, isMultiple: false, charId: 2 },
+            { question: "以下哪些節氣可以用於指導農事活動？（答案可多於一個。）", options: ["A. 穀雨。", "B. 芒種。", "C. 小雪。", "D. 冬至。"], answer: [0, 1], isMultiple: true, charId: 3 },
+            { question: "二十四節氣中，哪一個節氣當天是北半球全年白晝最長的一天？", options: ["A. 春分。", "B. 夏至。", "C. 秋分。", "D. 冬至。"], answer: 1, isMultiple: false, charId: 4 },
+            { question: "二十四節氣中，哪兩個節氣是我國傳統節日？（答案可多於一個。）", options: ["A. 清明。", "B. 夏至。", "C. 立秋。", "D. 冬至。"], answer: [0, 3], isMultiple: true, charId: 5 },
+            { question: "以下哪項對二十四節氣的描述是不正確的？", options: ["A. 二十四節氣是我國很久以前開創的曆法。", "B. 二十四節氣反映季節的變化。", "C. 二十四節氣指導人們耕作和生活。", "D. 二十四節氣現在已經不重要了。"], answer: 3, isMultiple: false, charId: 6 },
+            { question: "以下哪些是唐朝服裝的特色？（答案可多於一個。）", options: ["A. 男士有佩戴香囊的習慣。", "B. 男士穿長袍和馬褂為主。", "C. 女士穿長袍為主。", "D. 女士多穿低領長裙配披肩。"], answer: [0, 3], isMultiple: true, charId: 7 },
+            { question: "我們現在一般會在甚麼日子穿我國傳統服裝？（答案可多於一個。）", options: ["A. 聖誕節。", "B. 農曆新年。", "C. 結婚。", "D. 母親節。"], answer: [1, 2], isMultiple: true, charId: 8 },
+            { question: "以下哪些是我們上酒樓吃飯時的飲食習慣？（答案可多於一個。）", options: ["A. 一人一份餐。", "B. 使用碗和筷子進食。", "C. 一家人圍坐進食。", "D. 主要吃薄餅和意粉。"], answer: [1, 2], isMultiple: true, charId: 10 },
+            { question: "以下哪些是元朗 大夫第的建築特色？（答案可多於一個。）", options: ["A. 屋脊上有生動的陶塑人偶。", "B. 窗户的雕刻有代表「福」的蝙蝠圖案。", "C. 正廳的台基較矮。", "D. 整座房子面積小。"], answer: [0, 1], isMultiple: true, charId: 11 },
+            { question: "以下哪項是福建的特色房屋？", options: ["A. 土樓。", "B. 吊腳樓。", "C. 蒙古包。", "D. 窰洞。"], answer: 0, isMultiple: false, charId: 12 },
+            { question: "以下哪項是我國的傳統繪畫？", options: ["A. 水彩畫。", "B. 水墨畫。", "C. 油畫。", "D. 素描。"], answer: 1, isMultiple: false, charId: 13 },
+            { question: "以下哪些是國畫的主要題材？（答案可多於一個。）", options: ["A. 山水。", "B. 花鳥。", "C. 天空。", "D. 人物。"], answer: [0, 1, 3], isMultiple: true, charId: 1 },
+            { question: "以下哪些是國畫的特色？（答案可多於一個。）", options: ["A. 以水墨為主。", "B. 主要以動物為題材。", "C. 以山水、人物和花鳥為題材。", "D. 色彩豐富豔麗。"], answer: [0, 2], isMultiple: true, charId: 2 },
+            { question: "採茶舞是以下我國哪個民族的舞蹈？", options: ["A. 蒙古族。", "B. 傣族。", "C. 黎族。", "D. 漢族。"], answer: 3, isMultiple: false, charId: 3 },
+            { question: "以下哪項是傣族的民族舞蹈？", options: ["A. 孔雀舞。", "B. 騎馬舞。", "C. 採茶舞。", "D. 舂米舞。"], answer: 0, isMultiple: false, charId: 4 },
+            { question: "以下哪項是蒙古族的舞蹈？", options: ["A. 孔雀舞。", "B. 採茶舞。", "C. 騎馬舞。", "D. 舂米舞。"], answer: 2, isMultiple: false, charId: 5 },
+            { question: "以下哪項是我國其中一種民族舞蹈？", options: ["A. 拉丁舞。", "B. 芭蕾舞。", "C. 孔雀舞。", "D. 佛朗明哥舞。"], answer: 2, isMultiple: false, charId: 6 },
+            { question: "以下哪種我國傳統樂器屬於拉弦樂？", options: ["A. 鼓。", "B. 二胡。", "C. 琵琶。", "D. 笛。"], answer: 1, isMultiple: false, charId: 7 },
+            { question: "《憫農》這首唐詩中表達了哪項我國傳統美德？", options: ["A. 團結。", "B. 謙遜。", "C. 勤勞。", "D. 堅毅。"], answer: 2, isMultiple: false, charId: 8 },
+            { question: "以下哪些書籍是我國四大名著？（答案可多於一個。）", options: ["A. 《紅樓夢》。", "B. 《雙城記》。", "C. 《西遊記》。", "D. 《本草綱目》。"], answer: [0, 2], isMultiple: true, charId: 10 },
+            { question: "以下哪項不是我國四大名著？", options: ["A. 《西遊記》。", "B. 《水滸傳》。", "C. 《孤星淚》。", "D. 《三國演義》。"], answer: 2, isMultiple: false, charId: 11 },
+            { question: "以下哪項描述是不正確的？", options: ["A. 世界各地的人有不同的風俗習慣。", "B. 香港沒有受到外來文化的影響。", "C. 各地人民的生活環境和方式構成了各自獨特的文化。", "D. 各地的文化有值得我們欣賞的地方。"], answer: 1, isMultiple: false, charId: 12 },
+            { question: "和服是以下哪個國家的傳統服裝？", options: ["A. 韓國。", "B. 印度。", "C. 印尼。", "D. 日本。"], answer: 3, isMultiple: false, charId: 13 },
+            { question: "以下哪種是日本的特色食品？", options: ["A. 壽司。", "B. 白粥。", "C. 薯條。", "D. 泡菜。"], answer: 0, isMultiple: false, charId: 1 },
+            { question: "以下哪種是印度的傳統食物？", options: ["A. 河粉。", "B. 咖喱。", "C. 餃子。", "D. 意粉。"], answer: 1, isMultiple: false, charId: 2 },
+            { question: "以下哪個國家的人主要使用刀叉進食？", options: ["A. 印度。", "B. 日本。", "C. 韓國。", "D. 英國。"], answer: 3, isMultiple: false, charId: 3 },
+            { question: "以下哪個國家的人主要使用筷子進食？", options: ["A. 德國。", "B. 芬蘭。", "C. 澳洲。", "D. 韓國。"], answer: 3, isMultiple: false, charId: 4 },
+            { question: "以下哪項是印度人的主要進食習慣？", options: ["A. 用刀叉進食。", "B. 用筷子進食。", "C. 用左手抓飯吃。", "D. 用右手抓飯吃。"], answer: 3, isMultiple: false, charId: 5 },
+            { question: "以下哪項關於日本 法隆寺的描述是正確的？", options: ["A. 是基督教建築。", "B. 建築風格受西方影響。", "C. 是世界最古老的木造建築。", "D. 曾經是平民的居所。"], answer: 2, isMultiple: false, charId: 6 },
+            { question: "泰國 玉佛寺是以下哪個宗教的建築？", options: ["A. 基督教。", "B. 天主教。", "C. 佛教。", "D. 印度教。"], answer: 2, isMultiple: false, charId: 7 },
+            { question: "以下哪種宗教的建築一般有圓形拱頂？", options: ["A. 基督教。", "B. 天主教。", "C. 佛教。", "D. 伊斯蘭教。"], answer: 3, isMultiple: false, charId: 8 },
+            { question: "佛朗明哥舞是以下哪個國家的傳統舞蹈？", options: ["A. 日本。", "B. 韓國。", "C. 巴西。", "D. 西班牙。"], answer: 3, isMultiple: false, charId: 10 },
+            { question: "以下哪些是香港受到外來文化影響的例子？（答案可多於一個。）", options: ["A. 蛋撻。", "B. 葡撻。", "C. 奶茶。", "D. 小籠包。"], answer: [0, 1, 2], isMultiple: true, charId: 11 },
+            { question: "以下哪些不是日本傳統文化？（答案可多於一個。）", options: ["A. 在祭典活動跳拉丁舞。", "B. 喜歡吃海產和喝茶。", "C. 在傳統節日穿和服。", "D. 用刀叉進食。"], answer: [0, 3], isMultiple: true, charId: 12 },
+            { question: "越南的傳統服裝主要受哪個國家的影響？", options: ["A. 中國。", "B. 法國。", "C. 英國。", "D. 德國。"], answer: 0, isMultiple: false, charId: 13 },
+            { question: "一家人圍坐進食體現甚麼精神？", options: ["A. 團結。", "B. 謙遜。", "C. 勤勞。", "D. 堅毅。"], answer: 0, isMultiple: false, charId: 1 },
+            { question: "我們用餐時要避免做出以下哪項不禮貌的行為？", options: ["A. 口中有食物時不説話。", "B. 不翻弄食物。", "C. 進食時發出聲響以表示謝意。", "D. 吃飯途中，不隨便離座。"], answer: 2, isMultiple: false, charId: 2 }
+        ];
+
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedAnswers = [];
+
+        // 初始化背景圖片相容性機制 (針對 Mario 資料夾)
+        function initBackground() {
+            const bgCandidates = [
+                'wallpaper.jpg',
+                'wallpaper.png',
+                'Mario/wallpaper.jpg',
+                'Mario/wallpaper.png',
+                'file:///C:/Users/annsk/OneDrive/桌面/MC%20games/Mario/wallpaper.jpg',
+                'file:///C:/Users/annsk/OneDrive/桌面/MC%20games/Mario/wallpaper.png'
+            ];
+            
+            let bgImg = new Image();
+            let candidateIdx = 0;
+
+            function tryNextBg() {
+                if (candidateIdx >= bgCandidates.length) return;
+                let src = bgCandidates[candidateIdx];
+                bgImg.onload = function() {
+                    document.body.style.backgroundImage = `url('${src}')`;
+                };
+                bgImg.onerror = function() {
+                    candidateIdx++;
+                    tryNextBg();
+                };
+                bgImg.src = src;
+            }
+            tryNextBg();
+        }
+
+        function initGame() {
+            initBackground();
+            const shuffled = [...fullQuestionPool].sort(() => 0.5 - Math.random());
+            actualQuestionsPerGame = Math.min(TARGET_QUESTIONS_PER_GAME, fullQuestionPool.length);
+            currentQuestions = shuffled.slice(0, actualQuestionsPerGame);
+            currentQuestionIndex = 0;
+            score = 0;
+            
+            document.getElementById("quizSection").style.display = "block";
+            document.getElementById("resultSection").style.display = "none";
+            showQuestion();
+        }
+
+        function showQuestion() {
+            selectedAnswers = [];
+            document.getElementById("feedbackContainer").style.display = "none";
+            document.getElementById("nextBtn").style.display = "none";
+            document.getElementById("submitBtn").style.display = "none";
+
+            const qData = currentQuestions[currentQuestionIndex];
+            
+            document.getElementById("progressText").innerText = `第 ${currentQuestionIndex + 1} / ${actualQuestionsPerGame} 題`;
+            document.getElementById("scoreText").innerText = `目前積分：${score} / ${actualQuestionsPerGame}`;
+            document.getElementById("questionText").innerText = qData.question;
+            
+            const typeBadge = document.getElementById("typeBadge");
+            if(qData.isMultiple) {
+                typeBadge.innerText = "複選題";
+                typeBadge.style.backgroundColor = "#E65100";
+                document.getElementById("submitBtn").style.display = "block";
+            } else {
+                typeBadge.innerText = "單選題";
+                typeBadge.style.backgroundColor = "#009922";
+            }
+
+            // 加載 MARIO 角色圖片
+            loadCharacterImage(qData.charId || 1);
+
+            const container = document.getElementById("optionsContainer");
+            container.innerHTML = "";
+
+            qData.options.forEach((option, index) => {
+                const btn = document.createElement("button");
+                btn.className = "option-btn";
+                btn.innerText = option;
+                btn.onclick = () => selectOption(index, btn);
+                container.appendChild(btn);
+            });
+        }
+
+        // 載入 Mario 角色圖片的多級降級相容機制
+        function loadCharacterImage(charId) {
+            const charSprite = document.getElementById("charSprite");
+            
+            const sources = [
+                `Mario (${charId}).png`,
+                `Mario/Mario (${charId}).png`,
+                `file:///C:/Users/annsk/OneDrive/桌面/MC%20games/Mario/Mario%20(${charId}).png`,
+                `Mario (${charId}).jpg`,
+                `Mario/Mario (${charId}).jpg`
+            ];
+
+            let sourceIdx = 0;
+
+            function tryLoadNext() {
+                if (sourceIdx >= sources.length) {
+                    charSprite.style.display = 'none';
+                    return;
+                }
+                charSprite.style.display = 'block';
+                charSprite.onerror = function() {
+                    sourceIdx++;
+                    tryLoadNext();
+                };
+                charSprite.src = sources[sourceIdx];
+            }
+
+            tryLoadNext();
+        }
+
+        function selectOption(index, btnElement) {
+            const qData = currentQuestions[currentQuestionIndex];
+            
+            if (!qData.isMultiple) {
+                checkSingleAnswer(index);
+            } else {
+                if (selectedAnswers.includes(index)) {
+                    selectedAnswers = selectedAnswers.filter(i => i !== index);
+                    btnElement.classList.remove("selected");
+                } else {
+                    selectedAnswers.push(index);
+                    btnElement.classList.add("selected");
+                }
+            }
+        }
+
+        function checkSingleAnswer(selectedIndex) {
+            const qData = currentQuestions[currentQuestionIndex];
+            const buttons = document.querySelectorAll(".options-container .option-btn");
+            buttons.forEach(btn => btn.disabled = true);
+
+            const feedback = document.getElementById("feedbackContainer");
+            feedback.style.display = "block";
+
+            if (selectedIndex === qData.answer) {
+                score++;
+                buttons[selectedIndex].classList.add("correct");
+                feedback.className = "feedback-container feedback-success";
+                feedback.innerHTML = "Here we go! 答對了！🍄⭐";
+                playAudio("sndCorrect");
+            } else {
+                buttons[selectedIndex].classList.add("wrong");
+                buttons[qData.answer].classList.add("correct");
+                feedback.className = "feedback-container feedback-fail";
+                feedback.innerHTML = `Mamma mia! 答錯了，正確答案是：<br><span style="color:#D32F2F;">${qData.options[qData.answer]}</span>`;
+                playAudio("sndWrong");
+            }
+            document.getElementById("scoreText").innerText = `目前積分：${score} / ${actualQuestionsPerGame}`;
+            document.getElementById("nextBtn").style.display = "block";
+        }
+
+        function submitMultipleChoice() {
+            const qData = currentQuestions[currentQuestionIndex];
+            const buttons = document.querySelectorAll(".options-container .option-btn");
+            
+            if(selectedAnswers.length === 0) {
+                alert("請至少選擇一個選項再提交！");
+                return;
+            }
+
+            document.getElementById("submitBtn").style.display = "none";
+            buttons.forEach(btn => btn.disabled = true);
+
+            selectedAnswers.sort((a, b) => a - b);
+            const correctAnswers = [...qData.answer].sort((a, b) => a - b);
+            const isCorrect = JSON.stringify(selectedAnswers) === JSON.stringify(correctAnswers);
+
+            buttons.forEach((btn, idx) => {
+                btn.classList.remove("selected");
+                if (correctAnswers.includes(idx)) {
+                    btn.classList.add("correct");
+                } else if (selectedAnswers.includes(idx)) {
+                    btn.classList.add("wrong");
+                }
+            });
+
+            const feedback = document.getElementById("feedbackContainer");
+            feedback.style.display = "block";
+
+            const correctTexts = correctAnswers.map(idx => qData.options[idx]).join("<br>");
+
+            if (isCorrect) {
+                score++;
+                feedback.className = "feedback-container feedback-success";
+                feedback.innerHTML = "Here we go! 答對了！🍄⭐";
+                playAudio("sndCorrect");
+            } else {
+                feedback.className = "feedback-container feedback-fail";
+                feedback.innerHTML = `Mamma mia! 答錯了，正確答案是：<br><span style="color:#D32F2F; font-size:12pt;">${correctTexts}</span>`;
+                playAudio("sndWrong");
+            }
+
+            document.getElementById("scoreText").innerText = `目前積分：${score} / ${actualQuestionsPerGame}`;
+            document.getElementById("nextBtn").style.display = "block";
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < actualQuestionsPerGame) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById("quizSection").style.display = "none";
+            document.getElementById("resultSection").style.display = "flex";
+            document.getElementById("finalScoreText").innerText = score;
+            document.getElementById("totalPossibleText").innerText = actualQuestionsPerGame;
+
+            let badge = "";
+            let passRatio = score / actualQuestionsPerGame;
+            if (passRatio === 1) {
+                badge = "瑪利歐級文化大師 (Mario Master)";
+            } else if (passRatio >= 0.7) {
+                badge = "路易吉超級夥伴 (Luigi Ally)";
+            } else {
+                badge = "蘑菇王國新星冒險家";
+            }
+            
+            document.getElementById("badgeText").innerText = badge;
+        }
+
+        function restartGame() { initGame(); }
+
+        function playAudio(id) {
+            const audio = document.getElementById(id);
+            if (audio) {
+                audio.currentTime = 0;
+                audio.play().catch(e => console.log("音效播不出:", e));
+            }
+        }
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>
