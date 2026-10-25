@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inside Out 腦筋急轉彎生活與理財素養挑戰</title>
+    <style>
+        :root {
+            /* 背景圖片路徑 */
+            --bg-image: url('inside out/insideout wallpaper.jpg');
+            --container-bg: rgba(255, 255, 255, 0.55);
+            --primary-pink: #FFC0CB;
+            --primary-pink-hover: #FFD1DC;
+            --powder-blue: #B0E0E6;
+            --wrong-red: #FF8A8A;
+            --text-dark: #444444;
+            --btn-gray: #777777;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, "Microsoft JhengHei";
+        }
+
+        body {
+            background: var(--bg-image) no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: var(--container-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 25px;
+            width: 100%;
+            max-width: 680px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            color: var(--text-dark);
+            position: relative;
+            min-height: 520px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .score-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14pt;
+            font-weight: bold;
+            margin-bottom: 20px;
+            border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+            padding-bottom: 12px;
+        }
+
+        .score-points {
+            color: #E91E63; 
+        }
+
+        .question-text {
+            font-size: 16pt;
+            font-weight: bold;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+        }
+
+        .q-type-badge {
+            background-color: #90CAF9;
+            color: white;
+            font-size: 10pt;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+            z-index: 5;
+        }
+
+        .option-btn {
+            background-color: var(--primary-pink);
+            color: #444;
+            border: none;
+            border-bottom: 5px solid #FFB2C1;
+            border-radius: 12px;
+            padding: 14px 20px;
+            font-size: 13pt;
+            font-weight: bold;
+            text-align: left;
+            cursor: pointer;
+            transition: transform 0.1s ease, background-color 0.2s ease;
+            width: 100%;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: var(--primary-pink-hover);
+            transform: translateY(-2px);
+        }
+
+        .option-btn:active:not(:disabled) {
+            transform: translateY(2px);
+            border-bottom-width: 1px;
+            margin-bottom: 4px;
+        }
+
+        .option-btn.correct {
+            background-color: var(--powder-blue) !important;
+            border-bottom-color: #98D0D6 !important;
+        }
+
+        .option-btn.wrong {
+            background-color: var(--wrong-red) !important;
+            border-bottom-color: #E57373 !important;
+        }
+
+        .option-btn.selected {
+            background-color: #FFD180; 
+            border-bottom-color: #FFB74D;
+        }
+
+        /* 右下角 Inside Out 角色圖片樣式 */
+        .character-sprite {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            width: 130px;
+            height: 130px;
+            object-fit: contain;
+            pointer-events: none;
+            z-index: 2;
+            opacity: 0.98;
+        }
+
+        .feedback-container {
+            margin-top: 10px;
+            padding: 15px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.7);
+            font-size: 13pt;
+            font-weight: bold;
+            display: none;
+            z-index: 3;
+            line-height: 1.5;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .feedback-success { color: #00897B; }
+        .feedback-fail { color: #D32F2F; }
+
+        .control-panel {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 5px;
+            z-index: 10;
+            position: relative;
+            width: 100%;
+        }
+
+        .action-btn {
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 14px 50px;
+            font-size: 14pt;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .submit-btn {
+            background-color: #4DD0E1;
+            border-bottom: 4px solid #26C6DA;
+        }
+
+        .next-btn {
+            background-color: var(--btn-gray);
+            border-bottom: 4px solid #555;
+            display: none;
+        }
+
+        .result-screen {
+            text-align: center;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .result-title {
+            font-size: 26pt;
+            color: #E91E63;
+            margin-bottom: 25px;
+        }
+
+        .result-badge {
+            font-size: 22pt;
+            font-weight: bold;
+            color: #3F51B5;
+            margin-top: 15px;
+            margin-bottom: 35px;
+            background: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            border: 2px solid #FFC0CB;
+        }
+
+        .restart-btn {
+            background-color: #90CAF9;
+            border-bottom: 5px solid #64B5F6;
+            border-radius: 12px;
+            padding: 14px 40px;
+            font-size: 14pt;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <div id="quizSection" style="display: block; width: 100%;">
+            <div class="score-header">
+                <span id="progressText">第 1 / 10 題</span>
+                <span class="score-points" id="scoreText">目前積分：0 / 10</span>
+            </div>
+
+            <div class="question-text">
+                <span class="q-type-badge" id="typeBadge">單選題</span><span id="questionText">載入中...</span>
+            </div>
+
+            <div class="options-container" id="optionsContainer"></div>
+
+            <div class="feedback-container" id="feedbackContainer"></div>
+
+            <div class="control-panel">
+                <button class="action-btn submit-btn" id="submitBtn" onclick="submitMultipleChoice()" style="display: none;">確認提交 ✔</button>
+                <button class="action-btn next-btn" id="nextBtn" onclick="nextQuestion()">下一題 ➔</button>
+            </div>
+            
+            <!-- 右下角角色圖片 -->
+            <img src="" alt="Inside Out Character" class="character-sprite" id="charSprite" onerror="handleImageError(this)">
+        </div>
+
+        <div id="resultSection" class="result-screen">
+            <div class="result-title">🧠 Inside Out 挑戰結束 🧠</div>
+            <div style="font-size: 18pt; margin-bottom: 10px;">總得分：<span id="finalScoreText">0</span> / 10</div>
+            <div style="font-size: 13pt; color: #666;">獲得情緒稱號：</div>
+            <div class="result-badge" id="badgeText">情緒小助手</div>
+            <button class="restart-btn" onclick="restartGame()">重新挑戰 ↺</button>
+        </div>
+    </div>
+
+    <audio id="sndCorrect" preload="auto"><source src="https://actions.google.com/sounds/v1/cartoon/cartoon_wink.ogg" type="audio/ogg"></audio>
+    <audio id="sndWrong" preload="auto"><source src="https://actions.google.com/sounds/v1/cartoon/slide_whistle_down.ogg" type="audio/ogg"></audio>
+
+    <script>
+        const TOTAL_QUESTIONS_PER_GAME = 10; // 每次隨機 10 題
+
+        const fullQuestionPool = [
+            { question: "以下哪些是儲蓄的作用？（答案可多於一個。）", options: ["A. 達成理財目標。", "B. 應付突發需要。", "C. 隨便花錢。", "D. 捐助別人。"], answer: [0, 1, 3], isMultiple: true, charId: 1 },
+            { question: "儲蓄有甚麼好處？（答案可多於一個。）", options: ["A. 可以隨便花錢。", "B. 不會把錢全部花光。", "C. 幫助我們積少成多。", "D. 在需要時有錢可以使用。"], answer: [1, 2, 3], isMultiple: true, charId: 2 },
+            { question: "為甚麼要記錄開支？", options: ["A. 可以減少開支。", "B. 可以增加收入。", "C. 不會遺失金錢。", "D. 讓我們記得金錢花了在甚麼地方。"], answer: 3, isMultiple: false, charId: 3 },
+            { question: "以下哪些是我們的支出？（答案可多於一個。）", options: ["A. 家長給我們的零用錢。", "B. 長輩給我們的利是錢。", "C. 用來買圖書的零用錢。", "D. 用來買玩具的利是錢。"], answer: [2, 3], isMultiple: true, charId: 4 },
+            { question: "以下哪些是管理金錢的好習慣？（答案可多於一個。）", options: ["A. 訂立儲蓄目標。", "B. 把金錢隨意放在桌上。", "C. 每天隨意花錢。", "D. 記錄開支。"], answer: [0, 3], isMultiple: true, charId: 5 },
+            { question: "妹妹的生日快到了，她最喜歡動物，你會選擇甚麼禮物給她？", options: ["A. 超人錢包。", "B. 兔子玩偶。", "C. 精美文具。", "D. 紅色裙子。"], answer: 1, isMultiple: false, charId: 6 },
+            { question: "八達通是甚麼工具？", options: ["A. 現金。", "B. 銀行卡。", "C. 支付工具。", "D. 會員卡。"], answer: 2, isMultiple: false, charId: 7 },
+            { question: "以下哪些是支付工具？（答案可多於一個。）", options: ["A. 學生證。", "B. 八達通。", "C. 會員卡。", "D. 電子錢包。"], answer: [1, 3], isMultiple: true, charId: 8 },
+            { question: "以下哪些是保管八達通的好方法？（答案可多於一個。）", options: ["A. 把八達通放進錢包裏。", "B. 把八達通放進保護套掛包裏。", "C. 一直把八達通拿在手上。", "D. 把八達通隨意放在桌上。"], answer: [0, 1], isMultiple: true, charId: 9 },
+            { question: "以下哪項是閒暇？", options: ["A. 上學時間。", "B. 温習時間。", "C. 做功課時間。", "D. 自由活動時間。"], answer: 3, isMultiple: false, charId: 10 },
+            { question: "以下哪些不是閒暇活動？（答案可多於一個。）", options: ["A. 吃飯。", "B. 玩電腦遊戲。", "C. 看電視。", "D. 睡覺。"], answer: [0, 3], isMultiple: true, charId: 1 },
+            { question: "以下哪些是閒暇活動？（答案可多於一個。）", options: ["A. 繪畫。", "B. 郊遊。", "C. 打羽毛球。", "D. 做功課。"], answer: [0, 1, 2], isMultiple: true, charId: 2 },
+            { question: "以下哪個是善用空餘時間的習慣？", options: ["A. 安排自己的假日時間表。", "B. 每逢假日，便賴牀。", "C. 到了温習時間，仍然繼續玩耍。", "D. 每逢假日，便長時間玩電腦遊戲。"], answer: 0, isMultiple: false, charId: 3 },
+            { question: "一個人的時候，可以進行以下哪些活動？（答案可多於一個。）", options: ["A. 看電視。", "B. 猜拳遊戲。", "C. 捉迷藏。", "D. 唱歌。"], answer: [0, 3], isMultiple: true, charId: 4 },
+            { question: "以下哪些是可以一個人進行的活動？（答案可多於一個。）", options: ["A. 跑步。", "B. 打羽毛球。", "C. 游泳。", "D. 閲讀。"], answer: [0, 2, 3], isMultiple: true, charId: 5 },
+            { question: "以下哪些是必須與別人一起才可以進行的活動？（答案可多於一個。）", options: ["A. 捉迷藏。", "B. 彈鋼琴。", "C. 打羽毛球。", "D. 閲讀。"], answer: [0, 2], isMultiple: true, charId: 6 },
+            { question: "參加以下哪些活動可以增廣見聞？（答案可多於一個。）", options: ["A. 參觀展覽。", "B. 跳繩。", "C. 參觀動物園。", "D. 打乒乓球。"], answer: [0, 2], isMultiple: true, charId: 7 },
+            { question: "以下哪些活動可以強身健體？（答案可多於一個。）", options: ["A. 做體操。", "B. 繪畫。", "C. 下棋。", "D. 騎單車。"], answer: [0, 3], isMultiple: true, charId: 8 },
+            { question: "以下哪項是有益身心的活動？", options: ["A. 吵架。", "B. 大吃大喝。", "C. 玩一整天電腦遊戲。", "D. 游泳。"], answer: 3, isMultiple: false, charId: 9 },
+            { question: "閲讀有甚麼好處？", options: ["A. 強身健體。", "B. 增進知識。", "C. 培養責任感。", "D. 學習與人相處。"], answer: 1, isMultiple: false, charId: 10 },
+            { question: "打乒乓球有甚麼好處？（答案可多於一個。）", options: ["A. 強身健體。", "B. 增進知識。", "C. 訓練反應。", "D. 發揮創意。"], answer: [0, 2], isMultiple: true, charId: 1 },
+            { question: "以下哪項閒暇活動能發揮創意？", options: ["A. 繪畫。", "B. 下棋。", "C. 騎單車。", "D. 看動畫。"], answer: 0, isMultiple: false, charId: 2 },
+            { question: "以下哪些是參加閒暇活動的好處？（答案可多於一個。）", options: ["A. 放鬆身心。", "B. 不用上學。", "C. 把空餘時間填滿。", "D. 紓緩壓力。"], answer: [0, 3], isMultiple: true, charId: 3 },
+            { question: "子朗身體瘦弱，你會建議他選擇以下哪些閒暇活動來改善身體情況？（答案可多於一個。）", options: ["A. 打羽毛球。", "B. 摺紙。", "C. 玩電腦遊戲。", "D. 跳舞。"], answer: [0, 3], isMultiple: true, charId: 4 },
+            { question: "以下哪些是飼養動物前需要考慮的條件？（答案可多於一個。）", options: ["A. 照顧動物的能力。", "B. 家人的同意。", "C. 就讀的學校。", "D. 居住環境。"], answer: [0, 1, 3], isMultiple: true, charId: 5 },
+            { question: "哪項不是飼養小狗的正確方法？", options: ["A. 餵飼牠。", "B. 清理牠的大小便。", "C. 把牠整天關在籠裏。", "D. 和牠玩耍。"], answer: 2, isMultiple: false, charId: 6 },
+            { question: "為了寵物的健康，主人必須為牠們提供甚麼？（答案可多於一個。）", options: ["A. 流通的空氣。", "B. 有益健康的食物。", "C. 漂亮的餐具。", "D. 乾淨的水。"], answer: [0, 1, 3], isMultiple: true, charId: 7 },
+            { question: "以下哪些是動物主人的責任？（答案可多於一個。）", options: ["A. 定時餵飼動物。", "B. 給動物提供足夠的活動空間。", "C. 清潔牠們的身體。", "D. 動物生病時不理會牠。"], answer: [0, 1, 2], isMultiple: true, charId: 8 },
+            { question: "以下哪項是面對寵物生病時的正確態度？", options: ["A. 帶牠看獸醫。", "B. 棄養牠。", "C. 不再理會牠。", "D. 交給別人照顧。"], answer: 0, isMultiple: false, charId: 9 },
+            { question: "以下哪些不是栽種植物的正確做法？（答案可多於一個。）", options: ["A. 把植物放在不通風的地方。", "B. 把植物放在陽光充足的地方。", "C. 適當澆水。", "D. 不理會它。"], answer: [0, 3], isMultiple: true, charId: 10 },
+            { question: "以下哪個環境不適合植物生長？", options: ["A. 陽台上。", "B. 衣櫃內。", "C. 花園。", "D. 窗邊。"], answer: 1, isMultiple: false, charId: 1 },
+            { question: "哪些是使植物健康生長的做法？（答案可多於一個。）", options: ["A. 適當澆水。", "B. 把植物擺放在有陽光照射的地方。", "C. 適當施肥。", "D. 把植物擺放在密封的地方。"], answer: [0, 1, 2], isMultiple: true, charId: 2 },
+            { question: "以下哪些是參加閒暇活動時不正確的行為？（答案可多於一個。）", options: ["A. 爭先恐後。", "B. 穿上適當的裝備參加活動。", "C. 聽從活動導師的指示。", "D. 不守時。"], answer: [0, 3], isMultiple: true, charId: 3 },
+            { question: "在社交平台發佈消息時，透露自己的私隱有甚麼壞處？", options: ["A. 讓朋友更加認識自己。", "B. 個人資料可能會被不法之徒利用。", "C. 收到朋友的祝賀。", "D. 得到朋友的禮物。"], answer: 1, isMultiple: false, charId: 4 },
+            { question: "以下哪些資料不要讓別人知道？（答案可多於一個。）", options: ["A. 開啟電腦的密碼。", "B. 自己電郵的密碼。", "C. 學校內聯網帳户的密碼。", "D. 自己喜歡的顏色。"], answer: [0, 1, 2], isMultiple: true, charId: 5 },
+            { question: "為甚麼在網上看到別人的報告後，我們複製下來交功課是錯誤的行為？", options: ["A. 因為修改會浪費時間。", "B. 因為要加入自己意見。", "C. 因為抄襲是不尊重創作者的行為。", "D. 因為老師會發現。"], answer: 2, isMultiple: false, charId: 6 },
+            { question: "我們做專題研習時，應該怎樣蒐集所需的資料和圖片？（答案可多於一個。）", options: ["A. 直接使用任何網上文章。", "B. 直接使用任何網上圖片和照片。", "C. 透過訪問，取得第一手資料。", "D. 實地考察，拍攝照片。"], answer: [2, 3], isMultiple: true, charId: 7 },
+            { question: "以下哪些不是第一手資料？（答案可多於一個。）", options: ["A. 實地考察時拍攝的照片。", "B. 訪問時記錄的資料。", "C. 從網上抄下的資料。", "D. 別人寫的文章。"], answer: [2, 3], isMultiple: true, charId: 8 },
+            { question: "為了取得第一手資料，我們進行實地考察時應該做甚麼？", options: ["A. 拍攝照片。", "B. 跟朋友閒聊。", "C. 只查看網站資料。", "D. 複製現場資料。"], answer: 0, isMultiple: false, charId: 9 },
+            { question: "以下哪項是尊重知識產權的行為？", options: ["A. 沒有得到創作者同意就複製作品。", "B. 拒絕盜版活動。", "C. 下載盜版遊戲。", "D. 隨便下載別人拍攝的照片。"], answer: 1, isMultiple: false, charId: 10 },
+            { question: "以下哪些行為侵犯了知識產權？（答案可多於一個。）", options: ["A. 創作自己的作品。", "B. 下載盜版遊戲。", "C. 在沒有得到創作者同意下複製作品。", "D. 複印書本。"], answer: [1, 2, 3], isMultiple: true, charId: 1 },
+            { question: "以下哪些是正確運用資訊科技的做法？（答案可多於一個。）", options: ["A. 尊重知識產權。", "B. 使用正版軟件。", "C. 下載盜版影片。", "D. 直接使用陌生人在網上發放的資料和圖片。"], answer: [0, 1], isMultiple: true, charId: 2 },
+            { question: "我們應該養成以下哪些管理金錢的習慣？（答案可多於一個。）", options: ["A. 儲蓄。", "B. 記錄開支。", "C. 隨意使用金錢。", "D. 小心保管金錢。"], answer: [0, 1, 3], isMultiple: true, charId: 3 },
+            { question: "以下哪種購物態度是不正確的？", options: ["A. 購物前考慮自己的負擔能力。", "B. 購物前考慮物品的價值。", "C. 用合理的價錢購物。", "D. 向別人借錢購物。"], answer: 3, isMultiple: false, charId: 4 },
+            { question: "以下哪個小朋友購買物品時態度不正確？", options: ["A. 小風看到想要的東西就立刻購買。", "B. 美美購買前考慮該物品值不值得購買。", "C. 家文購買了價錢比較合理的物品。", "D. 永信會考慮自己的負擔能力。"], answer: 0, isMultiple: false, charId: 5 },
+            { question: "我們應該怎樣對待家長給我們的零用錢？（答案可多於一個。）", options: ["A. 珍惜。", "B. 立刻花光零用錢。", "C. 妥善使用零用錢。", "D. 小心保管零用錢。"], answer: [0, 2, 3], isMultiple: true, charId: 6 },
+            { question: "飼養動物時，哪項對待動物的態度不正確？", options: ["A. 棄養動物。", "B. 帶生病的動物看獸醫。", "C. 提供合適的居住環境給動物。", "D. 每天都提供有益健康的食物給動物。"], answer: 0, isMultiple: false, charId: 7 },
+            { question: "以下哪些是參加閒暇活動時正確的態度？（答案可多於一個。）", options: ["A. 幫助有需要的同學。", "B. 隨時缺席活動。", "C. 活動後收拾物品。", "D. 隨自己的喜好進行活動，不與人合作。"], answer: [0, 2], isMultiple: true, charId: 8 },
+            { question: "以下哪項是進行活動時不尊重別人的表現？", options: ["A. 守時。", "B. 守規則。", "C. 未經同意，取用別人的物品。", "D. 聆聽別人的意見。"], answer: 2, isMultiple: false, charId: 9 },
+            { question: "以下哪些是參加興趣班時的正確態度？（答案可多於一個。）", options: ["A. 爭先恐後。", "B. 準時到達。", "C. 樂於助人。", "D. 注意安全。"], answer: [1, 2, 3], isMultiple: true, charId: 10 },
+            { question: "運用資訊科技時，應該注意甚麼？", options: ["A. 向朋友透露自己的密碼。", "B. 保護自己和他人的私隱。", "C. 隨便下載軟件。", "D. 公開所有個人資料。"], answer: 1, isMultiple: false, charId: 1 },
+            { question: "我們在使用別人的作品時應該怎樣做？", options: ["A. 立刻在社交平台上發表。", "B. 隨意使用。", "C. 獲得創作者的同意才使用。", "D. 只改幾個字就使用。"], answer: 2, isMultiple: false, charId: 2 }
+        ];
+
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedAnswers = [];
+
+        function initGame() {
+            // 洗牌並隨機抽取 10 題
+            const shuffled = [...fullQuestionPool].sort(() => 0.5 - Math.random());
+            currentQuestions = shuffled.slice(0, TOTAL_QUESTIONS_PER_GAME);
+            currentQuestionIndex = 0;
+            score = 0;
+            
+            document.getElementById("quizSection").style.display = "block";
+            document.getElementById("resultSection").style.display = "none";
+            showQuestion();
+        }
+
+        function showQuestion() {
+            selectedAnswers = [];
+            document.getElementById("feedbackContainer").style.display = "none";
+            document.getElementById("nextBtn").style.display = "none";
+            document.getElementById("submitBtn").style.display = "none";
+
+            const qData = currentQuestions[currentQuestionIndex];
+            
+            document.getElementById("progressText").innerText = `第 ${currentQuestionIndex + 1} / ${TOTAL_QUESTIONS_PER_GAME} 題`;
+            document.getElementById("scoreText").innerText = `目前積分：${score} / ${TOTAL_QUESTIONS_PER_GAME}`;
+            document.getElementById("questionText").innerText = qData.question;
+            
+            const typeBadge = document.getElementById("typeBadge");
+            if(qData.isMultiple) {
+                typeBadge.innerText = "複選題";
+                typeBadge.style.backgroundColor = "#F06292";
+                document.getElementById("submitBtn").style.display = "block";
+            } else {
+                typeBadge.innerText = "單選題";
+                typeBadge.style.backgroundColor = "#90CAF9";
+            }
+
+            // 指定角色圖片檔名 (.png)
+            const imgIndex = qData.charId || 1;
+            const charSprite = document.getElementById("charSprite");
+            charSprite.src = `inside out/insideout (${imgIndex}).png`;
+
+            const container = document.getElementById("optionsContainer");
+            container.innerHTML = "";
+
+            qData.options.forEach((option, index) => {
+                const btn = document.createElement("button");
+                btn.className = "option-btn";
+                btn.innerText = option;
+                btn.onclick = () => selectOption(index, btn);
+                container.appendChild(btn);
+            });
+        }
+
+        // 圖片自動備用防錯機制
+        function handleImageError(img) {
+            if (img.src.endsWith('.png')) {
+                img.src = img.src.replace('.png', '.jpg');
+            }
+        }
+
+        function selectOption(index, btnElement) {
+            const qData = currentQuestions[currentQuestionIndex];
+            
+            if (!qData.isMultiple) {
+                checkSingleAnswer(index);
+            } else {
+                if (selectedAnswers.includes(index)) {
+                    selectedAnswers = selectedAnswers.filter(i => i !== index);
+                    btnElement.classList.remove("selected");
+                } else {
+                    selectedAnswers.push(index);
+                    btnElement.classList.add("selected");
+                }
+            }
+        }
+
+        function checkSingleAnswer(selectedIndex) {
+            const qData = currentQuestions[currentQuestionIndex];
+            const buttons = document.querySelectorAll(".options-container .option-btn");
+            buttons.forEach(btn => btn.disabled = true);
+
+            const feedback = document.getElementById("feedbackContainer");
+            feedback.style.display = "block";
+
+            if (selectedIndex === qData.answer) {
+                score++;
+                buttons[selectedIndex].classList.add("correct");
+                feedback.className = "feedback-container feedback-success";
+                feedback.innerHTML = "太棒了！答對了！✨";
+                playAudio("sndCorrect");
+            } else {
+                buttons[selectedIndex].classList.add("wrong");
+                buttons[qData.answer].classList.add("correct");
+                feedback.className = "feedback-container feedback-fail";
+                feedback.innerHTML = `喔不！答錯了，正確答案是：<br><span style="color:#E91E63;">${qData.options[qData.answer]}</span>`;
+                playAudio("sndWrong");
+            }
+            document.getElementById("scoreText").innerText = `目前積分：${score} / ${TOTAL_QUESTIONS_PER_GAME}`;
+            document.getElementById("nextBtn").style.display = "block";
+        }
+
+        function submitMultipleChoice() {
+            const qData = currentQuestions[currentQuestionIndex];
+            const buttons = document.querySelectorAll(".options-container .option-btn");
+            
+            if(selectedAnswers.length === 0) {
+                alert("請至少選擇一個選項再提交！");
+                return;
+            }
+
+            document.getElementById("submitBtn").style.display = "none";
+            buttons.forEach(btn => btn.disabled = true);
+
+            selectedAnswers.sort((a, b) => a - b);
+            const correctAnswers = [...qData.answer].sort((a, b) => a - b);
+            const isCorrect = JSON.stringify(selectedAnswers) === JSON.stringify(correctAnswers);
+
+            buttons.forEach((btn, idx) => {
+                btn.classList.remove("selected");
+                if (correctAnswers.includes(idx)) {
+                    btn.classList.add("correct");
+                } else if (selectedAnswers.includes(idx)) {
+                    btn.classList.add("wrong");
+                }
+            });
+
+            const feedback = document.getElementById("feedbackContainer");
+            feedback.style.display = "block";
+
+            const correctTexts = correctAnswers.map(idx => qData.options[idx]).join("<br>");
+
+            if (isCorrect) {
+                score++;
+                feedback.className = "feedback-container feedback-success";
+                feedback.innerHTML = "太棒了！答對了！✨";
+                playAudio("sndCorrect");
+            } else {
+                feedback.className = "feedback-container feedback-fail";
+                feedback.innerHTML = `喔不！答錯了，正確答案是：<br><span style="color:#E91E63; font-size:12pt;">${correctTexts}</span>`;
+                playAudio("sndWrong");
+            }
+
+            document.getElementById("scoreText").innerText = `目前積分：${score} / ${TOTAL_QUESTIONS_PER_GAME}`;
+            document.getElementById("nextBtn").style.display = "block";
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < TOTAL_QUESTIONS_PER_GAME) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById("quizSection").style.display = "none";
+            document.getElementById("resultSection").style.display = "flex";
+            document.getElementById("finalScoreText").innerText = score;
+
+            let badge = "";
+            if (score === 10) {
+                badge = "理財素養大師 (Joy)";
+            } else if (score >= 7) {
+                badge = "資深核心記憶專家";
+            } else {
+                badge = "情緒控制台實習生";
+            }
+            
+            document.getElementById("badgeText").innerText = badge;
+        }
+
+        function restartGame() { initGame(); }
+
+        function playAudio(id) {
+            const audio = document.getElementById(id);
+            if (audio) {
+                audio.currentTime = 0;
+                audio.play().catch(e => console.log("音效播不出:", e));
+            }
+        }
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>
