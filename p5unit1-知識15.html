@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inside Out 腦筋急轉彎安全知識大挑戰</title>
+    <style>
+        :root {
+            /* 背景圖片路徑 */
+            --bg-image: url('inside out/insideout wallpaper.jpg');
+            --container-bg: rgba(255, 255, 255, 0.55);
+            --primary-pink: #FFC0CB;
+            --primary-pink-hover: #FFD1DC;
+            --powder-blue: #B0E0E6;
+            --wrong-red: #FF8A8A;
+            --text-dark: #444444;
+            --btn-gray: #777777;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, "Microsoft JhengHei";
+        }
+
+        body {
+            background: var(--bg-image) no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: var(--container-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 25px;
+            width: 100%;
+            max-width: 680px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            color: var(--text-dark);
+            position: relative;
+            min-height: 520px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .score-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14pt;
+            font-weight: bold;
+            margin-bottom: 20px;
+            border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+            padding-bottom: 12px;
+        }
+
+        .score-points {
+            color: #E91E63; 
+        }
+
+        .question-text {
+            font-size: 16pt;
+            font-weight: bold;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+        }
+
+        .q-type-badge {
+            background-color: #90CAF9;
+            color: white;
+            font-size: 10pt;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+            z-index: 5;
+        }
+
+        .option-btn {
+            background-color: var(--primary-pink);
+            color: #444;
+            border: none;
+            border-bottom: 5px solid #FFB2C1;
+            border-radius: 12px;
+            padding: 14px 20px;
+            font-size: 13pt;
+            font-weight: bold;
+            text-align: left;
+            cursor: pointer;
+            transition: transform 0.1s ease, background-color 0.2s ease;
+            width: 100%;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: var(--primary-pink-hover);
+            transform: translateY(-2px);
+        }
+
+        .option-btn:active:not(:disabled) {
+            transform: translateY(2px);
+            border-bottom-width: 1px;
+            margin-bottom: 4px;
+        }
+
+        .option-btn.correct {
+            background-color: var(--powder-blue) !important;
+            border-bottom-color: #98D0D6 !important;
+        }
+
+        .option-btn.wrong {
+            background-color: var(--wrong-red) !important;
+            border-bottom-color: #E57373 !important;
+        }
+
+        .option-btn.selected {
+            background-color: #FFD180; 
+            border-bottom-color: #FFB74D;
+        }
+
+        /* 右下角 Inside Out 角色圖片樣式 */
+        .character-sprite {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            width: 130px;
+            height: 130px;
+            object-fit: contain;
+            pointer-events: none;
+            z-index: 2;
+            opacity: 0.98;
+        }
+
+        .feedback-container {
+            margin-top: 10px;
+            padding: 15px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.7);
+            font-size: 13pt;
+            font-weight: bold;
+            display: none;
+            z-index: 3;
+            line-height: 1.5;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .feedback-success { color: #00897B; }
+        .feedback-fail { color: #D32F2F; }
+
+        .control-panel {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 5px;
+            z-index: 10;
+            position: relative;
+            width: 100%;
+        }
+
+        .action-btn {
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 14px 50px;
+            font-size: 14pt;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .submit-btn {
+            background-color: #4DD0E1;
+            border-bottom: 4px solid #26C6DA;
+        }
+
+        .next-btn {
+            background-color: var(--btn-gray);
+            border-bottom: 4px solid #555;
+            display: none;
+        }
+
+        .result-screen {
+            text-align: center;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .result-title {
+            font-size: 26pt;
+            color: #E91E63;
+            margin-bottom: 25px;
+        }
+
+        .result-badge {
+            font-size: 22pt;
+            font-weight: bold;
+            color: #3F51B5;
+            margin-top: 15px;
+            margin-bottom: 35px;
+            background: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            border: 2px solid #FFC0CB;
+        }
+
+        .restart-btn {
+            background-color: #90CAF9;
+            border-bottom: 5px solid #64B5F6;
+            border-radius: 12px;
+            padding: 14px 40px;
+            font-size: 14pt;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <div id="quizSection" style="display: block; width: 100%;">
+            <div class="score-header">
+                <span id="progressText">第 1 / 15 題</span>
+                <span class="score-points" id="scoreText">目前積分：0 / 15</span>
+            </div>
+
+            <div class="question-text">
+                <span class="q-type-badge" id="typeBadge">單選題</span><span id="questionText">載入中...</span>
+            </div>
+
+            <div class="options-container" id="optionsContainer"></div>
+
+            <div class="feedback-container" id="feedbackContainer"></div>
+
+            <div class="control-panel">
+                <button class="action-btn submit-btn" id="submitBtn" onclick="submitMultipleChoice()" style="display: none;">確認提交 ✔</button>
+                <button class="action-btn next-btn" id="nextBtn" onclick="nextQuestion()">下一題 ➔</button>
+            </div>
+            
+            <!-- 右下角角色圖片 -->
+            <img src="" alt="Inside Out Character" class="character-sprite" id="charSprite" onerror="handleImageError(this)">
+        </div>
+
+        <div id="resultSection" class="result-screen">
+            <div class="result-title">🧠 Inside Out 挑戰結束 🧠</div>
+            <div style="font-size: 18pt; margin-bottom: 10px;">總得分：<span id="finalScoreText">0</span> / 15</div>
+            <div style="font-size: 13pt; color: #666;">獲得情緒稱號：</div>
+            <div class="result-badge" id="badgeText">情緒小助手</div>
+            <button class="restart-btn" onclick="restartGame()">重新挑戰 ↺</button>
+        </div>
+    </div>
+
+    <audio id="sndCorrect" preload="auto"><source src="https://actions.google.com/sounds/v1/cartoon/cartoon_wink.ogg" type="audio/ogg"></audio>
+    <audio id="sndWrong" preload="auto"><source src="https://actions.google.com/sounds/v1/cartoon/slide_whistle_down.ogg" type="audio/ogg"></audio>
+
+    <script>
+        const TOTAL_QUESTIONS_PER_GAME = 15; // 設定每局抽 15 題
+
+        const fullQuestionPool = [
+            { question: "以下哪項行為容易引致燙傷或燒傷？", options: ["A. 以手指用力挖鼻孔。", "B. 接觸燙熱的東西。", "C. 錯誤地使用利器。", "D. 一邊説笑，一邊走路。"], answer: 1, isMultiple: false, charId: 1 },
+            { question: "以下哪項不是正確的急救方法？", options: ["A. 流鼻血時，頭微向上。", "B. 擦傷後，用清水洗傷口，然後貼上消毒膠布。", "C. 扭傷後，冷敷受傷部位。", "D. 輕微燙傷後，用清水沖洗受傷部位。"], answer: 0, isMultiple: false, charId: 2 },
+            { question: "以下哪些行為容易發生意外？（答案可多於一個。）", options: ["A. 下樓梯的時候跳級。", "B. 正確使用利器。", "C. 走路時留意四周環境。", "D. 接觸燙熱的東西。"], answer: [0, 3], isMultiple: true, charId: 3 },
+            { question: "做手工時，以下哪項行為容易引致意外受傷？", options: ["A. 正確地使用利器。", "B. 聽從老師的指示。", "C. 避免觸碰工具鋒利的部分。", "D. 使用剪刀時不小心。"], answer: 3, isMultiple: false, charId: 4 },
+            { question: "以下哪些行為容易發生意外？（答案可多於一個。）", options: ["A. 走路不留意四周環境。", "B. 使用利器時不夠小心。", "C. 上下樓梯時不跳級。", "D. 在樓梯上追逐。"], answer: [0, 1, 3], isMultiple: true, charId: 5 },
+            { question: "意外受傷後，以下哪些做法是正確的？（答案可多於一個。）", options: ["A. 需要進行簡單急救，防止傷勢惡化。", "B. 急救後，不用再檢查傷口。", "C. 如果情況嚴重，應該立即就醫。", "D. 燙傷和扭傷的急救方法相同。"], answer: [0, 2], isMultiple: true, charId: 6 },
+            { question: "以下哪項行為會增加上體育課時受傷的機會？", options: ["A. 穿運動鞋。", "B. 聽從老師的指示。", "C. 身體感到不適，但依然堅持運動。", "D. 運動前做熱身運動。"], answer: 2, isMultiple: false, charId: 7 },
+            { question: "在運動前應該做哪些準備？（答案可多於一個。）", options: ["A. 吃得太飽。", "B. 穿上合適的運動服裝和鞋子。", "C. 做好熱身運動。", "D. 不聽老師講解。"], answer: [1, 2], isMultiple: true, charId: 8 },
+            { question: "運動前應該做甚麼來預防受傷？", options: ["A. 吃得很飽。", "B. 互相追逐。", "C. 做熱身運動。", "D. 喝大量白開水。"], answer: 2, isMultiple: false, charId: 9 },
+            { question: "為甚麼上體育課時要認真地做熱身運動？", options: ["A. 可以降低運動時受傷的機會。", "B. 可以降低運動的難度。", "C. 可以早些下課。", "D. 可以提升運動技巧。"], answer: 0, isMultiple: false, charId: 10 },
+            { question: "假如上體育課時感到不適，應該怎樣做？（答案可多於一個。）", options: ["A. 繼續運動，直到下課。", "B. 立即停止運動。", "C. 告訴老師。", "D. 不告訴任何人。"], answer: [1, 2], isMultiple: true, charId: 1 },
+            { question: "如果上體育課時感到身體不適，應該怎樣做？", options: ["A. 繼續堅持運動。", "B. 馬上告訴老師。", "C. 立即喝大量冷飲。", "D. 默默忍受。"], answer: 1, isMultiple: false, charId: 2 },
+            { question: "運動後，應該怎樣做來幫助身體恢復？（答案可多於一個。）", options: ["A. 做緩和運動。", "B. 立即喝大量冷飲解渴。", "C. 立即躺在地上休息。", "D. 適當補充水分。"], answer: [0, 3], isMultiple: true, charId: 3 },
+            { question: "運動後，以下哪些做法是正確的？（答案可多於一個。）", options: ["A. 補充水分。", "B. 喝冷飲解渴。", "C. 立即坐下休息。", "D. 做緩和運動。"], answer: [0, 3], isMultiple: true, charId: 4 },
+            { question: "以下哪些行為是注意運動安全的做法？（答案可多於一個。）", options: ["A. 運動時量力而為。", "B. 感到不適仍堅持運動。", "C. 遵守安全守則。", "D. 聽完講解才開始做運動。"], answer: [0, 2, 3], isMultiple: true, charId: 5 },
+            { question: "以下哪些是注意運動安全的做法？（答案可多於一個。）", options: ["A. 穿着舒適的拖鞋做運動。", "B. 先認真聽老師講解，然後才開始練習。", "C. 運動前做熱身運動。", "D. 運動後立即喝大量冷飲。"], answer: [1, 2], isMultiple: true, charId: 6 },
+            { question: "過馬路時，我們應該怎樣做？（答案可多於一個。）", options: ["A. 遵守交通燈號。", "B. 使用行人過路設施過馬路。", "C. 沒有車輛時便可以過馬路。", "D. 不看交通燈號，跟隨其他人過馬路。"], answer: [0, 1], isMultiple: true, charId: 7 },
+            { question: "過馬路時，以下哪些做法是正確的？（答案可多於一個。）", options: ["A. 沒有車輛時便不用留意路面情況。", "B. 過馬路時不分心，留意路面情況。", "C. 過馬路時遵守交通燈號。", "D. 不使用行人過路設施，翻越欄杆橫過馬路。"], answer: [1, 2], isMultiple: true, charId: 8 },
+            { question: "我們過馬路時，要怎樣避免意外？（答案可多於一個。）", options: ["A. 戴耳機聽音樂。", "B. 留意路面情況。", "C. 看手機屏幕。", "D. 依照交通燈號過馬路。"], answer: [1, 3], isMultiple: true, charId: 9 },
+            { question: "乘坐交通工具時，以下哪項做法是正確的？", options: ["A. 站立時不握扶手。", "B. 留意隨身物品有否被車門卡着。", "C. 在巴士樓梯上跳樓梯。", "D. 在車門即將關上時衝進車廂。"], answer: 1, isMultiple: false, charId: 10 },
+            { question: "乘坐巴士時，應該怎樣做？（答案可多於一個。）", options: ["A. 站立時要緊握扶手。", "B. 繫上安全帶。", "C. 留意隨身物品有否被車門卡着。", "D. 車輛行駛時，在巴士上層站立。"], answer: [0, 1, 2], isMultiple: true, charId: 1 },
+            { question: "乘坐巴士時，我們應該怎樣注意安全？", options: ["A. 在樓梯上站立。", "B. 站立時緊握扶手。", "C. 在上層站立。", "D. 在車廂內和朋友打鬧。"], answer: 1, isMultiple: false, charId: 2 },
+            { question: "以下哪些是乘坐交通工具時的正確行為？（答案可多於一個。）", options: ["A. 站立時緊握扶手。", "B. 在車廂中奔跑。", "C. 繫上安全帶。", "D. 留意隨身物品有沒有被車門卡着。"], answer: [0, 2, 3], isMultiple: true, charId: 3 },
+            { question: "以下哪項情況可能引致火警或阻礙逃生？", options: ["A. 確保住處的走火通道暢通。", "B. 不在大廈內焚燒物品。", "C. 在公共走廊大量堆積易燃物品。", "D. 小心使用電器和爐具。"], answer: 2, isMultiple: false, charId: 4 },
+            { question: "以下哪種情況可能會引致火警？", options: ["A. 插座負荷過重，發生短路。", "B. 烹飪時成人一直看守爐火。", "C. 公共走廊或室內不堆積易燃物品。", "D. 嚴禁在家中焚燒物品。"], answer: 0, isMultiple: false, charId: 5 },
+            { question: "以下哪些是平日應該做好的火警逃生準備？（答案可多於一個。）", options: ["A. 長期保持防煙門打開。", "B. 從不參與火警演習。", "C. 熟悉走火通道及逃生路線。", "D. 保持走火通道暢通，不堆積雜物。"], answer: [2, 3], isMultiple: true, charId: 6 },
+            { question: "以下哪些情況可能阻礙火警時逃生？（答案可多於一個。）", options: ["A. 防煙門保持關閉。", "B. 逃生通道放置了雜物。", "C. 定期檢查及維修消防設備。", "D. 防煙門被鎖上。"], answer: [1, 3], isMultiple: true, charId: 7 },
+            { question: "如果居住的大廈發生火警，逃生路線受濃煙影響，應該怎樣做？（答案可多於一個。）", options: ["A. 致電999，報告被困的位置。", "B. 用乾毛巾堵塞門邊的縫隙。", "C. 走到未受濃煙影響的房間。", "D. 在窗邊揮動毛巾，讓消防員知道被困的位置。"], answer: [0, 2, 3], isMultiple: true, charId: 8 },
+            { question: "如果居住的大廈發生火警，走廊佈滿濃煙，居民不應該怎樣做？", options: ["A. 留在家中，關上大門，用膠紙和濕毛巾密封門邊的縫隙。", "B. 利用最近的樓梯逃生。", "C. 關上大門後甚麼也不做。", "D. 致電999，報告被困位置。"], answer: 2, isMultiple: false, charId: 9 },
+            { question: "如果居住的大廈發生火警，以下哪項是正確的逃生方法？", options: ["A. 帶好貴重物品後才離家逃生。", "B. 用乾毛巾掩着口鼻。", "C. 遇到濃煙時，伏地爬行。", "D. 利用升降機逃生。"], answer: 2, isMultiple: false, charId: 10 },
+            { question: "當火警發生而要離家逃生時，不應該怎樣做？", options: ["A. 保持冷靜。", "B. 帶備「逃生三寶」。", "C. 遇上濃煙，要伏地爬行。", "D. 使用升降機逃生。"], answer: 3, isMultiple: false, charId: 1 },
+            { question: "如果大廈發生火警，走廊滿佈濃煙，以下哪些做法是正確的？（答案可多於一個。）", options: ["A. 留在家中，關上大門。", "B. 走到未受濃煙影響的房間。", "C. 保持冷靜，隨機應變。", "D. 利用最近的升降機逃生。"], answer: [0, 1, 2], isMultiple: true, charId: 2 },
+            { question: "如果居住的大廈發生火警需要離家逃生，以下哪些做法是正確的？（答案可多於一個。）", options: ["A. 離開家中，關上大門。", "B. 利用最近的樓梯逃生。", "C. 馬上收拾貴重物品。", "D. 遇上濃煙時，用濕毛巾掩着口鼻。"], answer: [0, 1, 3], isMultiple: true, charId: 3 },
+            { question: "以下哪些是火警發生時要帶備的「逃生三寶」？（答案可多於一個。）", options: ["A. 飲用水。", "B. 手提電話。", "C. 門匙。", "D. 濕毛巾。"], answer: [1, 2, 3], isMultiple: true, charId: 4 },
+            { question: "以下哪項不是火警發生時要帶備的「逃生三寶」？", options: ["A. 門匙。", "B. 錢包。", "C. 濕毛巾。", "D. 手提電話。"], answer: 1, isMultiple: false, charId: 5 },
+            { question: "火警逃生時遇上濃煙，為甚麼要伏地爬行？", options: ["A. 因為接近地面比較多煙。", "B. 因為接近地面比較少煙。", "C. 因為伏地前進會比較快。", "D. 因為伏地爬行節省體力。"], answer: 1, isMultiple: false, charId: 6 },
+            { question: "當發現家中傳出刺鼻的氣味，懷疑有氣體泄漏時，我們應該怎樣做？（答案可多於一個。）", options: ["A. 迅速離開現場。", "B. 打開窗户，讓氣體消散。", "C. 在家中打電話報警。", "D. 如果情況許可，關掉供氣總掣。"], answer: [0, 1, 3], isMultiple: true, charId: 7 },
+            { question: "當發現家中傳出刺鼻的氣味，懷疑有氣體泄漏時，我們不應該做甚麼？（答案可多於一個。）", options: ["A. 開關任何電器和電掣。", "B. 在現場使用電話。", "C. 打開窗户，讓氣體消散。", "D. 拍門通知鄰居離開。"], answer: [0, 1], isMultiple: true, charId: 8 },
+            { question: "如果發現家中有氣體泄漏，應該怎樣做？（答案可多於一個。）", options: ["A. 打開窗户，讓氣體消散。", "B. 拍門通知鄰居儘快離開。", "C. 立即在現場使用電話報警。", "D. 情況許可下，關掉供氣總掣。"], answer: [0, 1, 3], isMultiple: true, charId: 9 },
+            { question: "遇到氣體泄漏時，以下哪些行為可能會產生火花，引發爆炸？（答案可多於一個。）", options: ["A. 開關電器或電掣。", "B. 在現場使用電話。", "C. 按門鈴通知鄰居儘快離開。", "D. 打開窗户，讓氣體消散。"], answer: [0, 1, 2], isMultiple: true, charId: 10 },
+            { question: "定期請合資格人員檢查甚麼設備可以避免氣體泄漏？（答案可多於一個。）", options: ["A. 爐具。", "B. 電錶。", "C. 喉管。", "D. 滅火筒。"], answer: [0, 2], isMultiple: true, charId: 1 },
+            { question: "遇到有人觸電時，可以用甚麼東西把傷者跟電源分開？（答案可多於一個。）", options: ["A. 手。", "B. 鐵棒。", "C. 膠棒。", "D. 木棒。"], answer: [2, 3], isMultiple: true, charId: 2 },
+            { question: "如果發現有人觸電，應該怎樣做？（答案可多於一個。）", options: ["A. 馬上用手把傷者跟電源分開。", "B. 關掉電源。", "C. 儘快致電999求助。", "D. 救助傷者前，先踏在膠墊上。"], answer: [1, 2, 3], isMultiple: true, charId: 3 },
+            { question: "遇到有人觸電，我們應該怎樣做？（答案可多於一個。）", options: ["A. 不用做任何事情，靜待電流消失。", "B. 用木棒分隔傷者和電源。", "C. 用鐵棒分隔傷者和電源。", "D. 分隔傷者和電源時，戴上膠手套，踏在膠墊上。"], answer: [1, 3], isMultiple: true, charId: 4 },
+            { question: "遇到有人觸電，我們不應該做以下哪項事情？", options: ["A. 馬上切斷電源。", "B. 用手直接移動傷者到安全位置。", "C. 儘快報警求助。", "D. 用膠棒分隔傷者和電源。"], answer: 1, isMultiple: false, charId: 5 },
+            { question: "以下哪項是安全的用電方法？（答案可多於一個。）", options: ["A. 當電器損壞時，找合資格人員修理電器。", "B. 手濕時使用電器。", "C. 在浴室使用沒有防水設計的電器。", "D. 停止使用電線外層破損的電器。"], answer: [0, 3], isMultiple: true, charId: 6 },
+            { question: "要避免家居危機，我們可以怎樣做？（答案可多於一個。）", options: ["A. 定期請合資格人員檢查爐具和喉管。", "B. 安全用電，避免觸電。", "C. 把雜物堆放在走廊和門口，方便取用。", "D. 做好防火措施。"], answer: [0, 1, 3], isMultiple: true, charId: 7 },
+            { question: "以下哪些行為可能導致意外發生？（答案可多於一個。）", options: ["A. 使用扶手電梯時緊握扶手。", "B. 飲料灑在商場地板後及時清理。", "C. 在商場內追逐玩耍。", "D. 送貨員在手推車上將貨物堆放得很高。"], answer: [2, 3], isMultiple: true, charId: 8 },
+            { question: "以下哪些搬運重物時的做法是不正確的？（答案可多於一個。）", options: ["A. 注意使用正確的姿勢。", "B. 行走時要專注和小心。", "C. 把重物堆疊過高，阻礙了視線。", "D. 在未放穩貨物時，突然放手。"], answer: [2, 3], isMultiple: true, charId: 9 },
+            { question: "以下哪項是參與大型羣眾聚集活動時正確的做法？", options: ["A. 隨意走動，不緊隨家人。", "B. 與同行的人失散，便自行回家。", "C. 預先瞭解場地的緊急出口位置。", "D. 在人多的地方逆流行走。"], answer: 2, isMultiple: false, charId: 10 },
+            { question: "參加大型羣眾聚集活動時，我們應該怎樣做？（答案可多於一個。）", options: ["A. 在人多的地方逆流行走。", "B. 緊隨同行的家人或朋友。", "C. 如果走失了，便獨自離開。", "D. 聽從警察的指示。"], answer: [1, 3], isMultiple: true, charId: 1 },
+            { question: "參與大型羣眾聚集活動時，我們不要怎樣做？", options: ["A. 聽從警察的指示。", "B. 與家人或朋友約定會合地點。", "C. 瞭解場館的緊急出口位置。", "D. 在人多的地方逆流行走。"], answer: 3, isMultiple: false, charId: 2 },
+            { question: "參與大型羣眾聚集活動前，應該做哪些準備？（答案可多於一個。）", options: ["A. 瞭解場地的緊急出口位置。", "B. 與同行的人約定會合地點。", "C. 帶上大量貴重物品。", "D. 瞭解場地或活動的安排。"], answer: [0, 1, 3], isMultiple: true, charId: 3 },
+            { question: "如果在大型羣眾聚集活動中和家人失散了，我們應該怎樣做？", options: ["A. 去事前約定的地點會合。", "B. 在原地停留等家人。", "C. 到人羣較多的地方尋找家人。", "D. 找陌生人借電話打給家人。"], answer: 0, isMultiple: false, charId: 4 },
+            { question: "參與大型羣眾聚集活動時發現可疑人士，以下哪項做法是正確的？", options: ["A. 偷偷地跟蹤該名可疑人士。", "B. 立即向當值的警員舉報。", "C. 立即上前質問該人士的意圖。", "D. 不告訴任何人。"], answer: 1, isMultiple: false, charId: 5 },
+            { question: "以下哪種情況不需要報警求助？", options: ["A. 發生火警。", "B. 懷疑有氣體泄漏。", "C. 走路時撞到桌椅。", "D. 有人觸電昏迷。"], answer: 2, isMultiple: false, charId: 6 },
+            { question: "報警求助時，報案人不需要提供哪項信息？", options: ["A. 報案人的姓名和聯絡電話。", "B. 報案人的興趣和愛好。", "C. 發生意外的地點。", "D. 發生了甚麼事。"], answer: 1, isMultiple: false, charId: 7 },
+            { question: "以下哪些情況不需要報警求助？", options: ["A. 輕微擦傷膝蓋。", "B. 發生火警。", "C. 懷疑家中有氣體泄漏。", "D. 有人被困在升降機中。"], answer: 0, isMultiple: false, charId: 8 },
+            { question: "以下哪些人不需要召喚救護車送往醫院治理？（答案可多於一個。）", options: ["A. 發生嚴重車禍。", "B. 出現輕微流鼻血。", "C. 輕微燙傷。", "D. 意外觸電後昏迷不醒。"], answer: [1, 2], isMultiple: true, charId: 9 },
+            { question: "以下哪個人需要召喚救護車送往醫院治理？", options: ["A. 爸爸在家中被熱水輕微燙傷。", "B. 姐姐下樓梯時扭傷了腳。", "C. 爺爺在街上突然暈倒，昏迷不醒。", "D. 妹妹做手工時，被剪刀輕微割傷手指。"], answer: 2, isMultiple: false, charId: 10 },
+            { question: "我們在使用緊急救援服務時，應該注意甚麼？（答案可多於一個。）", options: ["A. 可以隨意濫用緊急救援服務。", "B. 配合救援人員的工作。", "C. 聽從救援人員的指示。", "D. 要善用緊急救援服務。"], answer: [1, 2, 3], isMultiple: true, charId: 1 },
+            { question: "香港的緊急救援服務主要由以下哪些部門和機構提供？（答案可多於一個。）", options: ["A. 醫院。", "B. 康樂及文化事務署。", "C. 香港警務處。", "D. 香港消防處。"], answer: [0, 2, 3], isMultiple: true, charId: 2 },
+            { question: "發生緊急事故或暴力事件時，醫院的醫生和護士主要提供甚麼協助？", options: ["A. 治療傷者。", "B. 調查事故原因。", "C. 在現場維持秩序。", "D. 阻止暴力事件發生。"], answer: 0, isMultiple: false, charId: 3 },
+            { question: "當香港消防處的救護員到達緊急事故現場後，會提供甚麼協助？", options: ["A. 調查事故原因。", "B. 即時為傷者急救。", "C. 阻止暴力事件發生。", "D. 治療傷者。"], answer: 1, isMultiple: false, charId: 4 }
+        ];
+
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedAnswers = [];
+
+        function initGame() {
+            // 洗牌並隨機抽取 15 題
+            const shuffled = [...fullQuestionPool].sort(() => 0.5 - Math.random());
+            currentQuestions = shuffled.slice(0, TOTAL_QUESTIONS_PER_GAME);
+            currentQuestionIndex = 0;
+            score = 0;
+            
+            document.getElementById("quizSection").style.display = "block";
+            document.getElementById("resultSection").style.display = "none";
+            showQuestion();
+        }
+
+        function showQuestion() {
+            selectedAnswers = [];
+            document.getElementById("feedbackContainer").style.display = "none";
+            document.getElementById("nextBtn").style.display = "none";
+            document.getElementById("submitBtn").style.display = "none";
+
+            const qData = currentQuestions[currentQuestionIndex];
+            
+            document.getElementById("progressText").innerText = `第 ${currentQuestionIndex + 1} / ${TOTAL_QUESTIONS_PER_GAME} 題`;
+            document.getElementById("scoreText").innerText = `目前積分：${score} / ${TOTAL_QUESTIONS_PER_GAME}`;
+            document.getElementById("questionText").innerText = qData.question;
+            
+            const typeBadge = document.getElementById("typeBadge");
+            if(qData.isMultiple) {
+                typeBadge.innerText = "複選題";
+                typeBadge.style.backgroundColor = "#F06292";
+                document.getElementById("submitBtn").style.display = "block";
+            } else {
+                typeBadge.innerText = "單選題";
+                typeBadge.style.backgroundColor = "#90CAF9";
+            }
+
+            // 指定為 .png 檔
+            const imgIndex = qData.charId || 1;
+            const charSprite = document.getElementById("charSprite");
+            charSprite.src = `inside out/insideout (${imgIndex}).png`;
+
+            const container = document.getElementById("optionsContainer");
+            container.innerHTML = "";
+
+            qData.options.forEach((option, index) => {
+                const btn = document.createElement("button");
+                btn.className = "option-btn";
+                btn.innerText = option;
+                btn.onclick = () => selectOption(index, btn);
+                container.appendChild(btn);
+            });
+        }
+
+        // 圖片自動備用防錯機制
+        function handleImageError(img) {
+            if (img.src.endsWith('.png')) {
+                img.src = img.src.replace('.png', '.jpg');
+            }
+        }
+
+        function selectOption(index, btnElement) {
+            const qData = currentQuestions[currentQuestionIndex];
+            
+            if (!qData.isMultiple) {
+                checkSingleAnswer(index);
+            } else {
+                if (selectedAnswers.includes(index)) {
+                    selectedAnswers = selectedAnswers.filter(i => i !== index);
+                    btnElement.classList.remove("selected");
+                } else {
+                    selectedAnswers.push(index);
+                    btnElement.classList.add("selected");
+                }
+            }
+        }
+
+        function checkSingleAnswer(selectedIndex) {
+            const qData = currentQuestions[currentQuestionIndex];
+            const buttons = document.querySelectorAll(".options-container .option-btn");
+            buttons.forEach(btn => btn.disabled = true);
+
+            const feedback = document.getElementById("feedbackContainer");
+            feedback.style.display = "block";
+
+            if (selectedIndex === qData.answer) {
+                score++;
+                buttons[selectedIndex].classList.add("correct");
+                feedback.className = "feedback-container feedback-success";
+                feedback.innerHTML = "太棒了！答對了！✨";
+                playAudio("sndCorrect");
+            } else {
+                buttons[selectedIndex].classList.add("wrong");
+                buttons[qData.answer].classList.add("correct");
+                feedback.className = "feedback-container feedback-fail";
+                feedback.innerHTML = `喔不！答錯了，正確答案是：<br><span style="color:#E91E63;">${qData.options[qData.answer]}</span>`;
+                playAudio("sndWrong");
+            }
+            document.getElementById("scoreText").innerText = `目前積分：${score} / ${TOTAL_QUESTIONS_PER_GAME}`;
+            document.getElementById("nextBtn").style.display = "block";
+        }
+
+        function submitMultipleChoice() {
+            const qData = currentQuestions[currentQuestionIndex];
+            const buttons = document.querySelectorAll(".options-container .option-btn");
+            
+            if(selectedAnswers.length === 0) {
+                alert("請至少選擇一個選項再提交！");
+                return;
+            }
+
+            document.getElementById("submitBtn").style.display = "none";
+            buttons.forEach(btn => btn.disabled = true);
+
+            selectedAnswers.sort((a, b) => a - b);
+            const correctAnswers = [...qData.answer].sort((a, b) => a - b);
+            const isCorrect = JSON.stringify(selectedAnswers) === JSON.stringify(correctAnswers);
+
+            buttons.forEach((btn, idx) => {
+                btn.classList.remove("selected");
+                if (correctAnswers.includes(idx)) {
+                    btn.classList.add("correct");
+                } else if (selectedAnswers.includes(idx)) {
+                    btn.classList.add("wrong");
+                }
+            });
+
+            const feedback = document.getElementById("feedbackContainer");
+            feedback.style.display = "block";
+
+            const correctTexts = correctAnswers.map(idx => qData.options[idx]).join("<br>");
+
+            if (isCorrect) {
+                score++;
+                feedback.className = "feedback-container feedback-success";
+                feedback.innerHTML = "太棒了！答對了！✨";
+                playAudio("sndCorrect");
+            } else {
+                feedback.className = "feedback-container feedback-fail";
+                feedback.innerHTML = `喔不！答錯了，正確答案是：<br><span style="color:#E91E63; font-size:12pt;">${correctTexts}</span>`;
+                playAudio("sndWrong");
+            }
+
+            document.getElementById("scoreText").innerText = `目前積分：${score} / ${TOTAL_QUESTIONS_PER_GAME}`;
+            document.getElementById("nextBtn").style.display = "block";
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < TOTAL_QUESTIONS_PER_GAME) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById("quizSection").style.display = "none";
+            document.getElementById("resultSection").style.display = "flex";
+            document.getElementById("finalScoreText").innerText = score;
+
+            let badge = "";
+            if (score === 15) {
+                badge = "安全知識大師 (Joy)";
+            } else if (score >= 11) {
+                badge = "資深核心記憶專家";
+            } else {
+                badge = "情緒控制台實習生";
+            }
+            
+            document.getElementById("badgeText").innerText = badge;
+        }
+
+        function restartGame() { initGame(); }
+
+        function playAudio(id) {
+            const audio = document.getElementById(id);
+            if (audio) {
+                audio.currentTime = 0;
+                audio.play().catch(e => console.log("音效播不出:", e));
+            }
+        }
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>
